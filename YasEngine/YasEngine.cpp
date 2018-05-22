@@ -1,12 +1,9 @@
 #include"YasEngine.hpp"
 
-// Static variables Window
 int YasEngine::windowPositionX				= 64;
 int YasEngine::windowPositionY				= 64;
 int YasEngine::windowWidth					= 640;
 int YasEngine::windowHeight					= 480;
-
-// Windows functions and procedures
 
 LRESULT CALLBACK windowProcedure(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -18,6 +15,26 @@ LRESULT CALLBACK windowProcedure(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 	}
 	return DefWindowProc(hWnd, message, wParam, lParam);
 }
+
+YasEngine::YasEngine()
+{
+	AllocConsole();
+	AttachConsole(GetCurrentProcessId());
+	// TODO freopen is depracated change to freopen_s
+	freopen("CON", "w", stdout);
+	freopen("CON", "w", stderr);
+	SetConsoleTitle("YasEngine logging");
+}
+
+void YasEngine::run(HINSTANCE hInstance)
+{
+	createWindow(hInstance);
+	vulkanInitialization();
+	mainLoop();
+	cleanUp();
+}
+
+//Private Methods
 
 void YasEngine::createWindow(HINSTANCE hInstance)
 {
@@ -36,10 +53,10 @@ void YasEngine::createWindow(HINSTANCE hInstance)
 	windowClassEx.lpszClassName			= "YASEngine window class";
 	windowClassEx.hIconSm				= LoadIcon(0, IDI_APPLICATION);
 
-	//Register window class here:
 	RegisterClassEx(&windowClassEx);
 
-	//Create window
+	windowInstance = hInstance;
+
 	window =  CreateWindowEx(
 									NULL,
 									"YASEngine window class",
@@ -49,17 +66,16 @@ void YasEngine::createWindow(HINSTANCE hInstance)
 									windowWidth, windowHeight,
 									NULL,
 									NULL,
-									hInstance,
+									windowInstance,
 									NULL
 								);
 
-	//Show and refresh window
 	ShowWindow(window, SW_NORMAL);
 	SetForegroundWindow(window);
 	SetFocus(window);
 }
 
-void YasEngine::renderLoop()
+void YasEngine::mainLoop()
 {
 	MSG message;
 	
@@ -73,3 +89,84 @@ void YasEngine::renderLoop()
 		}
 	}
 }
+
+void YasEngine::vulkanInitialization()
+{
+	createVulkanInstance();
+}
+
+bool YasEngine::checkForExtensionSupport(const std::vector<const char*> &enabledExtensions, uint32_t numberOfEnabledExtensions)
+{
+
+	bool allEnabletExtensionsAreAvailable = false;
+	uint32_t numberOfAvailableExtensions = 0;
+	vkEnumerateInstanceExtensionProperties(nullptr, &numberOfAvailableExtensions, nullptr);
+	
+	std::vector<VkExtensionProperties> availableExtensions(static_cast<int>(numberOfAvailableExtensions));
+	vkEnumerateInstanceExtensionProperties(nullptr, &numberOfAvailableExtensions, availableExtensions.data());
+	int extensionsCounter = 0;
+
+	for(int i=0; i<static_cast<int>(numberOfEnabledExtensions); i++)
+	{
+		for(int j=0; j< static_cast<int>(availableExtensions.size()); j++)
+		{
+			if(strcmp(enabledExtensions[i], availableExtensions[j].extensionName) == 0)
+			{
+				++extensionsCounter;
+			}
+			if(extensionsCounter == numberOfEnabledExtensions)
+			{
+				return true;
+			}
+		}
+	}
+	
+	return false;
+}
+
+void YasEngine::createVulkanInstance()
+{
+	std::cout << "Creating Vulkan Instance..." << std::endl;
+	VkApplicationInfo applicationInfo = {};
+	applicationInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+	applicationInfo.pApplicationName = "YasEngine Demo";
+	applicationInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
+	applicationInfo.pEngineName = "Yas Engine";
+	applicationInfo.engineVersion = VK_MAKE_VERSION(0, 1, 0);
+	applicationInfo.apiVersion = VK_API_VERSION_1_1;
+
+	VkInstanceCreateInfo createInfo = {};
+	createInfo = {};
+	createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+	createInfo.pApplicationInfo = &applicationInfo;
+
+	std::vector<const char*> allEnabledExtenstions = std::vector<const char*>();
+	allEnabledExtenstions.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
+	allEnabledExtenstions.push_back(VK_KHR_WIN32_SURFACE_EXTENSION_NAME);
+	uint32_t extensionsCount = static_cast<uint32_t>(allEnabledExtenstions.size());
+
+	createInfo.ppEnabledExtensionNames = allEnabledExtenstions.data();
+	createInfo.enabledLayerCount = 0;
+
+	bool allExtensionsAvailable = checkForExtensionSupport(allEnabledExtenstions, extensionsCount);
+
+	if(!allExtensionsAvailable)
+	{
+		throw std::runtime_error("Not all required extensions available! Can't create Vulkan Instance");
+	}
+
+	VkResult result = vkCreateInstance(&createInfo, nullptr, &vulkanInstance);
+	
+	if(result != VK_SUCCESS)
+	{
+		throw std::runtime_error("Failed to create Vulkan instance!");
+	}
+}
+
+void YasEngine::cleanUp()
+{
+	//Second parameter is optional allocator which for this version will not be used.
+	vkDestroyInstance(vulkanInstance, nullptr);
+	DestroyWindow(window);
+}
+//----------------------------------------------------------------------------------------------------------------------
