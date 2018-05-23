@@ -1,6 +1,5 @@
 #ifndef YASENGINE_HPP
 #define YASENGINE_HPP
-#define _CRT_SECURE_NO_WARNINGS
 #include<iostream>
 #include<vector>
 #include<Windows.h>
@@ -19,6 +18,16 @@ class YasEngine
 		static int				windowWidth;
 		static int				windowHeight;
 
+		const std::vector<const char*> validationLayers =
+		{
+			"VK_LAYER_LUNARG_standard_validation"	
+		};
+
+		#ifdef NDEBUG
+			const bool enableValidationLayers = false;
+		#else
+			const bool enableValidationLayers = true;
+		#endif
 	//public end
 
 	private:
@@ -34,7 +43,8 @@ class YasEngine
 		//Vulkan variables and functions
 		void					createVulkanInstance();
 		void					vulkanInitialization();
-		bool					checkForExtensionSupport(const std::vector<const char*> &enabledExtensions, uint32_t numberOfEnabledExtensions);
+		bool					checkForExtensionsSupport(const std::vector<const char*> &enabledExtensions, uint32_t numberOfEnabledExtensions);
+		bool					checkValidationLayerSupport();
 
 		VkInstance				vulkanInstance;
 		

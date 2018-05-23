@@ -20,9 +20,9 @@ YasEngine::YasEngine()
 {
 	AllocConsole();
 	AttachConsole(GetCurrentProcessId());
-	// TODO freopen is depracated change to freopen_s
-	freopen("CON", "w", stdout);
-	freopen("CON", "w", stderr);
+	FILE* file;
+	freopen_s(&file, "CON", "w", stdout);
+	freopen_s(&file, "CON", "w", stderr);
 	SetConsoleTitle("YasEngine logging");
 }
 
@@ -95,7 +95,7 @@ void YasEngine::vulkanInitialization()
 	createVulkanInstance();
 }
 
-bool YasEngine::checkForExtensionSupport(const std::vector<const char*> &enabledExtensions, uint32_t numberOfEnabledExtensions)
+bool YasEngine::checkForExtensionsSupport(const std::vector<const char*> &enabledExtensions, uint32_t numberOfEnabledExtensions)
 {
 
 	bool allEnabletExtensionsAreAvailable = false;
@@ -124,8 +124,41 @@ bool YasEngine::checkForExtensionSupport(const std::vector<const char*> &enabled
 	return false;
 }
 
+bool YasEngine::checkValidationLayerSupport()
+{
+	uint32_t layersCount;
+	vkEnumerateInstanceLayerProperties(&layersCount, nullptr);
+	
+	std::vector<VkLayerProperties> availableLayers(layersCount);
+	vkEnumerateInstanceLayerProperties(&layersCount, availableLayers.data());
+	
+	for(const char* layerName: validationLayers)
+	{
+		bool layerFound = false;
+		// Uwaga
+		for(const VkLayerProperties& layerProperties: availableLayers)
+		{
+			if(strcmp(layerName, layerProperties.layerName) == 0)
+			{
+				layerFound = true;
+				break;
+			}
+		}
+		if(!layerFound)
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
 void YasEngine::createVulkanInstance()
 {
+	if(enableValidationLayers && !checkValidationLayerSupport())
+	{
+		throw std::runtime_error("Requested validation layers are not available");
+	}	
+
 	std::cout << "Creating Vulkan Instance..." << std::endl;
 	VkApplicationInfo applicationInfo = {};
 	applicationInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
@@ -148,7 +181,7 @@ void YasEngine::createVulkanInstance()
 	createInfo.ppEnabledExtensionNames = allEnabledExtenstions.data();
 	createInfo.enabledLayerCount = 0;
 
-	bool allExtensionsAvailable = checkForExtensionSupport(allEnabledExtenstions, extensionsCount);
+	bool allExtensionsAvailable = checkForExtensionsSupport(allEnabledExtenstions, extensionsCount);
 
 	if(!allExtensionsAvailable)
 	{
