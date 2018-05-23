@@ -18,10 +18,7 @@ class YasEngine
 		static int				windowWidth;
 		static int				windowHeight;
 
-		const std::vector<const char*> validationLayers =
-		{
-			"VK_LAYER_LUNARG_standard_validation"	
-		};
+
 
 		#ifdef NDEBUG
 			const bool enableValidationLayers = false;
@@ -43,11 +40,16 @@ class YasEngine
 		//Vulkan variables and functions
 		void					createVulkanInstance();
 		void					vulkanInitialization();
+		std::vector<const char*> getRequiredExtensions();
 		bool					checkForExtensionsSupport(const std::vector<const char*> &enabledExtensions, uint32_t numberOfEnabledExtensions);
 		bool					checkValidationLayerSupport();
 
 		VkInstance				vulkanInstance;
-		
+		const std::vector<const char*> validationLayers =
+		{
+			"VK_LAYER_LUNARG_standard_validation"	
+		};
+
 		//Both Window and Vulkan variable and functions
 		void					cleanUp();
 

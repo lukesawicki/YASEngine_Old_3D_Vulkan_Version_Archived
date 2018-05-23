@@ -152,6 +152,20 @@ bool YasEngine::checkValidationLayerSupport()
 	return true;
 }
 
+std::vector<const char*> YasEngine::getRequiredExtensions()
+{
+	std::vector<const char*> allRequiredExtenstions = std::vector<const char*>();
+
+	allRequiredExtenstions.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
+	allRequiredExtenstions.push_back(VK_KHR_WIN32_SURFACE_EXTENSION_NAME);
+
+	if(enableValidationLayers)
+	{
+		allRequiredExtenstions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
+	}
+	return allRequiredExtenstions;
+}
+
 void YasEngine::createVulkanInstance()
 {
 	if(enableValidationLayers && !checkValidationLayerSupport())
@@ -173,19 +187,26 @@ void YasEngine::createVulkanInstance()
 	createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
 	createInfo.pApplicationInfo = &applicationInfo;
 
-	std::vector<const char*> allEnabledExtenstions = std::vector<const char*>();
-	allEnabledExtenstions.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
-	allEnabledExtenstions.push_back(VK_KHR_WIN32_SURFACE_EXTENSION_NAME);
+	std::vector<const char*> allEnabledExtenstions = getRequiredExtensions();
 	uint32_t extensionsCount = static_cast<uint32_t>(allEnabledExtenstions.size());
-
-	createInfo.ppEnabledExtensionNames = allEnabledExtenstions.data();
-	createInfo.enabledLayerCount = 0;
 
 	bool allExtensionsAvailable = checkForExtensionsSupport(allEnabledExtenstions, extensionsCount);
 
 	if(!allExtensionsAvailable)
 	{
 		throw std::runtime_error("Not all required extensions available! Can't create Vulkan Instance");
+	}
+	createInfo.enabledExtensionCount = extensionsCount;
+	createInfo.ppEnabledExtensionNames = allEnabledExtenstions.data();
+
+	if(enableValidationLayers)
+	{
+		createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
+		createInfo.ppEnabledLayerNames = validationLayers.data();
+	}
+	else
+	{
+		createInfo.enabledLayerCount = 0;
 	}
 
 	VkResult result = vkCreateInstance(&createInfo, nullptr, &vulkanInstance);
