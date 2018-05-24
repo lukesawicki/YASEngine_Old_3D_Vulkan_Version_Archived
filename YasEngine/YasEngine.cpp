@@ -16,6 +16,53 @@ LRESULT CALLBACK windowProcedure(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 	return DefWindowProc(hWnd, message, wParam, lParam);
 }
 
+VkResult createDebugReportCallbackEXT
+	(
+		VkInstance vulkanInstance,
+		const VkDebugReportCallbackCreateInfoEXT* createInfo,
+		const VkAllocationCallbacks* allocator,
+		VkDebugReportCallbackEXT* callback
+	)
+{
+	PFN_vkCreateDebugReportCallbackEXT debugReportCallbackFunction = (PFN_vkCreateDebugReportCallbackEXT)vkGetInstanceProcAddr(vulkanInstance, "vkCreateDebugReportCallbackEXT");
+	if(debugReportCallbackFunction != nullptr)
+	{
+		return debugReportCallbackFunction(vulkanInstance, createInfo, allocator, callback);
+	}
+	else
+	{
+		return VK_ERROR_EXTENSION_NOT_PRESENT;
+	}
+}
+
+void destroyDebugReportCallbackEXT(VkInstance vulkanInstance, VkDebugReportCallbackEXT callback, const VkAllocationCallbacks* allocator)
+{
+	PFN_vkDestroyDebugReportCallbackEXT destroyFunction = (PFN_vkDestroyDebugReportCallbackEXT)vkGetInstanceProcAddr(vulkanInstance, "vkDestroyDebugReportCallbackEXT");
+	if(destroyFunction != nullptr)
+	{
+		destroyFunction(vulkanInstance, callback, allocator);
+	}
+}
+
+VKAPI_ATTR VkBool32 VKAPI_CALL YasEngine::debugCallback
+	(
+	VkDebugReportFlagsEXT debugReportFlags,
+	VkDebugReportObjectTypeEXT objectType,
+	uint64_t object,
+	size_t location,
+	int32_t code,
+	const char* layerPrefix,
+	const char* msg,
+	void* userData
+	)
+{
+	std::cerr << "Validation layer: " << msg << std::endl;
+	//If return true, then call is aborted with the VK_ERROR_VALIDATION_FAILED_EXT
+	//because this is used to test the validation layers themeselves
+	//then for now always return false
+	return VK_FALSE;
+}
+
 YasEngine::YasEngine()
 {
 	AllocConsole();
@@ -26,10 +73,28 @@ YasEngine::YasEngine()
 	SetConsoleTitle("YasEngine logging");
 }
 
+void YasEngine::setupDebugCallback()
+{
+	if(!enableValidationLayers)
+	{
+		return;
+	}
+	
+	VkDebugReportCallbackCreateInfoEXT createInfo = {};
+	createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT;
+	createInfo.flags = VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT;
+	createInfo.pfnCallback = debugCallback;
+	
+	if(createDebugReportCallbackEXT(vulkanInstance, &createInfo, nullptr, &callback) != VK_SUCCESS)
+	{
+		throw std::runtime_error("Failed to set up debug callback function");
+	}
+}
+
 void YasEngine::run(HINSTANCE hInstance)
 {
 	createWindow(hInstance);
-	vulkanInitialization();
+	initializeVulkan();
 	mainLoop();
 	cleanUp();
 }
@@ -90,9 +155,10 @@ void YasEngine::mainLoop()
 	}
 }
 
-void YasEngine::vulkanInitialization()
+void YasEngine::initializeVulkan()
 {
 	createVulkanInstance();
+	setupDebugCallback();
 }
 
 bool YasEngine::checkForExtensionsSupport(const std::vector<const char*> &enabledExtensions, uint32_t numberOfEnabledExtensions)
@@ -135,7 +201,7 @@ bool YasEngine::checkValidationLayerSupport()
 	for(const char* layerName: validationLayers)
 	{
 		bool layerFound = false;
-		// Uwaga
+		// Attention
 		for(const VkLayerProperties& layerProperties: availableLayers)
 		{
 			if(strcmp(layerName, layerProperties.layerName) == 0)
@@ -219,6 +285,10 @@ void YasEngine::createVulkanInstance()
 
 void YasEngine::cleanUp()
 {
+	if(enableValidationLayers)
+	{
+		destroyDebugReportCallbackEXT(vulkanInstance, callback, nullptr);
+	}
 	//Second parameter is optional allocator which for this version will not be used.
 	vkDestroyInstance(vulkanInstance, nullptr);
 	DestroyWindow(window);
