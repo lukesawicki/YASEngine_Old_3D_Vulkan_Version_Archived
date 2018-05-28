@@ -5,6 +5,16 @@ int YasEngine::windowPositionY				= 64;
 int YasEngine::windowWidth					= 640;
 int YasEngine::windowHeight					= 480;
 
+struct YasEngine::QueueFamilyIndices
+{
+	int graphicsFamily = -1;
+	
+	bool isComplete()
+	{
+		return graphicsFamily >= 0;
+	}
+};
+
 LRESULT CALLBACK windowProcedure(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	switch(message)
@@ -159,6 +169,8 @@ void YasEngine::initializeVulkan()
 {
 	createVulkanInstance();
 	setupDebugCallback();
+	selectPhysicalDevice();
+	createLogicalDevice();
 }
 
 bool YasEngine::checkForExtensionsSupport(const std::vector<const char*> &enabledExtensions, uint32_t numberOfEnabledExtensions)
@@ -283,14 +295,132 @@ void YasEngine::createVulkanInstance()
 	}
 }
 
+void YasEngine::selectPhysicalDevice()
+{
+	uint32_t deviceCount = 0;
+	vkEnumeratePhysicalDevices(vulkanInstance, &deviceCount, nullptr);
+	if(deviceCount == 0) {
+		throw std::runtime_error("Failed to find Graphics Cards with Vulkan support.");
+	}
+	std::vector<VkPhysicalDevice> physicalDevices(deviceCount);
+	vkEnumeratePhysicalDevices(vulkanInstance, &deviceCount, physicalDevices.data());
+
+	for(const VkPhysicalDevice& device: physicalDevices)
+	{
+		if(isPhysicalDeviceSuitable(device))
+		{
+			physicalDevice = device;
+			std::cout << "YasEngine chosen physical device: " << std::endl;
+			break;
+		}
+	}
+	if(physicalDevice == VK_NULL_HANDLE)
+	{
+		throw std::runtime_error("Failed to find suitable graphic card");
+	}
+}
+
+bool YasEngine::isPhysicalDeviceSuitable(VkPhysicalDevice device)
+{	
+	VkPhysicalDeviceProperties physicalDeviceProperties;
+	vkGetPhysicalDeviceProperties(device, &physicalDeviceProperties);
+
+	VkPhysicalDeviceFeatures physicalDeviceFeatures;
+	vkGetPhysicalDeviceFeatures(device, &physicalDeviceFeatures);
+	//AMD		4130
+	//INTEL		8086
+	//NVIDIA	4318
+	if(physicalDeviceProperties.vendorID == 4130)
+	{
+		std::cout << "Physical device vendor: AMD" << std::endl;
+	}
+	if(physicalDeviceProperties.vendorID == 4318)
+	{
+		std::cout << "Physical device vendor: NVIDIA" << std::endl;
+	}
+
+	QueueFamilyIndices indices = findQueueFamilies(device);
+
+	return (physicalDeviceProperties.vendorID == 4130 ||
+		    physicalDeviceProperties.vendorID == 4318) && indices.isComplete();
+}
+
+YasEngine::QueueFamilyIndices YasEngine::findQueueFamilies(VkPhysicalDevice vulkanPhysicalDevice)
+{
+	YasEngine::QueueFamilyIndices queueFamilyIndices;
+
+	uint32_t queueFamilyCount = 0;
+	vkGetPhysicalDeviceQueueFamilyProperties(vulkanPhysicalDevice, &queueFamilyCount, nullptr);
+
+	std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
+	vkGetPhysicalDeviceQueueFamilyProperties(vulkanPhysicalDevice, &queueFamilyCount, queueFamilies.data());
+
+	int i = 0;
+	for(const VkQueueFamilyProperties queueFamily: queueFamilies)
+	{
+		if(queueFamily.queueCount > 0 && queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT)
+		{
+			queueFamilyIndices.graphicsFamily = i;
+		}
+		if(queueFamilyIndices.isComplete())
+		{
+			break;
+		}
+		i++;
+	}
+
+	return queueFamilyIndices;
+}
+
+void YasEngine::createLogicalDevice()
+{
+	QueueFamilyIndices indices = findQueueFamilies(physicalDevice);
+	
+	VkDeviceQueueCreateInfo queueCreateInfo = {};
+	queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+	queueCreateInfo.queueFamilyIndex = indices.graphicsFamily;
+	queueCreateInfo.queueCount = 1;
+	
+	float queuePriority = 1.0f;
+	queueCreateInfo.pQueuePriorities = &queuePriority;
+	
+	VkPhysicalDeviceFeatures physicalDeviceFeatures = {};
+
+	VkDeviceCreateInfo createInfo = {};
+	createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+	createInfo.pQueueCreateInfos = &queueCreateInfo;
+	createInfo.queueCreateInfoCount = 1;
+	createInfo.pEnabledFeatures = &physicalDeviceFeatures;
+	createInfo.enabledExtensionCount = 0;
+	
+	if(enableValidationLayers)
+	{
+		createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
+		createInfo.ppEnabledLayerNames = validationLayers.data();
+	}
+	else
+	{
+		createInfo.enabledLayerCount = 0;
+	}
+	if(vkCreateDevice(physicalDevice, &createInfo, nullptr, &vulkanLogicalDevice) != VK_SUCCESS)
+	{
+		throw std::runtime_error("Failed to crate logical device");
+	}
+
+	vkGetDeviceQueue(vulkanLogicalDevice, indices.graphicsFamily, 0, &graphicsQueue);
+
+}
+
 void YasEngine::cleanUp()
 {
+	vkDestroyDevice(vulkanLogicalDevice, nullptr);
 	if(enableValidationLayers)
 	{
 		destroyDebugReportCallbackEXT(vulkanInstance, callback, nullptr);
 	}
 	//Second parameter is optional allocator which for this version will not be used.
 	vkDestroyInstance(vulkanInstance, nullptr);
+	
 	DestroyWindow(window);
 }
 //----------------------------------------------------------------------------------------------------------------------

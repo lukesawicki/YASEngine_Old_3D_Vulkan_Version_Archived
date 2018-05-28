@@ -25,6 +25,7 @@ class YasEngine
 		static int				windowPositionY;
 		static int				windowWidth;
 		static int				windowHeight;
+		struct					QueueFamilyIndices;
 		
 		static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback
 			(
@@ -55,6 +56,10 @@ class YasEngine
 		HWND					window;
 
 
+		//Both Window and Vulkan variable and functions
+		void					cleanUp();
+
+
 		//Vulkan variables and functions
 		void					createVulkanInstance();
 		void					initializeVulkan();
@@ -62,17 +67,26 @@ class YasEngine
 		bool					checkForExtensionsSupport(const std::vector<const char*> &enabledExtensions, uint32_t numberOfEnabledExtensions);
 		bool					checkValidationLayerSupport();
 		void					setupDebugCallback();
+		void					selectPhysicalDevice();
+		bool					isPhysicalDeviceSuitable(VkPhysicalDevice device);
+		void					createLogicalDevice();
+		
+
+		QueueFamilyIndices		findQueueFamilies(VkPhysicalDevice vulkanPhysicalDevice);
 
 		VkInstance				vulkanInstance;
+		VkDevice				vulkanLogicalDevice;
+		VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
 		VkDebugReportCallbackEXT callback;
+		VkQueue graphicsQueue;
+
+
 		const std::vector<const char*> validationLayers =
 		{
 			"VK_LAYER_LUNARG_standard_validation"	
 		};
 
-
-		//Both Window and Vulkan variable and functions
-		void					cleanUp();
+		
 
 	//private end
 };
