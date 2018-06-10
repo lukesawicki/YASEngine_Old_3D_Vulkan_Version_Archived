@@ -1,8 +1,9 @@
 #ifndef MAIN_HPP
 #define MAIN_HPP
-#include<Windows.h>
+#include"stdafx.hpp"
 #include"YasEngine.hpp"
 
 	;
 
 #endif
+

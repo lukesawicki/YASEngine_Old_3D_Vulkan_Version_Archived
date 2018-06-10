@@ -1,3 +1,4 @@
+#include"stdafx.hpp"
 #include"Main.hpp"
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
@@ -8,3 +9,4 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	//std::cin >> stop;
 	return 0;
 }
+

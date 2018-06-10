@@ -1,5 +1,5 @@
+#include"stdafx.hpp"
 #include"YasEngine.hpp"
-
 int YasEngine::windowPositionX				= 64;
 int YasEngine::windowPositionY				= 64;
 int YasEngine::windowWidth					= 640;
@@ -8,10 +8,11 @@ int YasEngine::windowHeight					= 480;
 struct YasEngine::QueueFamilyIndices
 {
 	int graphicsFamily = -1;
+	int presentationFamily = -1;
 	
 	bool isComplete()
 	{
-		return graphicsFamily >= 0;
+		return graphicsFamily >= 0 && presentationFamily >= 0;
 	}
 };
 
@@ -130,20 +131,21 @@ void YasEngine::createWindow(HINSTANCE hInstance)
 
 	RegisterClassEx(&windowClassEx);
 
-	windowInstance = hInstance;
+	application = hInstance;
 
-	window =  CreateWindowEx(
-									NULL,
-									"YASEngine window class",
-									"YASEngine",
-									WS_OVERLAPPEDWINDOW,
-									windowPositionX, windowPositionY,
-									windowWidth, windowHeight,
-									NULL,
-									NULL,
-									windowInstance,
-									NULL
-								);
+	window =  CreateWindowEx
+				(
+					NULL,
+					"YASEngine window class",
+					"YASEngine",
+					WS_OVERLAPPEDWINDOW,
+					windowPositionX, windowPositionY,
+					windowWidth, windowHeight,
+					NULL,
+					NULL,
+					application,
+					NULL
+				);
 
 	ShowWindow(window, SW_NORMAL);
 	SetForegroundWindow(window);
@@ -169,8 +171,10 @@ void YasEngine::initializeVulkan()
 {
 	createVulkanInstance();
 	setupDebugCallback();
+	createSurface();
 	selectPhysicalDevice();
 	createLogicalDevice();
+	//createSwapChain();
 }
 
 bool YasEngine::checkForExtensionsSupport(const std::vector<const char*> &enabledExtensions, uint32_t numberOfEnabledExtensions)
@@ -180,7 +184,7 @@ bool YasEngine::checkForExtensionsSupport(const std::vector<const char*> &enable
 	uint32_t numberOfAvailableExtensions = 0;
 	vkEnumerateInstanceExtensionProperties(nullptr, &numberOfAvailableExtensions, nullptr);
 	
-	std::vector<VkExtensionProperties> availableExtensions(static_cast<int>(numberOfAvailableExtensions));
+	std::vector<VkExtensionProperties> availableExtensions(static_cast<size_t>(numberOfAvailableExtensions));
 	vkEnumerateInstanceExtensionProperties(nullptr, &numberOfAvailableExtensions, availableExtensions.data());
 	int extensionsCounter = 0;
 
@@ -200,6 +204,35 @@ bool YasEngine::checkForExtensionsSupport(const std::vector<const char*> &enable
 	}
 	
 	return false;
+}
+
+bool YasEngine::checkPhysicalDeviceExtensionSupport(VkPhysicalDevice device)
+{
+	uint32_t extensionsCount;
+	vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionsCount, nullptr);
+	
+	std::vector<VkExtensionProperties> availableExtensions(extensionsCount);
+	vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionsCount, availableExtensions.data());
+	
+	for(const char* deviceExtensionName: deviceExtensions)
+	{
+		bool extensionFound = false;
+
+		for(const VkExtensionProperties& availableExt: availableExtensions)
+		{
+			if(strcmp(deviceExtensionName, availableExt.extensionName) == 0)
+			{
+				extensionFound = true;
+				break;
+			}
+		}
+		if(!extensionFound)
+		{
+			return false;
+		}
+	}
+
+	return true;
 }
 
 bool YasEngine::checkValidationLayerSupport()
@@ -230,12 +263,31 @@ bool YasEngine::checkValidationLayerSupport()
 	return true;
 }
 
+SwapChainSupportDetails	YasEngine::querySwapChainSupport(VkPhysicalDevice device)
+{
+	SwapChainSupportDetails swapChainDetails;
+	vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, surface, &swapChainDetails.capabilities);
+
+	uint32_t formatCount;
+	vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &formatCount, nullptr);
+	if(formatCount != 0)
+	{
+		swapChainDetails.formats.resize(formatCount);
+		vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &formatCount, swapChainDetails.formats.data());
+	}
+
+	uint32_t presentModesCount;
+	vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &presentModesCount, swapChainDetails.presentModes.data());
+
+	return swapChainDetails;
+}
+
 std::vector<const char*> YasEngine::getRequiredExtensions()
 {
 	std::vector<const char*> allRequiredExtenstions = std::vector<const char*>();
 
 	allRequiredExtenstions.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
-	allRequiredExtenstions.push_back(VK_KHR_WIN32_SURFACE_EXTENSION_NAME);
+	allRequiredExtenstions.push_back(VK_KHR_WIN32_SURFACE_EXTENSION_NAME);//VK_KHR_WIN32_SURFACE_EXTENSION_NAME
 
 	if(enableValidationLayers)
 	{
@@ -261,7 +313,6 @@ void YasEngine::createVulkanInstance()
 	applicationInfo.apiVersion = VK_API_VERSION_1_1;
 
 	VkInstanceCreateInfo createInfo = {};
-	createInfo = {};
 	createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
 	createInfo.pApplicationInfo = &applicationInfo;
 
@@ -310,7 +361,7 @@ void YasEngine::selectPhysicalDevice()
 		if(isPhysicalDeviceSuitable(device))
 		{
 			physicalDevice = device;
-			std::cout << "YasEngine chosen physical device: " << std::endl;
+			std::cout << "YasEngine chosen physical device." << std::endl;
 			break;
 		}
 	}
@@ -322,45 +373,72 @@ void YasEngine::selectPhysicalDevice()
 
 bool YasEngine::isPhysicalDeviceSuitable(VkPhysicalDevice device)
 {	
+	YasEngine::QueueFamilyIndices indices = findQueueFamilies(device);
+
 	VkPhysicalDeviceProperties physicalDeviceProperties;
 	vkGetPhysicalDeviceProperties(device, &physicalDeviceProperties);
 
 	VkPhysicalDeviceFeatures physicalDeviceFeatures;
 	vkGetPhysicalDeviceFeatures(device, &physicalDeviceFeatures);
-	//AMD		4130
-	//INTEL		8086
-	//NVIDIA	4318
 	if(physicalDeviceProperties.vendorID == 4130)
 	{
 		std::cout << "Physical device vendor: AMD" << std::endl;
 	}
-	if(physicalDeviceProperties.vendorID == 4318)
+	else
 	{
-		std::cout << "Physical device vendor: NVIDIA" << std::endl;
+		if(physicalDeviceProperties.vendorID == 4318)
+		{
+			std::cout << "Physical device vendor: NVIDIA" << std::endl;
+		}
+		else
+		{
+			if(physicalDeviceProperties.vendorID == 8086)
+			{
+				std::cout << "Physical device vendor: INTEL" << std::endl;
+			}
+			else
+			{
+				std::cout << "Physical device vendor: Other vendor." << std::endl;
+			}
+		}
 	}
 
-	QueueFamilyIndices indices = findQueueFamilies(device);
+	bool extensionsSupported = checkPhysicalDeviceExtensionSupport(device);
+	bool swapChainSuitable = false;
 
-	return (physicalDeviceProperties.vendorID == 4130 ||
-		    physicalDeviceProperties.vendorID == 4318) && indices.isComplete();
+	if(extensionsSupported)
+	{
+		SwapChainSupportDetails swapChainSupport = querySwapChainSupport(device);
+		swapChainSuitable = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
+	}
+
+	return indices.isComplete() && extensionsSupported && swapChainSuitable;
 }
 
-YasEngine::QueueFamilyIndices YasEngine::findQueueFamilies(VkPhysicalDevice vulkanPhysicalDevice)
+YasEngine::QueueFamilyIndices YasEngine::findQueueFamilies(VkPhysicalDevice device)
 {
 	YasEngine::QueueFamilyIndices queueFamilyIndices;
 
 	uint32_t queueFamilyCount = 0;
-	vkGetPhysicalDeviceQueueFamilyProperties(vulkanPhysicalDevice, &queueFamilyCount, nullptr);
+	vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
 
 	std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
-	vkGetPhysicalDeviceQueueFamilyProperties(vulkanPhysicalDevice, &queueFamilyCount, queueFamilies.data());
+	vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
 
 	int i = 0;
-	for(const VkQueueFamilyProperties queueFamily: queueFamilies)
+	for(const auto& queueFamily : queueFamilies)//(const VkQueueFamilyProperties& queueFamily: queueFamilies)
 	{
-		if(queueFamily.queueCount > 0 && queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT)
+		if((queueFamily.queueCount > 0) && (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT))
 		{
 			queueFamilyIndices.graphicsFamily = i;
+		}
+
+		VkBool32 presentationFamilySupport = false;
+		vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface, &presentationFamilySupport);
+		
+		if(queueFamily.queueCount > 0 && presentationFamilySupport)
+		{
+			queueFamilyIndices.presentationFamily = i;
 		}
 		if(queueFamilyIndices.isComplete())
 		{
@@ -374,24 +452,37 @@ YasEngine::QueueFamilyIndices YasEngine::findQueueFamilies(VkPhysicalDevice vulk
 
 void YasEngine::createLogicalDevice()
 {
+	//TODO refactor whole procedure
+
 	QueueFamilyIndices indices = findQueueFamilies(physicalDevice);
 	
-	VkDeviceQueueCreateInfo queueCreateInfo = {};
-	queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-	queueCreateInfo.queueFamilyIndex = indices.graphicsFamily;
-	queueCreateInfo.queueCount = 1;
+	std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
+	std::set<int> uniqueQueueFamilies = {indices.graphicsFamily, indices.presentationFamily};
 	
 	float queuePriority = 1.0f;
-	queueCreateInfo.pQueuePriorities = &queuePriority;
+
+	for(int queueFamily: uniqueQueueFamilies)
+	{
+		VkDeviceQueueCreateInfo queueCreateInfo = {};
+		queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+		queueCreateInfo.queueFamilyIndex = queueFamily;
+		queueCreateInfo.queueCount = 1;
+		queueCreateInfo.pQueuePriorities = &queuePriority;
+		queueCreateInfos.push_back(queueCreateInfo);
+	}
 	
 	VkPhysicalDeviceFeatures physicalDeviceFeatures = {};
 
 	VkDeviceCreateInfo createInfo = {};
 	createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-	createInfo.pQueueCreateInfos = &queueCreateInfo;
-	createInfo.queueCreateInfoCount = 1;
+
+	createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
+	createInfo.pQueueCreateInfos = queueCreateInfos.data();
 	createInfo.pEnabledFeatures = &physicalDeviceFeatures;
-	createInfo.enabledExtensionCount = 0;
+	
+	
+	createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
+	createInfo.ppEnabledExtensionNames = deviceExtensions.data();
 	
 	if(enableValidationLayers)
 	{
@@ -402,13 +493,30 @@ void YasEngine::createLogicalDevice()
 	{
 		createInfo.enabledLayerCount = 0;
 	}
+
 	if(vkCreateDevice(physicalDevice, &createInfo, nullptr, &vulkanLogicalDevice) != VK_SUCCESS)
 	{
 		throw std::runtime_error("Failed to crate logical device");
 	}
 
 	vkGetDeviceQueue(vulkanLogicalDevice, indices.graphicsFamily, 0, &graphicsQueue);
+	vkGetDeviceQueue(vulkanLogicalDevice, indices.presentationFamily, 0, &presentationQueue);
+}
 
+void YasEngine::createSurface()
+{
+	VkWin32SurfaceCreateInfoKHR	surfaceCreateInfo;
+	surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
+	surfaceCreateInfo.pNext = NULL;
+	surfaceCreateInfo.flags = 0;
+	surfaceCreateInfo.hinstance = application;
+	surfaceCreateInfo.hwnd = window;
+
+	VkResult result = vkCreateWin32SurfaceKHR(vulkanInstance, &surfaceCreateInfo, NULL, &surface);
+	if(!(result == VK_SUCCESS))
+	{
+		throw std::runtime_error("Failed to create Vulkan surface!");
+	}
 }
 
 void YasEngine::cleanUp()
@@ -418,9 +526,10 @@ void YasEngine::cleanUp()
 	{
 		destroyDebugReportCallbackEXT(vulkanInstance, callback, nullptr);
 	}
+	vkDestroySurfaceKHR(vulkanInstance, surface, nullptr);
 	//Second parameter is optional allocator which for this version will not be used.
 	vkDestroyInstance(vulkanInstance, nullptr);
-	
 	DestroyWindow(window);
 }
-//----------------------------------------------------------------------------------------------------------------------
+
+//-----------------------------------------------------------------------------|---------------------------------------|

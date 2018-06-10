@@ -1,7 +1,8 @@
 #ifndef VARIOUSTOOLS_HPP
 #define VARIOUSTOOLS_HPP
-#include<string>
+#include"stdafx.hpp"
 
 	;
 
 #endif
+

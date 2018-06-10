@@ -20,11 +20,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Main.hpp" />
+    <ClInclude Include="stdafx.hpp" />
     <ClInclude Include="VariousTools.hpp" />
     <ClInclude Include="YasEngine.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="stdafx.cpp" />
     <ClCompile Include="YasEngine.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
@@ -96,6 +98,8 @@
       <AdditionalIncludeDirectories>C:\VulkanSDK\1.1.73.0\Include;</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>VK_USE_PLATFORM_WIN32_KHR;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <CompileAs>CompileAsCpp</CompileAs>
+      <PrecompiledHeader>Create</PrecompiledHeader>
+      <PrecompiledHeaderFile>stdafx.hpp</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>C:\VulkanSDK\1.1.73.0\Bin;C:\VulkanSDK\1.1.73.0\Lib;</AdditionalLibraryDirectories>
@@ -127,6 +131,8 @@
       <AdditionalIncludeDirectories>C:\VulkanSDK\1.1.73.0\Include;</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>VK_USE_PLATFORM_WIN32_KHR;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <CompileAs>CompileAsCpp</CompileAs>
+      <PrecompiledHeader>Create</PrecompiledHeader>
+      <PrecompiledHeaderFile>stdafx.hpp</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
