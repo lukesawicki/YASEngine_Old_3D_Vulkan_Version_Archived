@@ -270,6 +270,7 @@ SwapChainSupportDetails	YasEngine::querySwapChainSupport(VkPhysicalDevice device
 
 	uint32_t formatCount;
 	vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &formatCount, nullptr);
+	
 	if(formatCount != 0)
 	{
 		swapChainDetails.formats.resize(formatCount);
@@ -277,7 +278,13 @@ SwapChainSupportDetails	YasEngine::querySwapChainSupport(VkPhysicalDevice device
 	}
 
 	uint32_t presentModesCount;
-	vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &presentModesCount, swapChainDetails.presentModes.data());
+	vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &presentModesCount, nullptr);
+
+	if(presentModesCount != 0)
+	{
+		swapChainDetails.presentModes.resize(presentModesCount);
+		vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &presentModesCount, swapChainDetails.presentModes.data());
+	}
 
 	return swapChainDetails;
 }
@@ -479,8 +486,6 @@ void YasEngine::createLogicalDevice()
 	createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
 	createInfo.pQueueCreateInfos = queueCreateInfos.data();
 	createInfo.pEnabledFeatures = &physicalDeviceFeatures;
-	
-	
 	createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
 	createInfo.ppEnabledExtensionNames = deviceExtensions.data();
 	

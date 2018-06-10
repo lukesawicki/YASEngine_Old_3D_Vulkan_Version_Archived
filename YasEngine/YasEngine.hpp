@@ -79,10 +79,10 @@ class YasEngine
 		QueueFamilyIndices		findQueueFamilies(VkPhysicalDevice device);
 
 		VkInstance				vulkanInstance;
+		VkDebugReportCallbackEXT callback;
 		VkDevice				vulkanLogicalDevice;
 		VkSurfaceKHR			surface;
 		VkPhysicalDevice		physicalDevice = VK_NULL_HANDLE;
-		VkDebugReportCallbackEXT callback;
 		VkQueue					graphicsQueue;
 		VkQueue					presentationQueue;
 
