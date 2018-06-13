@@ -2,6 +2,9 @@
 #define YASENGINE_HPP
 #include"stdafx.hpp"
 
+#undef min
+#undef max
+
 VkResult createDebugReportCallbackEXT
 (
 	VkInstance vulkanInstance,
@@ -75,7 +78,10 @@ class YasEngine
 		bool					isPhysicalDeviceSuitable(VkPhysicalDevice device);
 		void					createLogicalDevice();
 		void					createSurface();
-
+		VkSurfaceFormatKHR		chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &availableFormats);
+		VkPresentModeKHR		chooseSwapPresentMode(const std::vector<VkPresentModeKHR> availablePresentModes);
+		VkExtent2D				chooseSwapExtent(const VkSurfaceCapabilitiesKHR surfaceCapabilities);
+		void					createSwapChain();
 		QueueFamilyIndices		findQueueFamilies(VkPhysicalDevice device);
 
 		VkInstance				vulkanInstance;
@@ -85,6 +91,10 @@ class YasEngine
 		VkPhysicalDevice		physicalDevice = VK_NULL_HANDLE;
 		VkQueue					graphicsQueue;
 		VkQueue					presentationQueue;
+		VkSwapchainKHR			swapChain;
+		std::vector<VkImage>	swapChainImages;
+		VkFormat				swapChainImageFormat;
+		VkExtent2D				swapChainExtent;
 
 		const std::vector<const char*> validationLayers =
 		{
