@@ -2,9 +2,6 @@
 #define YASENGINE_HPP
 #include"stdafx.hpp"
 
-#undef min
-#undef max
-
 VkResult createDebugReportCallbackEXT
 (
 	VkInstance vulkanInstance,
@@ -12,13 +9,6 @@ VkResult createDebugReportCallbackEXT
 	const VkAllocationCallbacks* allocator,
 	VkDebugReportCallbackEXT* callback
 );
-
-struct SwapChainSupportDetails
-{
-	VkSurfaceCapabilitiesKHR capabilities;
-	std::vector<VkSurfaceFormatKHR> formats;
-	std::vector<VkPresentModeKHR> presentModes;
-};
 
 class YasEngine
 {
@@ -32,7 +22,6 @@ class YasEngine
 		static int				windowPositionY;
 		static int				windowWidth;
 		static int				windowHeight;
-		struct					QueueFamilyIndices;
 		
 		static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback
 			(
@@ -72,16 +61,15 @@ class YasEngine
 		bool					checkForExtensionsSupport(const std::vector<const char*> &enabledExtensions, uint32_t numberOfEnabledExtensions);
 		bool					checkPhysicalDeviceExtensionSupport(VkPhysicalDevice physicalDevice); // moze lepiej przez reerencje
 		bool					checkValidationLayerSupport();
-		SwapChainSupportDetails	querySwapChainSupport(VkPhysicalDevice physicalDevice);
+
 		void					setupDebugCallback();
 		void					selectPhysicalDevice();
 		bool					isPhysicalDeviceSuitable(VkPhysicalDevice device);
 		void					createLogicalDevice();
 		void					createSurface();
-		VkSurfaceFormatKHR		chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &availableFormats);
-		VkPresentModeKHR		chooseSwapPresentMode(const std::vector<VkPresentModeKHR> availablePresentModes);
-		VkExtent2D				chooseSwapExtent(const VkSurfaceCapabilitiesKHR surfaceCapabilities);
 		void					createSwapChain();
+		void					destroySwapChain();
+
 		QueueFamilyIndices		findQueueFamilies(VkPhysicalDevice device);
 
 		VkInstance				vulkanInstance;
@@ -91,10 +79,7 @@ class YasEngine
 		VkPhysicalDevice		physicalDevice = VK_NULL_HANDLE;
 		VkQueue					graphicsQueue;
 		VkQueue					presentationQueue;
-		VkSwapchainKHR			swapChain;
-		std::vector<VkImage>	swapChainImages;
-		VkFormat				swapChainImageFormat;
-		VkExtent2D				swapChainExtent;
+		VulkanSwapChain			vulkanSwapChain;
 
 		const std::vector<const char*> validationLayers =
 		{

@@ -22,11 +22,13 @@
     <ClInclude Include="Main.hpp" />
     <ClInclude Include="stdafx.hpp" />
     <ClInclude Include="VariousTools.hpp" />
+    <ClInclude Include="VulkanSwapChain.hpp" />
     <ClInclude Include="YasEngine.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="stdafx.cpp" />
+    <ClCompile Include="VulkanSwapChain.cpp" />
     <ClCompile Include="YasEngine.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
