@@ -69,6 +69,8 @@ class YasEngine
 		void					createSurface();
 		void					createSwapChain();
 		void					destroySwapChain();
+		void					createImageViews();
+		void					createGraphicsPipline();
 
 		QueueFamilyIndices		findQueueFamilies(VkPhysicalDevice device);
 

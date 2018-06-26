@@ -166,6 +166,8 @@ void YasEngine::initializeVulkan()
 	selectPhysicalDevice();
 	createLogicalDevice();
 	createSwapChain();
+	createGraphicsPipline();
+	
 }
 
 bool YasEngine::checkForExtensionsSupport(const std::vector<const char*> &enabledExtensions, uint32_t numberOfEnabledExtensions)
@@ -495,6 +497,15 @@ void YasEngine::createSwapChain()
 {
 	QueueFamilyIndices queueIndices = findQueueFamilies(physicalDevice);
 	vulkanSwapChain.createSwapChain(physicalDevice, surface, vulkanLogicalDevice, queueIndices, windowWidth, windowHeight);
+}
+
+void YasEngine::createImageViews()
+{
+	vulkanSwapChain.createImageViews(vulkanLogicalDevice);
+}
+
+void YasEngine::createGraphicsPipline()
+{
 }
 
 void YasEngine::destroySwapChain()

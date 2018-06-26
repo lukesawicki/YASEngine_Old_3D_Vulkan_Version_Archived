@@ -27,7 +27,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp" />
-    <ClCompile Include="stdafx.cpp" />
     <ClCompile Include="VulkanSwapChain.cpp" />
     <ClCompile Include="YasEngine.cpp" />
   </ItemGroup>

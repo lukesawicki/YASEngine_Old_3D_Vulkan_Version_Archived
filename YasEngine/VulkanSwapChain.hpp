@@ -13,14 +13,19 @@ class VulkanSwapChain
 
 		void					createSwapChain(VkPhysicalDevice& physicalDevice, VkSurfaceKHR& surface, VkDevice& vulkanLogicalDevice, QueueFamilyIndices& queueIndices, int windowWidth, int windowHeight);
 		void					destroySwapChain(VkDevice vulkanLogicalDevice);
-		std::vector<VkImage>	swapChainImages;
+		void createImageViews(VkDevice& device);
 		VkFormat				swapChainImageFormat;
 		VkExtent2D				swapChainExtent;
 		VkSwapchainKHR			swapChain;
+		std::vector<VkImage>	swapChainImages;
+		std::vector<VkImageView>	swapChainImageViews;
+
 	private:
 		VkSurfaceFormatKHR		chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &availableFormats);
 		VkPresentModeKHR		chooseSwapPresentMode(const std::vector<VkPresentModeKHR> availablePresentModes);
 		VkExtent2D				chooseSwapExtent(const VkSurfaceCapabilitiesKHR surfaceCapabilities, int windowWidth, int windowHeight);
+
+		
 };
 
 #endif
