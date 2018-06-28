@@ -6,7 +6,9 @@ Over time I will be gaining more knowledge about Vulkan and game engine architec
 Thrue process of creating this engine I'm learning from various of sources.
 Few of them are:
 
-Ofcource specification -> https://www.khronos.org/registry/vulkan/specs/1.0/html/vkspec.html#introduction
+All resources from Khronos Group git hub -> https://github.com/KhronosGroup/Khronosdotorg/blob/master/api/vulkan/resources.md
+
+Of cource specification -> https://www.khronos.org/registry/vulkan/specs/1.0/html/vkspec.html#introduction
 
 Vulkan tutorial -> https://vulkan-tutorial.com/Introduction
 
