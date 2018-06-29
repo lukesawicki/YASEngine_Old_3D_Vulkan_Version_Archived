@@ -70,8 +70,8 @@ class YasEngine
 		void					createSwapChain();
 		void					destroySwapChain();
 		void					createImageViews();
-		void					createGraphicsPipline();
-
+		void					createGraphicsPipeline();
+		VkShaderModule			createShaderModule(const std::vector<char>& code);
 		QueueFamilyIndices		findQueueFamilies(VkPhysicalDevice device);
 
 		VkInstance				vulkanInstance;
@@ -82,6 +82,7 @@ class YasEngine
 		VkQueue					graphicsQueue;
 		VkQueue					presentationQueue;
 		VulkanSwapChain			vulkanSwapChain;
+		VkPipelineLayout		pipelineLayout;
 
 		const std::vector<const char*> validationLayers =
 		{
