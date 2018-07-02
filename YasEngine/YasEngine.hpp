@@ -67,10 +67,12 @@ class YasEngine
 		bool					isPhysicalDeviceSuitable(VkPhysicalDevice device);
 		void					createLogicalDevice();
 		void					createSurface();
-		void					createSwapChain();
-		void					destroySwapChain();
+		void					createSwapchain();
+		void					destroySwapchain();
 		void					createImageViews();
+		void					createRenderPass();
 		void					createGraphicsPipeline();
+		void					createFramebuffers();
 		VkShaderModule			createShaderModule(const std::vector<char>& code);
 		QueueFamilyIndices		findQueueFamilies(VkPhysicalDevice device);
 
@@ -81,15 +83,17 @@ class YasEngine
 		VkPhysicalDevice		physicalDevice = VK_NULL_HANDLE;
 		VkQueue					graphicsQueue;
 		VkQueue					presentationQueue;
-		VulkanSwapChain			vulkanSwapChain;
+		VulkanSwapchain			vulkanSwapchain;
+		VkRenderPass			renderPass;
 		VkPipelineLayout		pipelineLayout;
-
+		VkPipeline				graphicsPipeline;
+		std::vector<VkFramebuffer> swapchainFramebuffers;
 		const std::vector<const char*> validationLayers =
 		{
 			"VK_LAYER_LUNARG_standard_validation"	
 		};
 
-		const std::vector<const char*> deviceExtensions =
+	const std::vector<const char*> deviceExtensions =
 		{
 			VK_KHR_SWAPCHAIN_EXTENSION_NAME
 		};

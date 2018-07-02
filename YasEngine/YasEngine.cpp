@@ -165,9 +165,11 @@ void YasEngine::initializeVulkan()
 	createSurface();
 	selectPhysicalDevice();
 	createLogicalDevice();
-	createSwapChain();
+	createSwapchain();
+	createImageViews();
+	createRenderPass();
 	createGraphicsPipeline();
-	
+	createFramebuffers();
 }
 
 bool YasEngine::checkForExtensionsSupport(const std::vector<const char*> &enabledExtensions, uint32_t numberOfEnabledExtensions)
@@ -380,15 +382,15 @@ bool YasEngine::isPhysicalDeviceSuitable(VkPhysicalDevice device)
 	}
 
 	bool extensionsSupported = checkPhysicalDeviceExtensionSupport(device);
-	bool swapChainSuitable = false;
+	bool swapchainSuitable = false;
 
 	if(extensionsSupported)
 	{
-		SwapChainSupportDetails swapChainSupport = VulkanSwapChain::querySwapChainSupport(device, surface);
-		swapChainSuitable = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
+		SwapchainSupportDetails swapchainSupport = VulkanSwapchain::querySwapchainSupport(device, surface);
+		swapchainSuitable = !swapchainSupport.formats.empty() && !swapchainSupport.presentModes.empty();
 	}
 
-	return indices.isComplete() && extensionsSupported && swapChainSuitable;
+	return indices.isComplete() && extensionsSupported && swapchainSuitable;
 }
 
 QueueFamilyIndices YasEngine::findQueueFamilies(VkPhysicalDevice device)
@@ -470,7 +472,7 @@ void YasEngine::createLogicalDevice()
 
 	if(vkCreateDevice(physicalDevice, &createInfo, nullptr, &vulkanLogicalDevice) != VK_SUCCESS)
 	{
-		throw std::runtime_error("Failed to crate logical device");
+		throw std::runtime_error("Failed to create logical device.");
 	}
 
 	vkGetDeviceQueue(vulkanLogicalDevice, indices.graphicsFamily, 0, &graphicsQueue);
@@ -493,26 +495,56 @@ void YasEngine::createSurface()
 	}
 }
 
-void YasEngine::createSwapChain()
+void YasEngine::createSwapchain()
 {
 	QueueFamilyIndices queueIndices = findQueueFamilies(physicalDevice);
-	vulkanSwapChain.createSwapChain(physicalDevice, surface, vulkanLogicalDevice, queueIndices, windowWidth, windowHeight);
+	vulkanSwapchain.createSwapchain(physicalDevice, surface, vulkanLogicalDevice, queueIndices, windowWidth, windowHeight);
 }
 
 void YasEngine::createImageViews()
 {
-	vulkanSwapChain.createImageViews(vulkanLogicalDevice);
+	vulkanSwapchain.createImageViews(vulkanLogicalDevice);
+}
+
+void YasEngine::createRenderPass()
+{
+	VkAttachmentDescription colorAttachment = {};
+	colorAttachment.format = vulkanSwapchain.swapchainImageFormat;
+	colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+	colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+	colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+	colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+	colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+	colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+
+	VkAttachmentReference colorAttachmentReference = {};
+	colorAttachmentReference.attachment = 0;
+	colorAttachmentReference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+	VkSubpassDescription subpassDescription = {};
+	subpassDescription.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+	subpassDescription.colorAttachmentCount = 1;
+	subpassDescription.pColorAttachments = &colorAttachmentReference;
+	
+	VkRenderPassCreateInfo renderPassInfo = {};
+	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+	renderPassInfo.attachmentCount = 1;
+	renderPassInfo.pAttachments = &colorAttachment;
+	renderPassInfo.subpassCount = 1;
+	renderPassInfo.pSubpasses = &subpassDescription;
+
+	if(vkCreateRenderPass(vulkanLogicalDevice, &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS)
+	{
+		throw std::runtime_error("Failed to create renderpass.");
+	}
+
 }
 
 void YasEngine::createGraphicsPipeline()
 {
-//C:\Users\luke\source\repos\YASEngine\YasEngine\Shaders
 	std::vector<char> vertShaderCode = readFile("Shaders\\vert.spv");
 	std::vector<char> fragShaderCode = readFile("Shaders\\frag.spv");
-
-	//std::vector<char> vertShaderCode = readFile("C:\\Users\\luke\\source\\repos\\YASEngine\\YasEngine\\Shaders\\vert.spv");
-	//std::vector<char> fragShaderCode = readFile("C:\\Users\\luke\\source\\repos\\YASEngine\\YasEngine\\Shaders\\frag.spv");
-
 
 	VkShaderModule vertShaderModule;
 	VkShaderModule fragShaderModule;
@@ -552,14 +584,14 @@ void YasEngine::createGraphicsPipeline()
 	VkViewport viewport = {};
 	viewport.x = 0.0F;
 	viewport.x = 0.0F;
-	viewport.width = static_cast<float>(vulkanSwapChain.swapChainExtent.width);
-	viewport.height = static_cast<float>(vulkanSwapChain.swapChainExtent.height);
+	viewport.width = static_cast<float>(vulkanSwapchain.swapchainExtent.width);
+	viewport.height = static_cast<float>(vulkanSwapchain.swapchainExtent.height);
 	viewport.minDepth = 0.0F;
 	viewport.maxDepth = 1.0F;
 
 	VkRect2D scissor = {};
 	scissor.offset = {0, 0};
-	scissor.extent = vulkanSwapChain.swapChainExtent;
+	scissor.extent = vulkanSwapchain.swapchainExtent;
 
 	VkPipelineViewportStateCreateInfo viewportState = {};
 	viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
@@ -585,10 +617,10 @@ void YasEngine::createGraphicsPipeline()
 	multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
 	multisampling.sampleShadingEnable = VK_FALSE;
 	multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
-	multisampling.minSampleShading = 1.0F;
-	multisampling.pSampleMask = nullptr;
-	multisampling.alphaToCoverageEnable = VK_FALSE;
-	multisampling.alphaToOneEnable = VK_FALSE;
+	//multisampling.minSampleShading = 1.0F;
+	//multisampling.pSampleMask = nullptr;
+	//multisampling.alphaToCoverageEnable = VK_FALSE;
+	//multisampling.alphaToOneEnable = VK_FALSE;
 
 	//VkPipelineDepthStencilStateCreateInfo
 
@@ -631,9 +663,56 @@ void YasEngine::createGraphicsPipeline()
 		throw std::runtime_error("Filed to create pipeline layout!");
 	}
 
+	VkGraphicsPipelineCreateInfo graphicsPiplineCreateInfo = {};
+	graphicsPiplineCreateInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+	graphicsPiplineCreateInfo.stageCount = 2;
+	graphicsPiplineCreateInfo.pStages = shaderStages;
+	graphicsPiplineCreateInfo.pVertexInputState = &vertexInputInfo;
+	graphicsPiplineCreateInfo.pInputAssemblyState = &inputAssembly;
+	graphicsPiplineCreateInfo.pViewportState = &viewportState;
+	graphicsPiplineCreateInfo.pRasterizationState = &rasterizer;
+	graphicsPiplineCreateInfo.pMultisampleState = &multisampling;
+	graphicsPiplineCreateInfo.pDepthStencilState = nullptr;
+	graphicsPiplineCreateInfo.pColorBlendState = &colorBlending;
+	graphicsPiplineCreateInfo.pDynamicState = nullptr;
+	graphicsPiplineCreateInfo.layout = pipelineLayout;
+	graphicsPiplineCreateInfo.renderPass = renderPass;
+	graphicsPiplineCreateInfo.subpass = 0;
+	graphicsPiplineCreateInfo.basePipelineHandle = VK_NULL_HANDLE;
+
+	if(vkCreateGraphicsPipelines(vulkanLogicalDevice, VK_NULL_HANDLE, 1, &graphicsPiplineCreateInfo, nullptr, &graphicsPipeline) != VK_SUCCESS)
+	{
+		throw std::runtime_error("Failed to create graphics pipeline");
+	}
+
 	//...
 	vkDestroyShaderModule(vulkanLogicalDevice, fragShaderModule, nullptr);
 	vkDestroyShaderModule(vulkanLogicalDevice, vertShaderModule, nullptr);
+}
+
+void YasEngine::createFramebuffers()
+{
+	swapchainFramebuffers.resize(vulkanSwapchain.swapchainImageViews.size());
+	for(size_t i = 0; i < swapchainFramebuffers.size(); i++)
+	{
+		VkImageView attachments[] = { vulkanSwapchain.swapchainImageViews[i] };
+
+		VkFramebufferCreateInfo framebufferCreateInfo = {};
+		framebufferCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+		framebufferCreateInfo.renderPass = renderPass;
+		framebufferCreateInfo.attachmentCount = 1;
+		framebufferCreateInfo.pAttachments = attachments;
+		framebufferCreateInfo.width = vulkanSwapchain.swapchainExtent.width;
+		framebufferCreateInfo.height = vulkanSwapchain.swapchainExtent.height;
+		framebufferCreateInfo.layers = 1;
+
+		if(vkCreateFramebuffer(vulkanLogicalDevice, &framebufferCreateInfo, nullptr, &swapchainFramebuffers[i]) != VK_SUCCESS)
+		{
+			throw std::runtime_error("Failed to create framebuffer.");
+		}
+
+	}
+
 }
 
 VkShaderModule YasEngine::createShaderModule(const std::vector<char>& code)
@@ -651,15 +730,21 @@ VkShaderModule YasEngine::createShaderModule(const std::vector<char>& code)
 	return shaderModule;
 }
 
-void YasEngine::destroySwapChain()
+void YasEngine::destroySwapchain()
 {
-	vulkanSwapChain.destroySwapChain(vulkanLogicalDevice);
+	vulkanSwapchain.destroySwapchain(vulkanLogicalDevice);
 }
 
 void YasEngine::cleanUp()
 {
+	for(VkFramebuffer framebuffer: swapchainFramebuffers)
+	{
+		vkDestroyFramebuffer(vulkanLogicalDevice, framebuffer, nullptr);
+	}
+	vkDestroyPipeline(vulkanLogicalDevice, graphicsPipeline, nullptr);
 	vkDestroyPipelineLayout(vulkanLogicalDevice, pipelineLayout, nullptr);
-	destroySwapChain();
+	vkDestroyRenderPass(vulkanLogicalDevice, renderPass, nullptr);
+	destroySwapchain();
 	vkDestroyDevice(vulkanLogicalDevice, nullptr);
 	if(enableValidationLayers)
 	{

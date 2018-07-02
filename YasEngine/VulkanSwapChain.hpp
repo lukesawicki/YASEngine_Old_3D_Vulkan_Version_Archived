@@ -5,20 +5,20 @@
 #undef min
 #undef max
 
-class VulkanSwapChain
+class VulkanSwapchain
 {
 	public:
 
-		static SwapChainSupportDetails	querySwapChainSupport(VkPhysicalDevice device, VkSurfaceKHR surface);		
+		static SwapchainSupportDetails	querySwapchainSupport(VkPhysicalDevice device, VkSurfaceKHR surface);		
 
-		void					createSwapChain(VkPhysicalDevice& physicalDevice, VkSurfaceKHR& surface, VkDevice& vulkanLogicalDevice, QueueFamilyIndices& queueIndices, int windowWidth, int windowHeight);
-		void					destroySwapChain(VkDevice vulkanLogicalDevice);
-		void createImageViews(VkDevice& device);
-		VkFormat				swapChainImageFormat;
-		VkExtent2D				swapChainExtent;
-		VkSwapchainKHR			swapChain;
-		std::vector<VkImage>	swapChainImages;
-		std::vector<VkImageView>	swapChainImageViews;
+		void					createSwapchain(VkPhysicalDevice& physicalDevice, VkSurfaceKHR& surface, VkDevice& vulkanLogicalDevice, QueueFamilyIndices& queueIndices, int windowWidth, int windowHeight);
+		void					destroySwapchain(VkDevice vulkanLogicalDevice);
+		void					createImageViews(VkDevice& device);
+		VkFormat				swapchainImageFormat;
+		VkExtent2D				swapchainExtent;
+		VkSwapchainKHR			swapchain;
+		std::vector<VkImage>	swapchainImages;
+		std::vector<VkImageView>	swapchainImageViews;
 
 	private:
 		VkSurfaceFormatKHR		chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &availableFormats);
