@@ -170,6 +170,8 @@ void YasEngine::initializeVulkan()
 	createRenderPass();
 	createGraphicsPipeline();
 	createFramebuffers();
+	createCommandPool();
+	createCommandBuffers();
 }
 
 bool YasEngine::checkForExtensionsSupport(const std::vector<const char*> &enabledExtensions, uint32_t numberOfEnabledExtensions)
@@ -185,7 +187,7 @@ bool YasEngine::checkForExtensionsSupport(const std::vector<const char*> &enable
 
 	for(int i=0; i<static_cast<int>(numberOfEnabledExtensions); i++)
 	{
-		for(int j=0; j< static_cast<int>(availableExtensions.size()); j++)
+		for(int j=0; j<static_cast<int>(availableExtensions.size()); j++)
 		{
 			if(strcmp(enabledExtensions[i], availableExtensions[j].extensionName) == 0)
 			{
@@ -426,6 +428,69 @@ QueueFamilyIndices YasEngine::findQueueFamilies(VkPhysicalDevice device)
 	}
 
 	return queueFamilyIndices;
+}
+
+void YasEngine::createCommandPool()
+{
+	QueueFamilyIndices queueFamilyIndices = findQueueFamilies(physicalDevice);
+	
+	VkCommandPoolCreateInfo commandPoolCreateInfo = {};
+	commandPoolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+	commandPoolCreateInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily;
+	commandPoolCreateInfo.flags = 0;
+	if(vkCreateCommandPool(vulkanLogicalDevice, &commandPoolCreateInfo, nullptr, &commandPool) != VK_SUCCESS)
+	{
+		throw std::runtime_error("Failed to create command pool!");
+	}
+}
+
+void YasEngine::createCommandBuffers()
+{
+	VkCommandBufferAllocateInfo commandBufferAllocateInfo = {};
+	commandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+	commandBufferAllocateInfo.commandPool = commandPool;
+	commandBufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+	commandBufferAllocateInfo.commandBufferCount = (uint32_t)commandBuffers.size();
+	if(vkAllocateCommandBuffers(vulkanLogicalDevice, &commandBufferAllocateInfo, commandBuffers.data()) != VK_SUCCESS)
+	{
+		throw std::runtime_error("Failed to allocatae command buffers.");
+	}
+
+	for(size_t i=0; i<commandBuffers.size(); i++)
+	{
+		VkCommandBufferBeginInfo commandBufferBeginInfo = {};
+		commandBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		commandBufferBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
+		commandBufferBeginInfo.pInheritanceInfo = nullptr;
+
+		if(vkBeginCommandBuffer(commandBuffers[i], &commandBufferBeginInfo) != VK_SUCCESS)
+		{
+			throw std::runtime_error("Failed to begin recording command buffer.");
+		}
+
+		VkRenderPassBeginInfo renderPassBeginInfo = {};
+		renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+		renderPassBeginInfo.renderPass = renderPass;
+		renderPassBeginInfo.framebuffer = swapchainFramebuffers[i];
+		renderPassBeginInfo.renderArea.offset = {0, 0};
+		renderPassBeginInfo.renderArea.extent = vulkanSwapchain.swapchainExtent;
+
+		VkClearValue clearColor = {0.0F, 0.0F, 0.0F, 1.0F};
+		renderPassBeginInfo.clearValueCount = 1;
+		renderPassBeginInfo.pClearValues = &clearColor;
+		
+		vkCmdBeginRenderPass(commandBuffers[i], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+		vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
+		vkCmdDraw(commandBuffers[i], 3, 1, 0, 0);
+		
+		vkCmdEndRenderPass(commandBuffers[i]);
+		if(vkEndCommandBuffer(commandBuffers[i]) != VK_SUCCESS)
+		{
+			throw std::runtime_error("Failed to record command buffer");
+		}
+		
+	}
+
 }
 
 void YasEngine::createLogicalDevice()
@@ -693,7 +758,7 @@ void YasEngine::createGraphicsPipeline()
 void YasEngine::createFramebuffers()
 {
 	swapchainFramebuffers.resize(vulkanSwapchain.swapchainImageViews.size());
-	for(size_t i = 0; i < swapchainFramebuffers.size(); i++)
+	for(size_t i=0; i<swapchainFramebuffers.size(); i++)
 	{
 		VkImageView attachments[] = { vulkanSwapchain.swapchainImageViews[i] };
 
@@ -737,6 +802,7 @@ void YasEngine::destroySwapchain()
 
 void YasEngine::cleanUp()
 {
+	vkDestroyCommandPool(vulkanLogicalDevice, commandPool, nullptr);
 	for(VkFramebuffer framebuffer: swapchainFramebuffers)
 	{
 		vkDestroyFramebuffer(vulkanLogicalDevice, framebuffer, nullptr);

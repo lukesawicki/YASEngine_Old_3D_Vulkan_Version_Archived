@@ -75,6 +75,8 @@ class YasEngine
 		void					createFramebuffers();
 		VkShaderModule			createShaderModule(const std::vector<char>& code);
 		QueueFamilyIndices		findQueueFamilies(VkPhysicalDevice device);
+		void					createCommandPool();
+		void					createCommandBuffers();
 
 		VkInstance				vulkanInstance;
 		VkDebugReportCallbackEXT callback;
@@ -88,6 +90,8 @@ class YasEngine
 		VkPipelineLayout		pipelineLayout;
 		VkPipeline				graphicsPipeline;
 		std::vector<VkFramebuffer> swapchainFramebuffers;
+		VkCommandPool			commandPool;
+		std::vector<VkCommandBuffer> commandBuffers;
 		const std::vector<const char*> validationLayers =
 		{
 			"VK_LAYER_LUNARG_standard_validation"	
