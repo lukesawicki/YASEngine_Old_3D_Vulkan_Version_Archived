@@ -1,11 +1,12 @@
 #include"stdafx.hpp"
 #include"YasEngine.hpp"
+
 int YasEngine::windowPositionX				= 64;
 int YasEngine::windowPositionY				= 64;
 int YasEngine::windowWidth					= 640;
 int YasEngine::windowHeight					= 480;
 
-
+const int MAX_FRAMES_IN_FLIGHT = 2;
 
 LRESULT CALLBACK windowProcedure(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -145,15 +146,42 @@ void YasEngine::createWindow(HINSTANCE hInstance)
 
 void YasEngine::mainLoop()
 {
+	float time;
+	float newTime;
+	float deltaTime;
+	float fps, fpsTime;
+	unsigned int frames;
 	MSG message;
-	
-	while(GetMessage(&message, NULL, 0, 0))
+	TimePicker* timePicker = TimePicker::getTimePicker();
+	time = timePicker->getSeconds();
+	fpsTime = 0.0F;
+	frames = 0;
+	message.message = WM_NULL;
+
+	while(message.message != WM_QUIT)
 	{
-		TranslateMessage(&message);
-		DispatchMessage(&message);
-		if(message.message == WM_QUIT)
+		if(PeekMessage(&message, 0, 0, 0, PM_REMOVE))
 		{
-			break;
+			TranslateMessage(&message);
+			DispatchMessage(&message);
+		}
+		else
+		{
+			newTime = timePicker->getSeconds();
+			deltaTime = newTime - time;
+			time = newTime;
+
+			// Calculating and drawing
+			drawFrame();			
+
+			frames++;
+			fpsTime = fpsTime + deltaTime;
+			if(fpsTime >= 1.0F)
+			{
+				fps = frames / fpsTime;
+				frames = 0;
+				fpsTime = 0.0F;
+			}
 		}
 	}
 }
@@ -482,7 +510,6 @@ void YasEngine::createCommandBuffers()
 		vkCmdBeginRenderPass(commandBuffers[i], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 		vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
 		vkCmdDraw(commandBuffers[i], 3, 1, 0, 0);
-		
 		vkCmdEndRenderPass(commandBuffers[i]);
 		if(vkEndCommandBuffer(commandBuffers[i]) != VK_SUCCESS)
 		{
@@ -491,6 +518,61 @@ void YasEngine::createCommandBuffers()
 		
 	}
 
+}
+
+void YasEngine::drawFrame()
+{
+	uint32_t imageIndex;
+	vkAcquireNextImageKHR(vulkanLogicalDevice, vulkanSwapchain.swapchain, std::numeric_limits<uint64_t>::max(), imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
+	
+	VkSubmitInfo submitInfo = {};
+	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+
+	VkSemaphore waitSemaphores[] = {imageAvailableSemaphore};
+	VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+	submitInfo.waitSemaphoreCount = 1;
+	submitInfo.pWaitSemaphores = waitSemaphores;
+	submitInfo.pWaitDstStageMask = waitStages;
+	submitInfo.commandBufferCount = 1;
+	submitInfo.pCommandBuffers = &commandBuffers[imageIndex];	// lukesawicki error tutaj
+	
+	VkSemaphore signalSemaphores[] = {renderFinishedSemaphore}; // lub tutaj
+	submitInfo.signalSemaphoreCount = 1;
+	submitInfo.pSignalSemaphores = signalSemaphores;
+
+//tutaj jest bug w trybie realease
+	if(vkQueueSubmit(graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS)
+	{
+		throw std::runtime_error("Failed to submit draw command buffer.");
+	}
+	
+	VkPresentInfoKHR presentInfoKhr = {};
+	presentInfoKhr.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+	presentInfoKhr.waitSemaphoreCount = 1;
+	presentInfoKhr.pWaitSemaphores = signalSemaphores;
+	
+	VkSwapchainKHR swapChains[] = {vulkanSwapchain.swapchain};
+	
+	presentInfoKhr.swapchainCount = 1;
+	presentInfoKhr.pSwapchains = swapChains;
+	presentInfoKhr.pImageIndices = &imageIndex;
+	presentInfoKhr.pResults = nullptr;
+
+	vkQueuePresentKHR(presentationQueue, &presentInfoKhr);
+
+
+}
+
+void YasEngine::createSemaphore()
+{
+	VkSemaphoreCreateInfo semaphoreCreateInfo = {};
+	semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+	
+	if( vkCreateSemaphore(vulkanLogicalDevice, &semaphoreCreateInfo, nullptr, &imageAvailableSemaphore) != VK_SUCCESS
+		|| vkCreateSemaphore(vulkanLogicalDevice, &semaphoreCreateInfo, nullptr, &renderFinishedSemaphore) != VK_SUCCESS)
+	{
+		throw std::runtime_error("failed to create semaphores!");
+	}
 }
 
 void YasEngine::createLogicalDevice()
@@ -592,18 +674,30 @@ void YasEngine::createRenderPass()
 	subpassDescription.colorAttachmentCount = 1;
 	subpassDescription.pColorAttachments = &colorAttachmentReference;
 	
+	//VkSubpassDependency subpassDependency = {};
+	//subpassDependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+	//subpassDependency.dstSubpass = 0;
+	//subpassDependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	//subpassDependency.srcAccessMask = 0;
+	//subpassDependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	//subpassDependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+
 	VkRenderPassCreateInfo renderPassInfo = {};
 	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
 	renderPassInfo.attachmentCount = 1;
 	renderPassInfo.pAttachments = &colorAttachment;
 	renderPassInfo.subpassCount = 1;
 	renderPassInfo.pSubpasses = &subpassDescription;
+	renderPassInfo.dependencyCount = 0;
+	
+	renderPassInfo.pDependencies = nullptr;
+	//renderPassInfo.pDependencies = &subpassDependency;
 
 	if(vkCreateRenderPass(vulkanLogicalDevice, &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS)
 	{
 		throw std::runtime_error("Failed to create renderpass.");
 	}
-
+	
 }
 
 void YasEngine::createGraphicsPipeline()
@@ -649,8 +743,8 @@ void YasEngine::createGraphicsPipeline()
 	VkViewport viewport = {};
 	viewport.x = 0.0F;
 	viewport.x = 0.0F;
-	viewport.width = static_cast<float>(vulkanSwapchain.swapchainExtent.width);
-	viewport.height = static_cast<float>(vulkanSwapchain.swapchainExtent.height);
+	viewport.width = (float)(vulkanSwapchain.swapchainExtent.width);
+	viewport.height = (float)(vulkanSwapchain.swapchainExtent.height);
 	viewport.minDepth = 0.0F;
 	viewport.maxDepth = 1.0F;
 
@@ -802,6 +896,9 @@ void YasEngine::destroySwapchain()
 
 void YasEngine::cleanUp()
 {
+	vkDestroySemaphore(vulkanLogicalDevice, renderFinishedSemaphore, nullptr);
+	vkDestroySemaphore(vulkanLogicalDevice, imageAvailableSemaphore, nullptr);
+
 	vkDestroyCommandPool(vulkanLogicalDevice, commandPool, nullptr);
 	for(VkFramebuffer framebuffer: swapchainFramebuffers)
 	{

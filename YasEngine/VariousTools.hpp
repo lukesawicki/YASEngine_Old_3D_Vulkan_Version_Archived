@@ -37,5 +37,38 @@ static std::vector<char> readFile(const std::string& fileName)
 	return buffer;
 }
 
+class TimePicker
+{
+	private:
+		LARGE_INTEGER frequency;
+		bool isFrequencyOfThePerformanceCounterPickedUp;
+		TimePicker()
+		{
+			isFrequencyOfThePerformanceCounterPickedUp = (QueryPerformanceFrequency(&frequency) != 0);
+		}
+	public:
+
+		float getSeconds()
+		{
+			if(!isFrequencyOfThePerformanceCounterPickedUp)
+			{
+				return GetTickCount64() / 1000.0F;
+			}
+			else
+			{
+				LARGE_INTEGER ticks;
+				QueryPerformanceCounter(&ticks);
+				return (float)(ticks.QuadPart / (double)frequency.QuadPart);
+			}
+		}
+
+		static TimePicker* getTimePicker()
+		{
+			return new TimePicker();
+		}
+
+
+};
+
 #endif
 

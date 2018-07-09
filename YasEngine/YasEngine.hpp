@@ -40,6 +40,7 @@ class YasEngine
 		#else
 			const bool enableValidationLayers = true;
 		#endif
+
 	//public end
 
 	private:
@@ -77,6 +78,8 @@ class YasEngine
 		QueueFamilyIndices		findQueueFamilies(VkPhysicalDevice device);
 		void					createCommandPool();
 		void					createCommandBuffers();
+		void					drawFrame();
+		void					createSemaphore();
 
 		VkInstance				vulkanInstance;
 		VkDebugReportCallbackEXT callback;
@@ -92,6 +95,8 @@ class YasEngine
 		std::vector<VkFramebuffer> swapchainFramebuffers;
 		VkCommandPool			commandPool;
 		std::vector<VkCommandBuffer> commandBuffers;
+		VkSemaphore imageAvailableSemaphore;
+		VkSemaphore	renderFinishedSemaphore;
 		const std::vector<const char*> validationLayers =
 		{
 			"VK_LAYER_LUNARG_standard_validation"	
