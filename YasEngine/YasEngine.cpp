@@ -296,7 +296,7 @@ std::vector<const char*> YasEngine::getRequiredExtensions()
 	std::vector<const char*> allRequiredExtenstions = std::vector<const char*>();
 
 	allRequiredExtenstions.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
-	allRequiredExtenstions.push_back(VK_KHR_WIN32_SURFACE_EXTENSION_NAME);//VK_KHR_WIN32_SURFACE_EXTENSION_NAME
+	allRequiredExtenstions.push_back(VK_KHR_WIN32_SURFACE_EXTENSION_NAME);
 
 	if(enableValidationLayers)
 	{
@@ -435,7 +435,7 @@ QueueFamilyIndices YasEngine::findQueueFamilies(VkPhysicalDevice device)
 	vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
 
 	int i = 0;
-	for(const auto& queueFamily : queueFamilies)//(const VkQueueFamilyProperties& queueFamily: queueFamilies)
+	for(const VkQueueFamilyProperties& queueFamily : queueFamilies)
 	{
 		if((queueFamily.queueCount > 0) && (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT))
 		{
@@ -475,6 +475,8 @@ void YasEngine::createCommandPool()
 
 void YasEngine::createCommandBuffers()
 {
+	commandBuffers.resize(swapchainFramebuffers.size());
+
 	VkCommandBufferAllocateInfo commandBufferAllocateInfo = {};
 	commandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 	commandBufferAllocateInfo.commandPool = commandPool;
@@ -538,13 +540,12 @@ uint32_t imageIndex;
 	submitInfo.pWaitSemaphores = waitSemaphores;
 	submitInfo.pWaitDstStageMask = waitStages;
 	submitInfo.commandBufferCount = 1;
-	submitInfo.pCommandBuffers = &commandBuffers[imageIndex];	// lukesawicki error tutaj
+	submitInfo.pCommandBuffers = &commandBuffers[imageIndex];
 	
-	VkSemaphore signalSemaphores[] = {renderFinishedSemaphores[currentFrame]}; // lub tutaj
+	VkSemaphore signalSemaphores[] = {renderFinishedSemaphores[currentFrame]};
 	submitInfo.signalSemaphoreCount = 1;
 	submitInfo.pSignalSemaphores = signalSemaphores;
 
-//tutaj jest bug w trybie realease
 	if(vkQueueSubmit(graphicsQueue, 1, &submitInfo, inFlightFences[currentFrame]) != VK_SUCCESS)
 	{
 		throw std::runtime_error("Failed to submit draw command buffer.");
@@ -792,10 +793,10 @@ void YasEngine::createGraphicsPipeline()
 	multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
 	multisampling.sampleShadingEnable = VK_FALSE;
 	multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
-	//multisampling.minSampleShading = 1.0F;
-	//multisampling.pSampleMask = nullptr;
-	//multisampling.alphaToCoverageEnable = VK_FALSE;
-	//multisampling.alphaToOneEnable = VK_FALSE;
+	multisampling.minSampleShading = 1.0F;
+	multisampling.pSampleMask = nullptr;
+	multisampling.alphaToCoverageEnable = VK_FALSE;
+	multisampling.alphaToOneEnable = VK_FALSE;
 
 	//VkPipelineDepthStencilStateCreateInfo
 
@@ -803,13 +804,12 @@ void YasEngine::createGraphicsPipeline()
 	colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT |
 	VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
 	colorBlendAttachment.blendEnable = VK_FALSE;
-	//colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
-	//colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;
-	//colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;
-	//colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-	//colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
-	//colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;
-	//...???
+	colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
+	colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;
+	colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;
+	colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+	colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+	colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;
 
 	VkPipelineColorBlendStateCreateInfo colorBlending = {};
 	colorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
@@ -821,10 +821,6 @@ void YasEngine::createGraphicsPipeline()
 	colorBlending.blendConstants[1] = 0.0F;
 	colorBlending.blendConstants[2] = 0.0F;
 	colorBlending.blendConstants[3] = 0.0F;
-
-	//For now
-	//VkDynamicState dynamicStates[] = {};
-	//VkPipelineDynamicStateCreateInfo dynamicState = {};
 
 	VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
 	pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -860,7 +856,6 @@ void YasEngine::createGraphicsPipeline()
 		throw std::runtime_error("Failed to create graphics pipeline");
 	}
 
-	//...
 	vkDestroyShaderModule(vulkanLogicalDevice, fragShaderModule, nullptr);
 	vkDestroyShaderModule(vulkanLogicalDevice, vertShaderModule, nullptr);
 }
