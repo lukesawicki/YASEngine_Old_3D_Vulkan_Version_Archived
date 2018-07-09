@@ -200,6 +200,7 @@ void YasEngine::initializeVulkan()
 	createFramebuffers();
 	createCommandPool();
 	createCommandBuffers();
+	createSyncObjects();
 }
 
 bool YasEngine::checkForExtensionsSupport(const std::vector<const char*> &enabledExtensions, uint32_t numberOfEnabledExtensions)
@@ -522,13 +523,16 @@ void YasEngine::createCommandBuffers()
 
 void YasEngine::drawFrame()
 {
-	uint32_t imageIndex;
-	vkAcquireNextImageKHR(vulkanLogicalDevice, vulkanSwapchain.swapchain, std::numeric_limits<uint64_t>::max(), imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
+	vkWaitForFences(vulkanLogicalDevice, 1, &inFlightFences[currentFrame], VK_TRUE, std::numeric_limits<uint64_t>::max());
+	vkResetFences(vulkanLogicalDevice, 1, &inFlightFences[currentFrame]);
+	
+uint32_t imageIndex;
+	vkAcquireNextImageKHR(vulkanLogicalDevice, vulkanSwapchain.swapchain, std::numeric_limits<uint64_t>::max(), imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
 	
 	VkSubmitInfo submitInfo = {};
 	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
-	VkSemaphore waitSemaphores[] = {imageAvailableSemaphore};
+	VkSemaphore waitSemaphores[] = {imageAvailableSemaphores[currentFrame]};
 	VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
 	submitInfo.waitSemaphoreCount = 1;
 	submitInfo.pWaitSemaphores = waitSemaphores;
@@ -536,12 +540,12 @@ void YasEngine::drawFrame()
 	submitInfo.commandBufferCount = 1;
 	submitInfo.pCommandBuffers = &commandBuffers[imageIndex];	// lukesawicki error tutaj
 	
-	VkSemaphore signalSemaphores[] = {renderFinishedSemaphore}; // lub tutaj
+	VkSemaphore signalSemaphores[] = {renderFinishedSemaphores[currentFrame]}; // lub tutaj
 	submitInfo.signalSemaphoreCount = 1;
 	submitInfo.pSignalSemaphores = signalSemaphores;
 
 //tutaj jest bug w trybie realease
-	if(vkQueueSubmit(graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS)
+	if(vkQueueSubmit(graphicsQueue, 1, &submitInfo, inFlightFences[currentFrame]) != VK_SUCCESS)
 	{
 		throw std::runtime_error("Failed to submit draw command buffer.");
 	}
@@ -560,19 +564,33 @@ void YasEngine::drawFrame()
 
 	vkQueuePresentKHR(presentationQueue, &presentInfoKhr);
 
-
+	currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 }
 
-void YasEngine::createSemaphore()
+void YasEngine::createSyncObjects()
 {
+	imageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
+	renderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
+	inFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
+
 	VkSemaphoreCreateInfo semaphoreCreateInfo = {};
 	semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-	
-	if( vkCreateSemaphore(vulkanLogicalDevice, &semaphoreCreateInfo, nullptr, &imageAvailableSemaphore) != VK_SUCCESS
-		|| vkCreateSemaphore(vulkanLogicalDevice, &semaphoreCreateInfo, nullptr, &renderFinishedSemaphore) != VK_SUCCESS)
+
+	VkFenceCreateInfo fenceCreateInfo = {};
+	fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+	fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+
+	for(size_t i = 0; i< MAX_FRAMES_IN_FLIGHT; i++)
 	{
-		throw std::runtime_error("failed to create semaphores!");
+		if(vkCreateSemaphore(vulkanLogicalDevice, &semaphoreCreateInfo, nullptr, &imageAvailableSemaphores[i]) != VK_SUCCESS ||
+			vkCreateSemaphore(vulkanLogicalDevice, &semaphoreCreateInfo, nullptr, &renderFinishedSemaphores[i]) != VK_SUCCESS ||
+			vkCreateFence(vulkanLogicalDevice, &fenceCreateInfo, nullptr, &inFlightFences[i]) != VK_SUCCESS
+		)
+		{
+			throw std::runtime_error("Failed to create semaphores for a frame.");
+		}
 	}
+
 }
 
 void YasEngine::createLogicalDevice()
@@ -674,13 +692,13 @@ void YasEngine::createRenderPass()
 	subpassDescription.colorAttachmentCount = 1;
 	subpassDescription.pColorAttachments = &colorAttachmentReference;
 	
-	//VkSubpassDependency subpassDependency = {};
-	//subpassDependency.srcSubpass = VK_SUBPASS_EXTERNAL;
-	//subpassDependency.dstSubpass = 0;
-	//subpassDependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-	//subpassDependency.srcAccessMask = 0;
-	//subpassDependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-	//subpassDependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+	VkSubpassDependency subpassDependency = {};
+	subpassDependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+	subpassDependency.dstSubpass = 0;
+	subpassDependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	subpassDependency.srcAccessMask = 0;
+	subpassDependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	subpassDependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 
 	VkRenderPassCreateInfo renderPassInfo = {};
 	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
@@ -689,9 +707,7 @@ void YasEngine::createRenderPass()
 	renderPassInfo.subpassCount = 1;
 	renderPassInfo.pSubpasses = &subpassDescription;
 	renderPassInfo.dependencyCount = 0;
-	
-	renderPassInfo.pDependencies = nullptr;
-	//renderPassInfo.pDependencies = &subpassDependency;
+	renderPassInfo.pDependencies = &subpassDependency;
 
 	if(vkCreateRenderPass(vulkanLogicalDevice, &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS)
 	{
@@ -896,8 +912,12 @@ void YasEngine::destroySwapchain()
 
 void YasEngine::cleanUp()
 {
-	vkDestroySemaphore(vulkanLogicalDevice, renderFinishedSemaphore, nullptr);
-	vkDestroySemaphore(vulkanLogicalDevice, imageAvailableSemaphore, nullptr);
+	for(size_t i = 0; i<MAX_FRAMES_IN_FLIGHT; i++)
+	{
+		vkDestroySemaphore(vulkanLogicalDevice, renderFinishedSemaphores[i], nullptr);
+		vkDestroySemaphore(vulkanLogicalDevice, imageAvailableSemaphores[i], nullptr);
+		vkDestroyFence(vulkanLogicalDevice, inFlightFences[i], nullptr);
+	}
 
 	vkDestroyCommandPool(vulkanLogicalDevice, commandPool, nullptr);
 	for(VkFramebuffer framebuffer: swapchainFramebuffers)
@@ -907,8 +927,11 @@ void YasEngine::cleanUp()
 	vkDestroyPipeline(vulkanLogicalDevice, graphicsPipeline, nullptr);
 	vkDestroyPipelineLayout(vulkanLogicalDevice, pipelineLayout, nullptr);
 	vkDestroyRenderPass(vulkanLogicalDevice, renderPass, nullptr);
+	
 	destroySwapchain();
+	
 	vkDestroyDevice(vulkanLogicalDevice, nullptr);
+	
 	if(enableValidationLayers)
 	{
 		destroyDebugReportCallbackEXT(vulkanInstance, callback, nullptr);

@@ -79,8 +79,13 @@ class YasEngine
 		void					createCommandPool();
 		void					createCommandBuffers();
 		void					drawFrame();
-		void					createSemaphore();
+		void					createSyncObjects();
 
+		size_t					currentFrame = 0;
+		std::vector<VkSemaphore> imageAvailableSemaphores;
+		std::vector<VkSemaphore> renderFinishedSemaphores;
+		std::vector<VkFence> inFlightFences;
+		
 		VkInstance				vulkanInstance;
 		VkDebugReportCallbackEXT callback;
 		VkDevice				vulkanLogicalDevice;
@@ -95,8 +100,6 @@ class YasEngine
 		std::vector<VkFramebuffer> swapchainFramebuffers;
 		VkCommandPool			commandPool;
 		std::vector<VkCommandBuffer> commandBuffers;
-		VkSemaphore imageAvailableSemaphore;
-		VkSemaphore	renderFinishedSemaphore;
 		const std::vector<const char*> validationLayers =
 		{
 			"VK_LAYER_LUNARG_standard_validation"	

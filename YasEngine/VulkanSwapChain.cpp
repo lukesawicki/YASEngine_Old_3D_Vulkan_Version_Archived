@@ -74,7 +74,7 @@ VkExtent2D	VulkanSwapchain::chooseSwapExtent(const VkSurfaceCapabilitiesKHR surf
 	{		
 		VkExtent2D actualExtent = {static_cast<uint32_t>(windowWidth), static_cast<uint32_t>(windowHeight)};
 		actualExtent.width = std::clamp(actualExtent.width, surfaceCapabilities.minImageExtent.width, surfaceCapabilities.maxImageExtent.width);
-		actualExtent.width = std::clamp(actualExtent.height, surfaceCapabilities.minImageExtent.height, surfaceCapabilities.maxImageExtent.height);		
+		actualExtent.height = std::clamp(actualExtent.height, surfaceCapabilities.minImageExtent.height, surfaceCapabilities.maxImageExtent.height);		
 		return actualExtent;
 	}
 }
