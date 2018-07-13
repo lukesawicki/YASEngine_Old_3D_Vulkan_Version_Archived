@@ -1,5 +1,6 @@
 #include"stdafx.hpp"
-#include"VulkanSwapChain.hpp"
+#include"VulkanSwapchain.hpp"
+#include"VariousTools.hpp"
 
 SwapchainSupportDetails	VulkanSwapchain::querySwapchainSupport(VkPhysicalDevice device, VkSurfaceKHR surface)
 {

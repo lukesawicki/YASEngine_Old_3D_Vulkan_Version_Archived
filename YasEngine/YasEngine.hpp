@@ -1,10 +1,14 @@
 #ifndef YASENGINE_HPP
 #define YASENGINE_HPP
 #include"stdafx.hpp"
+#include"VulkanSwapchain.hpp"
+#include"VariousTools.hpp"
+#include"VulkanInstance.hpp"
+
 
 VkResult createDebugReportCallbackEXT
 (
-	VkInstance vulkanInstance,
+	VkInstance& vulkanInstance,
 	const VkDebugReportCallbackCreateInfoEXT* createInfo,
 	const VkAllocationCallbacks* allocator,
 	VkDebugReportCallbackEXT* callback
@@ -85,8 +89,8 @@ class YasEngine
 		std::vector<VkSemaphore> imageAvailableSemaphores;
 		std::vector<VkSemaphore> renderFinishedSemaphores;
 		std::vector<VkFence> inFlightFences;
-		
-		VkInstance				vulkanInstance;
+		VulkanInstance				vulkanInstance;
+		//VkInstance				vulkanInstance;
 		VkDebugReportCallbackEXT callback;
 		VkDevice				vulkanLogicalDevice;
 		VkSurfaceKHR			surface;
@@ -100,15 +104,16 @@ class YasEngine
 		std::vector<VkFramebuffer> swapchainFramebuffers;
 		VkCommandPool			commandPool;
 		std::vector<VkCommandBuffer> commandBuffers;
-		const std::vector<const char*> validationLayers =
-		{
-			"VK_LAYER_LUNARG_standard_validation"	
-		};
+		
+		//const std::vector<const char*> validationLayers =
+		//{
+		//	"VK_LAYER_LUNARG_standard_validation"	
+		//};
 
-	const std::vector<const char*> deviceExtensions =
-		{
-			VK_KHR_SWAPCHAIN_EXTENSION_NAME
-		};
+		//const std::vector<const char*> deviceExtensions =
+		//{
+		//	VK_KHR_SWAPCHAIN_EXTENSION_NAME
+		//};
 		
 	//private end
 };

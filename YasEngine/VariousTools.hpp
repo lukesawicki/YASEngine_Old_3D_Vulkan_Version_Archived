@@ -66,8 +66,6 @@ class TimePicker
 		{
 			return new TimePicker();
 		}
-
-
 };
 
 #endif

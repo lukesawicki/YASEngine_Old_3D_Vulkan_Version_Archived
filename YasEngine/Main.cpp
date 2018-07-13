@@ -5,6 +5,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 {
 	YasEngine yasEngine = YasEngine();
 	yasEngine.run(hInstance);
+	system("PAUSE");
 	return 0;
 }
 

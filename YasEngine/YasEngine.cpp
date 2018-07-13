@@ -21,7 +21,7 @@ LRESULT CALLBACK windowProcedure(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 
 VkResult createDebugReportCallbackEXT
 	(
-		VkInstance vulkanInstance,
+		VkInstance& vulkanInstance,
 		const VkDebugReportCallbackCreateInfoEXT* createInfo,
 		const VkAllocationCallbacks* allocator,
 		VkDebugReportCallbackEXT* callback
@@ -88,7 +88,7 @@ void YasEngine::setupDebugCallback()
 	createInfo.flags = VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT;
 	createInfo.pfnCallback = debugCallback;
 	
-	if(createDebugReportCallbackEXT(vulkanInstance, &createInfo, nullptr, &callback) != VK_SUCCESS)
+	if(createDebugReportCallbackEXT(vulkanInstance.instance, &createInfo, nullptr, &callback) != VK_SUCCESS)
 	{
 		throw std::runtime_error("Failed to set up debug callback function");
 	}
@@ -232,138 +232,93 @@ bool YasEngine::checkForExtensionsSupport(const std::vector<const char*> &enable
 	return false;
 }
 
-bool YasEngine::checkPhysicalDeviceExtensionSupport(VkPhysicalDevice device)
-{
-	uint32_t extensionsCount;
-	vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionsCount, nullptr);
-	
-	std::vector<VkExtensionProperties> availableExtensions(extensionsCount);
-	vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionsCount, availableExtensions.data());
-	
-	for(const char* deviceExtensionName: deviceExtensions)
-	{
-		bool extensionFound = false;
+//bool YasEngine::checkPhysicalDeviceExtensionSupport(VkPhysicalDevice device)
+//{
+//	uint32_t extensionsCount;
+//	vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionsCount, nullptr);
+//	
+//	std::vector<VkExtensionProperties> availableExtensions(extensionsCount);
+//	vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionsCount, availableExtensions.data());
+//	
+//	for(const char* deviceExtensionName: deviceExtensions)
+//	{
+//		bool extensionFound = false;
+//
+//		for(const VkExtensionProperties& availableExt: availableExtensions)
+//		{
+//			if(strcmp(deviceExtensionName, availableExt.extensionName) == 0)
+//			{
+//				extensionFound = true;
+//				break;
+//			}
+//		}
+//		if(!extensionFound)
+//		{
+//			return false;
+//		}
+//	}
+//
+//	return true;
+//}
 
-		for(const VkExtensionProperties& availableExt: availableExtensions)
-		{
-			if(strcmp(deviceExtensionName, availableExt.extensionName) == 0)
-			{
-				extensionFound = true;
-				break;
-			}
-		}
-		if(!extensionFound)
-		{
-			return false;
-		}
-	}
-
-	return true;
-}
-
-bool YasEngine::checkValidationLayerSupport()
-{
-	uint32_t layersCount;
-	vkEnumerateInstanceLayerProperties(&layersCount, nullptr);
-	
-	std::vector<VkLayerProperties> availableLayers(layersCount);
-	vkEnumerateInstanceLayerProperties(&layersCount, availableLayers.data());
-	
-	for(const char* layerName: validationLayers)
-	{
-		bool layerFound = false;
-		// Attention
-		for(const VkLayerProperties& layerProperties: availableLayers)
-		{
-			if(strcmp(layerName, layerProperties.layerName) == 0)
-			{
-				layerFound = true;
-				break;
-			}
-		}
-		if(!layerFound)
-		{
-			return false;
-		}
-	}
-	return true;
-}
+//bool YasEngine::checkValidationLayerSupport()
+//{
+//	uint32_t layersCount;
+//	vkEnumerateInstanceLayerProperties(&layersCount, nullptr);
+//	
+//	std::vector<VkLayerProperties> availableLayers(layersCount);
+//	vkEnumerateInstanceLayerProperties(&layersCount, availableLayers.data());
+//	
+//	for(const char* layerName: validationLayers)
+//	{
+//		bool layerFound = false;
+//		// Attention
+//		for(const VkLayerProperties& layerProperties: availableLayers)
+//		{
+//			if(strcmp(layerName, layerProperties.layerName) == 0)
+//			{
+//				layerFound = true;
+//				break;
+//			}
+//		}
+//		if(!layerFound)
+//		{
+//			return false;
+//		}
+//	}
+//	return true;
+//}
 
 
 
-std::vector<const char*> YasEngine::getRequiredExtensions()
-{
-	std::vector<const char*> allRequiredExtenstions = std::vector<const char*>();
-
-	allRequiredExtenstions.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
-	allRequiredExtenstions.push_back(VK_KHR_WIN32_SURFACE_EXTENSION_NAME);
-
-	if(enableValidationLayers)
-	{
-		allRequiredExtenstions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
-	}
-	return allRequiredExtenstions;
-}
+//std::vector<const char*> YasEngine::getRequiredExtensions()
+//{
+//	std::vector<const char*> allRequiredExtenstions = std::vector<const char*>();
+//
+//	allRequiredExtenstions.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
+//	allRequiredExtenstions.push_back(VK_KHR_WIN32_SURFACE_EXTENSION_NAME);
+//
+//	if(enableValidationLayers)
+//	{
+//		allRequiredExtenstions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
+//	}
+//	return allRequiredExtenstions;
+//}
 
 void YasEngine::createVulkanInstance()
 {
-	if(enableValidationLayers && !checkValidationLayerSupport())
-	{
-		throw std::runtime_error("Requested validation layers are not available");
-	}	
-
-	std::cout << "Creating Vulkan Instance..." << std::endl;
-	VkApplicationInfo applicationInfo = {};
-	applicationInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-	applicationInfo.pApplicationName = "YasEngine Demo";
-	applicationInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
-	applicationInfo.pEngineName = "Yas Engine";
-	applicationInfo.engineVersion = VK_MAKE_VERSION(0, 1, 0);
-	applicationInfo.apiVersion = VK_API_VERSION_1_1;
-
-	VkInstanceCreateInfo createInfo = {};
-	createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-	createInfo.pApplicationInfo = &applicationInfo;
-
-	std::vector<const char*> allEnabledExtenstions = getRequiredExtensions();
-	uint32_t extensionsCount = static_cast<uint32_t>(allEnabledExtenstions.size());
-
-	bool allExtensionsAvailable = checkForExtensionsSupport(allEnabledExtenstions, extensionsCount);
-
-	if(!allExtensionsAvailable)
-	{
-		throw std::runtime_error("Not all required extensions available! Can't create Vulkan Instance");
-	}
-	createInfo.enabledExtensionCount = extensionsCount;
-	createInfo.ppEnabledExtensionNames = allEnabledExtenstions.data();
-
-	if(enableValidationLayers)
-	{
-		createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
-		createInfo.ppEnabledLayerNames = validationLayers.data();
-	}
-	else
-	{
-		createInfo.enabledLayerCount = 0;
-	}
-
-	VkResult result = vkCreateInstance(&createInfo, nullptr, &vulkanInstance);
-	
-	if(result != VK_SUCCESS)
-	{
-		throw std::runtime_error("Failed to create Vulkan instance!");
-	}
+	vulkanInstance.createVulkanInstance(enableValidationLayers);
 }
 
 void YasEngine::selectPhysicalDevice()
 {
 	uint32_t deviceCount = 0;
-	vkEnumeratePhysicalDevices(vulkanInstance, &deviceCount, nullptr);
+	vkEnumeratePhysicalDevices(vulkanInstance.instance, &deviceCount, nullptr);
 	if(deviceCount == 0) {
 		throw std::runtime_error("Failed to find Graphics Cards with Vulkan support.");
 	}
 	std::vector<VkPhysicalDevice> physicalDevices(deviceCount);
-	vkEnumeratePhysicalDevices(vulkanInstance, &deviceCount, physicalDevices.data());
+	vkEnumeratePhysicalDevices(vulkanInstance.instance, &deviceCount, physicalDevices.data());
 
 	for(const VkPhysicalDevice& device: physicalDevices)
 	{
@@ -412,15 +367,17 @@ bool YasEngine::isPhysicalDeviceSuitable(VkPhysicalDevice device)
 		}
 	}
 
-	bool extensionsSupported = checkPhysicalDeviceExtensionSupport(device);
+	bool extensionsSupported = vulkanInstance.layersAndExtensions->CheckIfAllRequestedPhysicalDeviceExtensionAreSupported(device);
+	std::cout << "extensionSupported= " << extensionsSupported << std::endl;
 	bool swapchainSuitable = false;
-
+	
 	if(extensionsSupported)
 	{
 		SwapchainSupportDetails swapchainSupport = VulkanSwapchain::querySwapchainSupport(device, surface);
 		swapchainSuitable = !swapchainSupport.formats.empty() && !swapchainSupport.presentModes.empty();
+		std::cout <<"swapchainSuitable= " << swapchainSuitable << std::endl;
 	}
-
+	std::cout << "Before return in isPhysicalDeviceSuitable(VkPhysicalDevice device) " << std::endl;
 	return indices.isComplete() && extensionsSupported && swapchainSuitable;
 }
 
@@ -623,13 +580,13 @@ void YasEngine::createLogicalDevice()
 	createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
 	createInfo.pQueueCreateInfos = queueCreateInfos.data();
 	createInfo.pEnabledFeatures = &physicalDeviceFeatures;
-	createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
-	createInfo.ppEnabledExtensionNames = deviceExtensions.data();
+	createInfo.enabledExtensionCount = static_cast<uint32_t>(vulkanInstance.layersAndExtensions->deviceExtensions.size());
+	createInfo.ppEnabledExtensionNames = vulkanInstance.layersAndExtensions->deviceExtensions.data();
 	
 	if(enableValidationLayers)
 	{
-		createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
-		createInfo.ppEnabledLayerNames = validationLayers.data();
+		createInfo.enabledLayerCount = static_cast<uint32_t>(vulkanInstance.layersAndExtensions->validationLayers.size());
+		createInfo.ppEnabledLayerNames = vulkanInstance.layersAndExtensions->validationLayers.data();
 	}
 	else
 	{
@@ -654,7 +611,7 @@ void YasEngine::createSurface()
 	surfaceCreateInfo.hinstance = application;
 	surfaceCreateInfo.hwnd = window;
 
-	VkResult result = vkCreateWin32SurfaceKHR(vulkanInstance, &surfaceCreateInfo, NULL, &surface);
+	VkResult result = vkCreateWin32SurfaceKHR(vulkanInstance.instance, &surfaceCreateInfo, NULL, &surface);
 	if(!(result == VK_SUCCESS))
 	{
 		throw std::runtime_error("Failed to create Vulkan surface!");
@@ -929,11 +886,11 @@ void YasEngine::cleanUp()
 	
 	if(enableValidationLayers)
 	{
-		destroyDebugReportCallbackEXT(vulkanInstance, callback, nullptr);
+		destroyDebugReportCallbackEXT(vulkanInstance.instance, callback, nullptr);
 	}
-	vkDestroySurfaceKHR(vulkanInstance, surface, nullptr);
+	vkDestroySurfaceKHR(vulkanInstance.instance, surface, nullptr);
 	//Second parameter is optional allocator which for this version will not be used.
-	vkDestroyInstance(vulkanInstance, nullptr);
+	vkDestroyInstance(vulkanInstance.instance, nullptr);
 	DestroyWindow(window);
 }
 

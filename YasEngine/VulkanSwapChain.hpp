@@ -1,7 +1,7 @@
 #ifndef VULKANSWAPCHAIN_HPP
 #define VULKANSWAPCHAIN_HPP
 #include"stdafx.hpp"
-
+#include"VariousTools.hpp"
 #undef min
 #undef max
 
