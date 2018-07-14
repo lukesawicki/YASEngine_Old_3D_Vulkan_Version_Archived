@@ -193,12 +193,7 @@ void YasEngine::initializeVulkan()
 	createVulkanInstance();
 	setupDebugCallback();
 	createSurface();
-//const VulkanInstance& vulkanInstance, VkSurfaceKHR surface,
-//VkQueue graphicsQueue, VkQueue presentationQueue,
-//bool enableValidationLayers
 	vulkanDevice = new VulkanDevice(vulkanInstance, surface, graphicsQueue, presentationQueue, enableValidationLayers);
-	//selectPhysicalDevice();
-	//createLogicalDevice();
 	createSwapchain();
 	createImageViews();
 	createRenderPass();
@@ -216,110 +211,8 @@ void YasEngine::createVulkanInstance()
 
 void YasEngine::selectPhysicalDevice()
 {
-	//const VulkanInstance& vulkanInstance, VkSurfaceKHR surface
 	vulkanDevice->selectPhysicalDevice(vulkanInstance, surface);
-	//uint32_t deviceCount = 0;
-	//vkEnumeratePhysicalDevices(vulkanInstance.instance, &deviceCount, nullptr);
-	//if(deviceCount == 0) {
-	//	throw std::runtime_error("Failed to find Graphics Cards with Vulkan support.");
-	//}
-	//std::vector<VkPhysicalDevice> physicalDevices(deviceCount);
-	//vkEnumeratePhysicalDevices(vulkanInstance.instance, &deviceCount, physicalDevices.data());
-
-	//for(const VkPhysicalDevice& device: physicalDevices)
-	//{
-	//	if(isPhysicalDeviceSuitable(device))
-	//	{
-	//		physicalDevice = device;
-	//		std::cout << "YasEngine chosen physical device." << std::endl;
-	//		break;
-	//	}
-	//}
-	//if(physicalDevice == VK_NULL_HANDLE)
-	//{
-	//	throw std::runtime_error("Failed to find suitable graphic card");
-	//}
 }
-//
-//bool YasEngine::isPhysicalDeviceSuitable(VkPhysicalDevice device)
-//{	
-//	QueueFamilyIndices indices = findQueueFamilies(device);
-//
-//	VkPhysicalDeviceProperties physicalDeviceProperties;
-//	vkGetPhysicalDeviceProperties(device, &physicalDeviceProperties);
-//
-//	VkPhysicalDeviceFeatures physicalDeviceFeatures;
-//	vkGetPhysicalDeviceFeatures(device, &physicalDeviceFeatures);
-//	if(physicalDeviceProperties.vendorID == 4130)
-//	{
-//		std::cout << "Physical device vendor: AMD" << std::endl;
-//	}
-//	else
-//	{
-//		if(physicalDeviceProperties.vendorID == 4318)
-//		{
-//			std::cout << "Physical device vendor: NVIDIA" << std::endl;
-//		}
-//		else
-//		{
-//			if(physicalDeviceProperties.vendorID == 8086)
-//			{
-//				std::cout << "Physical device vendor: INTEL" << std::endl;
-//			}
-//			else
-//			{
-//				std::cout << "Physical device vendor: Other vendor." << std::endl;
-//			}
-//		}
-//	}
-//
-//	bool extensionsSupported = vulkanInstance.layersAndExtensions->CheckIfAllRequestedPhysicalDeviceExtensionAreSupported(device);
-//	std::cout << "extensionSupported= " << extensionsSupported << std::endl;
-//	bool swapchainSuitable = false;
-//	
-//	if(extensionsSupported)
-//	{
-//		SwapchainSupportDetails swapchainSupport = VulkanSwapchain::querySwapchainSupport(device, surface);
-//		swapchainSuitable = !swapchainSupport.formats.empty() && !swapchainSupport.presentModes.empty();
-//		std::cout <<"swapchainSuitable= " << swapchainSuitable << std::endl;
-//	}
-//	return indices.isComplete() && extensionsSupported && swapchainSuitable;
-//}
-
-//QueueFamilyIndices YasEngine::findQueueFamilies(VkPhysicalDevice device)
-//{
-//	QueueFamilyIndices queueFamilyIndices;
-//
-//	uint32_t queueFamilyCount = 0;
-//	vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
-//
-//	std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
-//	vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
-//
-//	int i = 0;
-//	for(const VkQueueFamilyProperties& queueFamily : queueFamilies)
-//	{
-//		if((queueFamily.queueCount > 0) && (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT))
-//		{
-//			queueFamilyIndices.graphicsFamily = i;
-//		}
-//
-//		VkBool32 presentationFamilySupport = false;
-//		vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface, &presentationFamilySupport);
-//		
-//		if(queueFamily.queueCount > 0 && presentationFamilySupport)
-//		{
-//			queueFamilyIndices.presentationFamily = i;
-//		}
-//		if(queueFamilyIndices.isComplete())
-//		{
-//			break;
-//		}
-//		i++;
-//	}
-//
-//	return queueFamilyIndices;
-//}
 
 void YasEngine::createCommandPool()
 {
@@ -458,58 +351,7 @@ void YasEngine::createSyncObjects()
 
 void YasEngine::createLogicalDevice()
 {
-
-	//void createLogicalDevice(const VulkanInstance& vulkanInstance, VkSurfaceKHR surface,
-	//	VkQueue graphicsQueue, VkQueue presentationQueue, bool enableValidationLayers);
-
 	vulkanDevice->createLogicalDevice(vulkanInstance, surface, graphicsQueue, presentationQueue, enableValidationLayers);
-
-
-	/*QueueFamilyIndices indices = findQueueFamilies(physicalDevice);
-	
-	std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
-	std::set<int> uniqueQueueFamilies = {indices.graphicsFamily, indices.presentationFamily};
-	
-	float queuePriority = 1.0f;
-
-	for(int queueFamily: uniqueQueueFamilies)
-	{
-		VkDeviceQueueCreateInfo queueCreateInfo = {};
-		queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-		queueCreateInfo.queueFamilyIndex = queueFamily;
-		queueCreateInfo.queueCount = 1;
-		queueCreateInfo.pQueuePriorities = &queuePriority;
-		queueCreateInfos.push_back(queueCreateInfo);
-	}
-	
-	VkPhysicalDeviceFeatures physicalDeviceFeatures = {};
-
-	VkDeviceCreateInfo createInfo = {};
-	createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-
-	createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
-	createInfo.pQueueCreateInfos = queueCreateInfos.data();
-	createInfo.pEnabledFeatures = &physicalDeviceFeatures;
-	createInfo.enabledExtensionCount = static_cast<uint32_t>(vulkanInstance.layersAndExtensions->deviceExtensions.size());
-	createInfo.ppEnabledExtensionNames = vulkanInstance.layersAndExtensions->deviceExtensions.data();
-	
-	if(enableValidationLayers)
-	{
-		createInfo.enabledLayerCount = static_cast<uint32_t>(vulkanInstance.layersAndExtensions->validationLayers.size());
-		createInfo.ppEnabledLayerNames = vulkanInstance.layersAndExtensions->validationLayers.data();
-	}
-	else
-	{
-		createInfo.enabledLayerCount = 0;
-	}
-
-	if(vkCreateDevice(physicalDevice, &createInfo, nullptr, &vulkanLogicalDevice) != VK_SUCCESS)
-	{
-		throw std::runtime_error("Failed to create logical device.");
-	}
-
-	vkGetDeviceQueue(vulkanLogicalDevice, indices.graphicsFamily, 0, &graphicsQueue);
-	vkGetDeviceQueue(vulkanLogicalDevice, indices.presentationFamily, 0, &presentationQueue);*/
 }
 
 void YasEngine::createSurface()
@@ -581,7 +423,6 @@ void YasEngine::createRenderPass()
 	{
 		throw std::runtime_error("Failed to create renderpass.");
 	}
-	
 }
 
 void YasEngine::createGraphicsPipeline()

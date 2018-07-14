@@ -85,8 +85,6 @@ void VulkanDevice::selectPhysicalDevice(VulkanInstance& vulkanInstance, VkSurfac
 
 void VulkanDevice::createLogicalDevice(VulkanInstance& vulkanInstance, VkSurfaceKHR& surface, VkQueue& graphicsQueue, VkQueue& presentationQueue, bool enableValidationLayers)
 {
-	//TODO refactor whole procedure
-
 	QueueFamilyIndices indices = findQueueFamilies(physicalDevice, surface);
 	
 	std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;

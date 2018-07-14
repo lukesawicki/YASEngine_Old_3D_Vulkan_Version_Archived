@@ -67,7 +67,6 @@ class YasEngine
 
 		void							setupDebugCallback();
 		void							selectPhysicalDevice();
-		bool							isPhysicalDeviceSuitable(VkPhysicalDevice device);
 		void							createLogicalDevice();
 		void							createSurface();
 		void							createSwapchain();
@@ -88,9 +87,7 @@ class YasEngine
 		std::vector<VkFence>			inFlightFences;
 		VulkanInstance					vulkanInstance;
 		VkDebugReportCallbackEXT		callback;
-		//VkDevice						vulkanLogicalDevice;
 		VkSurfaceKHR					surface;
-		//VkPhysicalDevice				physicalDevice = VK_NULL_HANDLE;
 		VulkanDevice*					vulkanDevice;
 		VkQueue							graphicsQueue;
 		VkQueue							presentationQueue;
