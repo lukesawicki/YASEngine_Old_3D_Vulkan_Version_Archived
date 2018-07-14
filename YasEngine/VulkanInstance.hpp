@@ -1,6 +1,7 @@
 #ifndef VULKANINSTANCE_HPP
 #define VULKANINSTANCE_HPP
 #include"stdafx.hpp"
+#include"YasLog.hpp"
 #include"VulkanLayersAndExtensions.hpp"
 
 class VulkanInstance

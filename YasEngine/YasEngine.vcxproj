@@ -26,6 +26,7 @@
     <ClInclude Include="VulkanLayersAndExtensions.hpp" />
     <ClInclude Include="VulkanSwapchain.hpp" />
     <ClInclude Include="YasEngine.hpp" />
+    <ClInclude Include="YasLog.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp" />

@@ -203,34 +203,34 @@ void YasEngine::initializeVulkan()
 	createSyncObjects();
 }
 
-bool YasEngine::checkForExtensionsSupport(const std::vector<const char*> &enabledExtensions, uint32_t numberOfEnabledExtensions)
-{
-
-	bool allEnabletExtensionsAreAvailable = false;
-	uint32_t numberOfAvailableExtensions = 0;
-	vkEnumerateInstanceExtensionProperties(nullptr, &numberOfAvailableExtensions, nullptr);
-	
-	std::vector<VkExtensionProperties> availableExtensions(static_cast<size_t>(numberOfAvailableExtensions));
-	vkEnumerateInstanceExtensionProperties(nullptr, &numberOfAvailableExtensions, availableExtensions.data());
-	int extensionsCounter = 0;
-
-	for(int i=0; i<static_cast<int>(numberOfEnabledExtensions); i++)
-	{
-		for(int j=0; j<static_cast<int>(availableExtensions.size()); j++)
-		{
-			if(strcmp(enabledExtensions[i], availableExtensions[j].extensionName) == 0)
-			{
-				++extensionsCounter;
-			}
-			if(extensionsCounter == numberOfEnabledExtensions)
-			{
-				return true;
-			}
-		}
-	}
-	
-	return false;
-}
+//bool YasEngine::checkForExtensionsSupport(const std::vector<const char*> &enabledExtensions, uint32_t numberOfEnabledExtensions)
+//{
+//
+//	bool allEnabletExtensionsAreAvailable = false;
+//	uint32_t numberOfAvailableExtensions = 0;
+//	vkEnumerateInstanceExtensionProperties(nullptr, &numberOfAvailableExtensions, nullptr);
+//	
+//	std::vector<VkExtensionProperties> availableExtensions(static_cast<size_t>(numberOfAvailableExtensions));
+//	vkEnumerateInstanceExtensionProperties(nullptr, &numberOfAvailableExtensions, availableExtensions.data());
+//	int extensionsCounter = 0;
+//
+//	for(int i=0; i<static_cast<int>(numberOfEnabledExtensions); i++)
+//	{
+//		for(int j=0; j<static_cast<int>(availableExtensions.size()); j++)
+//		{
+//			if(strcmp(enabledExtensions[i], availableExtensions[j].extensionName) == 0)
+//			{
+//				++extensionsCounter;
+//			}
+//			if(extensionsCounter == numberOfEnabledExtensions)
+//			{
+//				return true;
+//			}
+//		}
+//	}
+//	
+//	return false;
+//}
 
 //bool YasEngine::checkPhysicalDeviceExtensionSupport(VkPhysicalDevice device)
 //{
@@ -320,8 +320,12 @@ void YasEngine::selectPhysicalDevice()
 	std::vector<VkPhysicalDevice> physicalDevices(deviceCount);
 	vkEnumeratePhysicalDevices(vulkanInstance.instance, &deviceCount, physicalDevices.data());
 
+	//std::cout << " vulkanInstance.instance << std::endl;
+	YasLog<VkInstance>::log("YasLog:  YasEngine::selectPhysicalDevice() ", " - " ,vulkanInstance.instance);
+
 	for(const VkPhysicalDevice& device: physicalDevices)
 	{
+		YasLog<std::string>::log("after isPhysicalDeviceSuitable\nin YasEngine::selectPhysicalDevice()", "", "");
 		if(isPhysicalDeviceSuitable(device))
 		{
 			physicalDevice = device;

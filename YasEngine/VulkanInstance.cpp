@@ -26,6 +26,13 @@ void VulkanInstance::createVulkanInstance(bool areValidationLayersEnabled)
 	createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
 	createInfo.pApplicationInfo = &applicationInfo;
 
+	bool allExtensionsAvailable = layersAndExtensions->CheckIfAllRequestedInstanceExtensionAreSupported();
+
+	if(!allExtensionsAvailable)
+	{
+		throw std::runtime_error("Not all required extensions available! Can't create Vulkan Instance");
+	}
+
 	createInfo.enabledExtensionCount = static_cast<uint32_t>(layersAndExtensions->instanceExtensions.size());
 	createInfo.ppEnabledExtensionNames = layersAndExtensions->instanceExtensions.data();
 
@@ -43,4 +50,5 @@ void VulkanInstance::createVulkanInstance(bool areValidationLayersEnabled)
 	{
 		throw std::runtime_error("Failed to create Vulkan instance!");
 	}
+	YasLog<VkInstance>::log("YasLog: After creating vulkan instance", " - ", instance);
 }

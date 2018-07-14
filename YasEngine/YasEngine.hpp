@@ -4,6 +4,7 @@
 #include"VulkanSwapchain.hpp"
 #include"VariousTools.hpp"
 #include"VulkanInstance.hpp"
+#include"YasLog.hpp"
 
 
 VkResult createDebugReportCallbackEXT
@@ -62,10 +63,10 @@ class YasEngine
 		//Vulkan variables and functions
 		void					createVulkanInstance();
 		void					initializeVulkan();
-		std::vector<const char*> getRequiredExtensions();
+		//std::vector<const char*> getRequiredExtensions();
 		bool					checkForExtensionsSupport(const std::vector<const char*> &enabledExtensions, uint32_t numberOfEnabledExtensions);
-		bool					checkPhysicalDeviceExtensionSupport(VkPhysicalDevice physicalDevice); // moze lepiej przez reerencje
-		bool					checkValidationLayerSupport();
+		//bool					checkPhysicalDeviceExtensionSupport(VkPhysicalDevice physicalDevice); // moze lepiej przez reerencje
+		//bool					checkValidationLayerSupport();
 
 		void					setupDebugCallback();
 		void					selectPhysicalDevice();

@@ -1,6 +1,7 @@
 #ifndef VULKANLAYERSANDEXTENSIONS_HPP
 #define VULKANLAYERSANDEXTENSIONS_HPP
 #include"stdafx.hpp"
+#include"YasLog.hpp"
 
 class VulkanLayersAndExtensions
 {
@@ -12,7 +13,7 @@ class VulkanLayersAndExtensions
 
 		bool CheckIfAllRequestedLayersAreSupported();
 		bool CheckIfAllRequestedInstanceExtensionAreSupported();
-		bool CheckIfAllRequestedPhysicalDeviceExtensionAreSupported(VkPhysicalDevice& device);
+		bool CheckIfAllRequestedPhysicalDeviceExtensionAreSupported(VkPhysicalDevice device);
 
 	private:
 		
