@@ -2,6 +2,8 @@
 #define VARIOUSTOOLS_HPP
 #include"stdafx.hpp"
 
+//-----------------------------------------------------------------------------|---------------------------------------|
+
 struct QueueFamilyIndices
 {
 	int graphicsFamily = -1;
@@ -35,6 +37,41 @@ static std::vector<char> readFile(const std::string& fileName)
 
 	file.close();
 	return buffer;
+}
+
+static QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device, VkSurfaceKHR& surface)
+{
+	QueueFamilyIndices queueFamilyIndices;
+
+	uint32_t queueFamilyCount = 0;
+	vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
+
+	std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
+	vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
+
+	int i = 0;
+	for(const VkQueueFamilyProperties& queueFamily : queueFamilies)
+	{
+		if((queueFamily.queueCount > 0) && (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT))
+		{
+			queueFamilyIndices.graphicsFamily = i;
+		}
+
+		VkBool32 presentationFamilySupport = false;
+		vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface, &presentationFamilySupport);
+		
+		if(queueFamily.queueCount > 0 && presentationFamilySupport)
+		{
+			queueFamilyIndices.presentationFamily = i;
+		}
+		if(queueFamilyIndices.isComplete())
+		{
+			break;
+		}
+		i++;
+	}
+
+	return queueFamilyIndices;
 }
 
 class TimePicker

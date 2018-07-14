@@ -1,6 +1,7 @@
 #include"stdafx.hpp"
 #include"VulkanLayersAndExtensions.hpp"
 
+//-----------------------------------------------------------------------------|---------------------------------------|
 
 VulkanLayersAndExtensions::VulkanLayersAndExtensions()
 {

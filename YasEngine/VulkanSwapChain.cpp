@@ -2,6 +2,8 @@
 #include"VulkanSwapchain.hpp"
 #include"VariousTools.hpp"
 
+//-----------------------------------------------------------------------------|---------------------------------------|
+
 SwapchainSupportDetails	VulkanSwapchain::querySwapchainSupport(VkPhysicalDevice device, VkSurfaceKHR surface)
 {
 	SwapchainSupportDetails swapchainDetails;

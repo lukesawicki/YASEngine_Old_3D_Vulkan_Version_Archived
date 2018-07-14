@@ -3,11 +3,13 @@
 #include"stdafx.hpp"
 #include"VulkanLayersAndExtensions.hpp"
 
+//-----------------------------------------------------------------------------|---------------------------------------|
+
 class VulkanInstance
 {
 	public:
 		VulkanInstance();
-		void createVulkanInstance(bool areValidationLayersEnabled);
+		void							createVulkanInstance(bool areValidationLayersEnabled);
 		
 		// Vulkan types
 		VkInstance						instance;

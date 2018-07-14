@@ -1,5 +1,7 @@
 #include"stdafx.hpp"
 #include"YasEngine.hpp"
+#include"VariousTools.hpp"
+//-----------------------------------------------------------------------------|---------------------------------------|
 
 int YasEngine::windowPositionX				= 64;
 int YasEngine::windowPositionY				= 64;
@@ -191,8 +193,12 @@ void YasEngine::initializeVulkan()
 	createVulkanInstance();
 	setupDebugCallback();
 	createSurface();
-	selectPhysicalDevice();
-	createLogicalDevice();
+//const VulkanInstance& vulkanInstance, VkSurfaceKHR surface,
+//VkQueue graphicsQueue, VkQueue presentationQueue,
+//bool enableValidationLayers
+	vulkanDevice = new VulkanDevice(vulkanInstance, surface, graphicsQueue, presentationQueue, enableValidationLayers);
+	//selectPhysicalDevice();
+	//createLogicalDevice();
 	createSwapchain();
 	createImageViews();
 	createRenderPass();
@@ -210,119 +216,120 @@ void YasEngine::createVulkanInstance()
 
 void YasEngine::selectPhysicalDevice()
 {
-	uint32_t deviceCount = 0;
-	vkEnumeratePhysicalDevices(vulkanInstance.instance, &deviceCount, nullptr);
-	if(deviceCount == 0) {
-		throw std::runtime_error("Failed to find Graphics Cards with Vulkan support.");
-	}
-	std::vector<VkPhysicalDevice> physicalDevices(deviceCount);
-	vkEnumeratePhysicalDevices(vulkanInstance.instance, &deviceCount, physicalDevices.data());
+	//const VulkanInstance& vulkanInstance, VkSurfaceKHR surface
+	vulkanDevice->selectPhysicalDevice(vulkanInstance, surface);
+	//uint32_t deviceCount = 0;
+	//vkEnumeratePhysicalDevices(vulkanInstance.instance, &deviceCount, nullptr);
+	//if(deviceCount == 0) {
+	//	throw std::runtime_error("Failed to find Graphics Cards with Vulkan support.");
+	//}
+	//std::vector<VkPhysicalDevice> physicalDevices(deviceCount);
+	//vkEnumeratePhysicalDevices(vulkanInstance.instance, &deviceCount, physicalDevices.data());
 
-	for(const VkPhysicalDevice& device: physicalDevices)
-	{
-		if(isPhysicalDeviceSuitable(device))
-		{
-			physicalDevice = device;
-			std::cout << "YasEngine chosen physical device." << std::endl;
-			break;
-		}
-	}
-	if(physicalDevice == VK_NULL_HANDLE)
-	{
-		throw std::runtime_error("Failed to find suitable graphic card");
-	}
+	//for(const VkPhysicalDevice& device: physicalDevices)
+	//{
+	//	if(isPhysicalDeviceSuitable(device))
+	//	{
+	//		physicalDevice = device;
+	//		std::cout << "YasEngine chosen physical device." << std::endl;
+	//		break;
+	//	}
+	//}
+	//if(physicalDevice == VK_NULL_HANDLE)
+	//{
+	//	throw std::runtime_error("Failed to find suitable graphic card");
+	//}
 }
+//
+//bool YasEngine::isPhysicalDeviceSuitable(VkPhysicalDevice device)
+//{	
+//	QueueFamilyIndices indices = findQueueFamilies(device);
+//
+//	VkPhysicalDeviceProperties physicalDeviceProperties;
+//	vkGetPhysicalDeviceProperties(device, &physicalDeviceProperties);
+//
+//	VkPhysicalDeviceFeatures physicalDeviceFeatures;
+//	vkGetPhysicalDeviceFeatures(device, &physicalDeviceFeatures);
+//	if(physicalDeviceProperties.vendorID == 4130)
+//	{
+//		std::cout << "Physical device vendor: AMD" << std::endl;
+//	}
+//	else
+//	{
+//		if(physicalDeviceProperties.vendorID == 4318)
+//		{
+//			std::cout << "Physical device vendor: NVIDIA" << std::endl;
+//		}
+//		else
+//		{
+//			if(physicalDeviceProperties.vendorID == 8086)
+//			{
+//				std::cout << "Physical device vendor: INTEL" << std::endl;
+//			}
+//			else
+//			{
+//				std::cout << "Physical device vendor: Other vendor." << std::endl;
+//			}
+//		}
+//	}
+//
+//	bool extensionsSupported = vulkanInstance.layersAndExtensions->CheckIfAllRequestedPhysicalDeviceExtensionAreSupported(device);
+//	std::cout << "extensionSupported= " << extensionsSupported << std::endl;
+//	bool swapchainSuitable = false;
+//	
+//	if(extensionsSupported)
+//	{
+//		SwapchainSupportDetails swapchainSupport = VulkanSwapchain::querySwapchainSupport(device, surface);
+//		swapchainSuitable = !swapchainSupport.formats.empty() && !swapchainSupport.presentModes.empty();
+//		std::cout <<"swapchainSuitable= " << swapchainSuitable << std::endl;
+//	}
+//	return indices.isComplete() && extensionsSupported && swapchainSuitable;
+//}
 
-bool YasEngine::isPhysicalDeviceSuitable(VkPhysicalDevice device)
-{	
-	QueueFamilyIndices indices = findQueueFamilies(device);
-
-	VkPhysicalDeviceProperties physicalDeviceProperties;
-	vkGetPhysicalDeviceProperties(device, &physicalDeviceProperties);
-
-	VkPhysicalDeviceFeatures physicalDeviceFeatures;
-	vkGetPhysicalDeviceFeatures(device, &physicalDeviceFeatures);
-	if(physicalDeviceProperties.vendorID == 4130)
-	{
-		std::cout << "Physical device vendor: AMD" << std::endl;
-	}
-	else
-	{
-		if(physicalDeviceProperties.vendorID == 4318)
-		{
-			std::cout << "Physical device vendor: NVIDIA" << std::endl;
-		}
-		else
-		{
-			if(physicalDeviceProperties.vendorID == 8086)
-			{
-				std::cout << "Physical device vendor: INTEL" << std::endl;
-			}
-			else
-			{
-				std::cout << "Physical device vendor: Other vendor." << std::endl;
-			}
-		}
-	}
-
-	bool extensionsSupported = vulkanInstance.layersAndExtensions->CheckIfAllRequestedPhysicalDeviceExtensionAreSupported(device);
-	std::cout << "extensionSupported= " << extensionsSupported << std::endl;
-	bool swapchainSuitable = false;
-	
-	if(extensionsSupported)
-	{
-		SwapchainSupportDetails swapchainSupport = VulkanSwapchain::querySwapchainSupport(device, surface);
-		swapchainSuitable = !swapchainSupport.formats.empty() && !swapchainSupport.presentModes.empty();
-		std::cout <<"swapchainSuitable= " << swapchainSuitable << std::endl;
-	}
-	std::cout << "Before return in isPhysicalDeviceSuitable(VkPhysicalDevice device) " << std::endl;
-	return indices.isComplete() && extensionsSupported && swapchainSuitable;
-}
-
-QueueFamilyIndices YasEngine::findQueueFamilies(VkPhysicalDevice device)
-{
-	QueueFamilyIndices queueFamilyIndices;
-
-	uint32_t queueFamilyCount = 0;
-	vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
-
-	std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
-	vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
-
-	int i = 0;
-	for(const VkQueueFamilyProperties& queueFamily : queueFamilies)
-	{
-		if((queueFamily.queueCount > 0) && (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT))
-		{
-			queueFamilyIndices.graphicsFamily = i;
-		}
-
-		VkBool32 presentationFamilySupport = false;
-		vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface, &presentationFamilySupport);
-		
-		if(queueFamily.queueCount > 0 && presentationFamilySupport)
-		{
-			queueFamilyIndices.presentationFamily = i;
-		}
-		if(queueFamilyIndices.isComplete())
-		{
-			break;
-		}
-		i++;
-	}
-
-	return queueFamilyIndices;
-}
+//QueueFamilyIndices YasEngine::findQueueFamilies(VkPhysicalDevice device)
+//{
+//	QueueFamilyIndices queueFamilyIndices;
+//
+//	uint32_t queueFamilyCount = 0;
+//	vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
+//
+//	std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
+//	vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
+//
+//	int i = 0;
+//	for(const VkQueueFamilyProperties& queueFamily : queueFamilies)
+//	{
+//		if((queueFamily.queueCount > 0) && (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT))
+//		{
+//			queueFamilyIndices.graphicsFamily = i;
+//		}
+//
+//		VkBool32 presentationFamilySupport = false;
+//		vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface, &presentationFamilySupport);
+//		
+//		if(queueFamily.queueCount > 0 && presentationFamilySupport)
+//		{
+//			queueFamilyIndices.presentationFamily = i;
+//		}
+//		if(queueFamilyIndices.isComplete())
+//		{
+//			break;
+//		}
+//		i++;
+//	}
+//
+//	return queueFamilyIndices;
+//}
 
 void YasEngine::createCommandPool()
 {
-	QueueFamilyIndices queueFamilyIndices = findQueueFamilies(physicalDevice);
+	QueueFamilyIndices queueFamilyIndices = findQueueFamilies(vulkanDevice->physicalDevice, surface);
 	
 	VkCommandPoolCreateInfo commandPoolCreateInfo = {};
 	commandPoolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 	commandPoolCreateInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily;
 	commandPoolCreateInfo.flags = 0;
-	if(vkCreateCommandPool(vulkanLogicalDevice, &commandPoolCreateInfo, nullptr, &commandPool) != VK_SUCCESS)
+	if(vkCreateCommandPool(vulkanDevice->logicalDevice, &commandPoolCreateInfo, nullptr, &commandPool) != VK_SUCCESS)
 	{
 		throw std::runtime_error("Failed to create command pool!");
 	}
@@ -337,7 +344,7 @@ void YasEngine::createCommandBuffers()
 	commandBufferAllocateInfo.commandPool = commandPool;
 	commandBufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 	commandBufferAllocateInfo.commandBufferCount = (uint32_t)commandBuffers.size();
-	if(vkAllocateCommandBuffers(vulkanLogicalDevice, &commandBufferAllocateInfo, commandBuffers.data()) != VK_SUCCESS)
+	if(vkAllocateCommandBuffers(vulkanDevice->logicalDevice, &commandBufferAllocateInfo, commandBuffers.data()) != VK_SUCCESS)
 	{
 		throw std::runtime_error("Failed to allocatae command buffers.");
 	}
@@ -380,11 +387,11 @@ void YasEngine::createCommandBuffers()
 
 void YasEngine::drawFrame()
 {
-	vkWaitForFences(vulkanLogicalDevice, 1, &inFlightFences[currentFrame], VK_TRUE, std::numeric_limits<uint64_t>::max());
-	vkResetFences(vulkanLogicalDevice, 1, &inFlightFences[currentFrame]);
+	vkWaitForFences(vulkanDevice->logicalDevice, 1, &inFlightFences[currentFrame], VK_TRUE, std::numeric_limits<uint64_t>::max());
+	vkResetFences(vulkanDevice->logicalDevice, 1, &inFlightFences[currentFrame]);
 	
 uint32_t imageIndex;
-	vkAcquireNextImageKHR(vulkanLogicalDevice, vulkanSwapchain.swapchain, std::numeric_limits<uint64_t>::max(), imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
+	vkAcquireNextImageKHR(vulkanDevice->logicalDevice, vulkanSwapchain.swapchain, std::numeric_limits<uint64_t>::max(), imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
 	
 	VkSubmitInfo submitInfo = {};
 	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -438,9 +445,9 @@ void YasEngine::createSyncObjects()
 
 	for(size_t i = 0; i< MAX_FRAMES_IN_FLIGHT; i++)
 	{
-		if(vkCreateSemaphore(vulkanLogicalDevice, &semaphoreCreateInfo, nullptr, &imageAvailableSemaphores[i]) != VK_SUCCESS ||
-			vkCreateSemaphore(vulkanLogicalDevice, &semaphoreCreateInfo, nullptr, &renderFinishedSemaphores[i]) != VK_SUCCESS ||
-			vkCreateFence(vulkanLogicalDevice, &fenceCreateInfo, nullptr, &inFlightFences[i]) != VK_SUCCESS
+		if(vkCreateSemaphore(vulkanDevice->logicalDevice, &semaphoreCreateInfo, nullptr, &imageAvailableSemaphores[i]) != VK_SUCCESS ||
+			vkCreateSemaphore(vulkanDevice->logicalDevice, &semaphoreCreateInfo, nullptr, &renderFinishedSemaphores[i]) != VK_SUCCESS ||
+			vkCreateFence(vulkanDevice->logicalDevice, &fenceCreateInfo, nullptr, &inFlightFences[i]) != VK_SUCCESS
 		)
 		{
 			throw std::runtime_error("Failed to create semaphores for a frame.");
@@ -451,9 +458,14 @@ void YasEngine::createSyncObjects()
 
 void YasEngine::createLogicalDevice()
 {
-	//TODO refactor whole procedure
 
-	QueueFamilyIndices indices = findQueueFamilies(physicalDevice);
+	//void createLogicalDevice(const VulkanInstance& vulkanInstance, VkSurfaceKHR surface,
+	//	VkQueue graphicsQueue, VkQueue presentationQueue, bool enableValidationLayers);
+
+	vulkanDevice->createLogicalDevice(vulkanInstance, surface, graphicsQueue, presentationQueue, enableValidationLayers);
+
+
+	/*QueueFamilyIndices indices = findQueueFamilies(physicalDevice);
 	
 	std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
 	std::set<int> uniqueQueueFamilies = {indices.graphicsFamily, indices.presentationFamily};
@@ -497,7 +509,7 @@ void YasEngine::createLogicalDevice()
 	}
 
 	vkGetDeviceQueue(vulkanLogicalDevice, indices.graphicsFamily, 0, &graphicsQueue);
-	vkGetDeviceQueue(vulkanLogicalDevice, indices.presentationFamily, 0, &presentationQueue);
+	vkGetDeviceQueue(vulkanLogicalDevice, indices.presentationFamily, 0, &presentationQueue);*/
 }
 
 void YasEngine::createSurface()
@@ -518,13 +530,13 @@ void YasEngine::createSurface()
 
 void YasEngine::createSwapchain()
 {
-	QueueFamilyIndices queueIndices = findQueueFamilies(physicalDevice);
-	vulkanSwapchain.createSwapchain(physicalDevice, surface, vulkanLogicalDevice, queueIndices, windowWidth, windowHeight);
+	QueueFamilyIndices queueIndices = findQueueFamilies(vulkanDevice->physicalDevice, surface);
+	vulkanSwapchain.createSwapchain(vulkanDevice->physicalDevice, surface, vulkanDevice->logicalDevice, queueIndices, windowWidth, windowHeight);
 }
 
 void YasEngine::createImageViews()
 {
-	vulkanSwapchain.createImageViews(vulkanLogicalDevice);
+	vulkanSwapchain.createImageViews(vulkanDevice->logicalDevice);
 }
 
 void YasEngine::createRenderPass()
@@ -565,7 +577,7 @@ void YasEngine::createRenderPass()
 	renderPassInfo.dependencyCount = 0;
 	renderPassInfo.pDependencies = &subpassDependency;
 
-	if(vkCreateRenderPass(vulkanLogicalDevice, &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS)
+	if(vkCreateRenderPass(vulkanDevice->logicalDevice, &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS)
 	{
 		throw std::runtime_error("Failed to create renderpass.");
 	}
@@ -684,7 +696,7 @@ void YasEngine::createGraphicsPipeline()
 	pipelineLayoutInfo.pushConstantRangeCount = 0;
 	pipelineLayoutInfo.pPushConstantRanges = nullptr;
 
-	if(vkCreatePipelineLayout(vulkanLogicalDevice, &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS)
+	if(vkCreatePipelineLayout(vulkanDevice->logicalDevice, &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS)
 	{
 		throw std::runtime_error("Filed to create pipeline layout!");
 	}
@@ -706,13 +718,13 @@ void YasEngine::createGraphicsPipeline()
 	graphicsPiplineCreateInfo.subpass = 0;
 	graphicsPiplineCreateInfo.basePipelineHandle = VK_NULL_HANDLE;
 
-	if(vkCreateGraphicsPipelines(vulkanLogicalDevice, VK_NULL_HANDLE, 1, &graphicsPiplineCreateInfo, nullptr, &graphicsPipeline) != VK_SUCCESS)
+	if(vkCreateGraphicsPipelines(vulkanDevice->logicalDevice, VK_NULL_HANDLE, 1, &graphicsPiplineCreateInfo, nullptr, &graphicsPipeline) != VK_SUCCESS)
 	{
 		throw std::runtime_error("Failed to create graphics pipeline");
 	}
 
-	vkDestroyShaderModule(vulkanLogicalDevice, fragShaderModule, nullptr);
-	vkDestroyShaderModule(vulkanLogicalDevice, vertShaderModule, nullptr);
+	vkDestroyShaderModule(vulkanDevice->logicalDevice, fragShaderModule, nullptr);
+	vkDestroyShaderModule(vulkanDevice->logicalDevice, vertShaderModule, nullptr);
 }
 
 void YasEngine::createFramebuffers()
@@ -731,7 +743,7 @@ void YasEngine::createFramebuffers()
 		framebufferCreateInfo.height = vulkanSwapchain.swapchainExtent.height;
 		framebufferCreateInfo.layers = 1;
 
-		if(vkCreateFramebuffer(vulkanLogicalDevice, &framebufferCreateInfo, nullptr, &swapchainFramebuffers[i]) != VK_SUCCESS)
+		if(vkCreateFramebuffer(vulkanDevice->logicalDevice, &framebufferCreateInfo, nullptr, &swapchainFramebuffers[i]) != VK_SUCCESS)
 		{
 			throw std::runtime_error("Failed to create framebuffer.");
 		}
@@ -748,7 +760,7 @@ VkShaderModule YasEngine::createShaderModule(const std::vector<char>& code)
 	createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
 	
 	VkShaderModule shaderModule;
-	if(vkCreateShaderModule(vulkanLogicalDevice, &createInfo, nullptr, &shaderModule) != VK_SUCCESS)
+	if(vkCreateShaderModule(vulkanDevice->logicalDevice, &createInfo, nullptr, &shaderModule) != VK_SUCCESS)
 	{
 		throw std::runtime_error("Failed to create shader module");
 	}
@@ -757,30 +769,30 @@ VkShaderModule YasEngine::createShaderModule(const std::vector<char>& code)
 
 void YasEngine::destroySwapchain()
 {
-	vulkanSwapchain.destroySwapchain(vulkanLogicalDevice);
+	vulkanSwapchain.destroySwapchain(vulkanDevice->logicalDevice);
 }
 
 void YasEngine::cleanUp()
 {
 	for(size_t i = 0; i<MAX_FRAMES_IN_FLIGHT; i++)
 	{
-		vkDestroySemaphore(vulkanLogicalDevice, renderFinishedSemaphores[i], nullptr);
-		vkDestroySemaphore(vulkanLogicalDevice, imageAvailableSemaphores[i], nullptr);
-		vkDestroyFence(vulkanLogicalDevice, inFlightFences[i], nullptr);
+		vkDestroySemaphore(vulkanDevice->logicalDevice, renderFinishedSemaphores[i], nullptr);
+		vkDestroySemaphore(vulkanDevice->logicalDevice, imageAvailableSemaphores[i], nullptr);
+		vkDestroyFence(vulkanDevice->logicalDevice, inFlightFences[i], nullptr);
 	}
 
-	vkDestroyCommandPool(vulkanLogicalDevice, commandPool, nullptr);
+	vkDestroyCommandPool(vulkanDevice->logicalDevice, commandPool, nullptr);
 	for(VkFramebuffer framebuffer: swapchainFramebuffers)
 	{
-		vkDestroyFramebuffer(vulkanLogicalDevice, framebuffer, nullptr);
+		vkDestroyFramebuffer(vulkanDevice->logicalDevice, framebuffer, nullptr);
 	}
-	vkDestroyPipeline(vulkanLogicalDevice, graphicsPipeline, nullptr);
-	vkDestroyPipelineLayout(vulkanLogicalDevice, pipelineLayout, nullptr);
-	vkDestroyRenderPass(vulkanLogicalDevice, renderPass, nullptr);
+	vkDestroyPipeline(vulkanDevice->logicalDevice, graphicsPipeline, nullptr);
+	vkDestroyPipelineLayout(vulkanDevice->logicalDevice, pipelineLayout, nullptr);
+	vkDestroyRenderPass(vulkanDevice->logicalDevice, renderPass, nullptr);
 	
 	destroySwapchain();
 	
-	vkDestroyDevice(vulkanLogicalDevice, nullptr);
+	vkDestroyDevice(vulkanDevice->logicalDevice, nullptr);
 	
 	if(enableValidationLayers)
 	{

@@ -1,6 +1,8 @@
 #include"stdafx.hpp"
 #include"VulkanInstance.hpp"
 
+//-----------------------------------------------------------------------------|---------------------------------------|
+
 VulkanInstance::VulkanInstance()
 {
 	layersAndExtensions = new VulkanLayersAndExtensions();

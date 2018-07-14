@@ -4,7 +4,8 @@
 #include"VulkanSwapchain.hpp"
 #include"VariousTools.hpp"
 #include"VulkanInstance.hpp"
-
+#include"VulkanDevice.hpp"
+//-----------------------------------------------------------------------------|---------------------------------------|
 
 VkResult createDebugReportCallbackEXT
 (
@@ -16,16 +17,17 @@ VkResult createDebugReportCallbackEXT
 
 class YasEngine
 {
+
 	public:
 		YasEngine();
 		//Window variables and functionss
-		void run(HINSTANCE hInstance);
+		void							run(HINSTANCE hInstance);
 
 		//Vulkan variables and functions
-		static int				windowPositionX;
-		static int				windowPositionY;
-		static int				windowWidth;
-		static int				windowHeight;
+		static int						windowPositionX;
+		static int						windowPositionY;
+		static int						windowWidth;
+		static int						windowHeight;
 		
 		static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback
 			(
@@ -40,9 +42,9 @@ class YasEngine
 			);
 
 		#ifdef NDEBUG
-			const bool enableValidationLayers = false;
+			const bool					enableValidationLayers = false;
 		#else
-			const bool enableValidationLayers = true;
+			const bool					enableValidationLayers = true;
 		#endif
 
 	//public end
@@ -50,55 +52,55 @@ class YasEngine
 	private:
 
 		//Window variables and functions
-		void					createWindow(HINSTANCE hInstance);
-		void					mainLoop();
+		void							createWindow(HINSTANCE hInstance);
+		void							mainLoop();
 
-		HINSTANCE				application;
-		HWND					window;
+		HINSTANCE						application;
+		HWND							window;
 
 		//Both Window and Vulkan variable and functions
-		void					cleanUp();
+		void							cleanUp();
 
 		//Vulkan variables and functions
-		void					createVulkanInstance();
-		void					initializeVulkan();
+		void							createVulkanInstance();
+		void							initializeVulkan();
 
-		void					setupDebugCallback();
-		void					selectPhysicalDevice();
-		bool					isPhysicalDeviceSuitable(VkPhysicalDevice device);
-		void					createLogicalDevice();
-		void					createSurface();
-		void					createSwapchain();
-		void					destroySwapchain();
-		void					createImageViews();
-		void					createRenderPass();
-		void					createGraphicsPipeline();
-		void					createFramebuffers();
-		VkShaderModule			createShaderModule(const std::vector<char>& code);
-		QueueFamilyIndices		findQueueFamilies(VkPhysicalDevice device);
-		void					createCommandPool();
-		void					createCommandBuffers();
-		void					drawFrame();
-		void					createSyncObjects();
+		void							setupDebugCallback();
+		void							selectPhysicalDevice();
+		bool							isPhysicalDeviceSuitable(VkPhysicalDevice device);
+		void							createLogicalDevice();
+		void							createSurface();
+		void							createSwapchain();
+		void							destroySwapchain();
+		void							createImageViews();
+		void							createRenderPass();
+		void							createGraphicsPipeline();
+		void							createFramebuffers();
+		VkShaderModule					createShaderModule(const std::vector<char>& code);
+		void							createCommandPool();
+		void							createCommandBuffers();
+		void							drawFrame();
+		void							createSyncObjects();
 
-		size_t					currentFrame = 0;
-		std::vector<VkSemaphore> imageAvailableSemaphores;
-		std::vector<VkSemaphore> renderFinishedSemaphores;
-		std::vector<VkFence> inFlightFences;
-		VulkanInstance				vulkanInstance;
-		VkDebugReportCallbackEXT callback;
-		VkDevice				vulkanLogicalDevice;
-		VkSurfaceKHR			surface;
-		VkPhysicalDevice		physicalDevice = VK_NULL_HANDLE;
-		VkQueue					graphicsQueue;
-		VkQueue					presentationQueue;
-		VulkanSwapchain			vulkanSwapchain;
-		VkRenderPass			renderPass;
-		VkPipelineLayout		pipelineLayout;
-		VkPipeline				graphicsPipeline;
-		std::vector<VkFramebuffer> swapchainFramebuffers;
-		VkCommandPool			commandPool;
-		std::vector<VkCommandBuffer> commandBuffers;
+		size_t							currentFrame = 0;
+		std::vector<VkSemaphore>		imageAvailableSemaphores;
+		std::vector<VkSemaphore>		renderFinishedSemaphores;
+		std::vector<VkFence>			inFlightFences;
+		VulkanInstance					vulkanInstance;
+		VkDebugReportCallbackEXT		callback;
+		//VkDevice						vulkanLogicalDevice;
+		VkSurfaceKHR					surface;
+		//VkPhysicalDevice				physicalDevice = VK_NULL_HANDLE;
+		VulkanDevice*					vulkanDevice;
+		VkQueue							graphicsQueue;
+		VkQueue							presentationQueue;
+		VulkanSwapchain					vulkanSwapchain;
+		VkRenderPass					renderPass;
+		VkPipelineLayout				pipelineLayout;
+		VkPipeline						graphicsPipeline;
+		std::vector<VkFramebuffer>		swapchainFramebuffers;
+		VkCommandPool					commandPool;
+		std::vector<VkCommandBuffer>	commandBuffers;
 		
 	//private end
 };
