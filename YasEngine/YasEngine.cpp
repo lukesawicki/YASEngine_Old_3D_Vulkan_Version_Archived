@@ -203,108 +203,6 @@ void YasEngine::initializeVulkan()
 	createSyncObjects();
 }
 
-//bool YasEngine::checkForExtensionsSupport(const std::vector<const char*> &enabledExtensions, uint32_t numberOfEnabledExtensions)
-//{
-//
-//	bool allEnabletExtensionsAreAvailable = false;
-//	uint32_t numberOfAvailableExtensions = 0;
-//	vkEnumerateInstanceExtensionProperties(nullptr, &numberOfAvailableExtensions, nullptr);
-//	
-//	std::vector<VkExtensionProperties> availableExtensions(static_cast<size_t>(numberOfAvailableExtensions));
-//	vkEnumerateInstanceExtensionProperties(nullptr, &numberOfAvailableExtensions, availableExtensions.data());
-//	int extensionsCounter = 0;
-//
-//	for(int i=0; i<static_cast<int>(numberOfEnabledExtensions); i++)
-//	{
-//		for(int j=0; j<static_cast<int>(availableExtensions.size()); j++)
-//		{
-//			if(strcmp(enabledExtensions[i], availableExtensions[j].extensionName) == 0)
-//			{
-//				++extensionsCounter;
-//			}
-//			if(extensionsCounter == numberOfEnabledExtensions)
-//			{
-//				return true;
-//			}
-//		}
-//	}
-//	
-//	return false;
-//}
-
-//bool YasEngine::checkPhysicalDeviceExtensionSupport(VkPhysicalDevice device)
-//{
-//	uint32_t extensionsCount;
-//	vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionsCount, nullptr);
-//	
-//	std::vector<VkExtensionProperties> availableExtensions(extensionsCount);
-//	vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionsCount, availableExtensions.data());
-//	
-//	for(const char* deviceExtensionName: deviceExtensions)
-//	{
-//		bool extensionFound = false;
-//
-//		for(const VkExtensionProperties& availableExt: availableExtensions)
-//		{
-//			if(strcmp(deviceExtensionName, availableExt.extensionName) == 0)
-//			{
-//				extensionFound = true;
-//				break;
-//			}
-//		}
-//		if(!extensionFound)
-//		{
-//			return false;
-//		}
-//	}
-//
-//	return true;
-//}
-
-//bool YasEngine::checkValidationLayerSupport()
-//{
-//	uint32_t layersCount;
-//	vkEnumerateInstanceLayerProperties(&layersCount, nullptr);
-//	
-//	std::vector<VkLayerProperties> availableLayers(layersCount);
-//	vkEnumerateInstanceLayerProperties(&layersCount, availableLayers.data());
-//	
-//	for(const char* layerName: validationLayers)
-//	{
-//		bool layerFound = false;
-//		// Attention
-//		for(const VkLayerProperties& layerProperties: availableLayers)
-//		{
-//			if(strcmp(layerName, layerProperties.layerName) == 0)
-//			{
-//				layerFound = true;
-//				break;
-//			}
-//		}
-//		if(!layerFound)
-//		{
-//			return false;
-//		}
-//	}
-//	return true;
-//}
-
-
-
-//std::vector<const char*> YasEngine::getRequiredExtensions()
-//{
-//	std::vector<const char*> allRequiredExtenstions = std::vector<const char*>();
-//
-//	allRequiredExtenstions.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
-//	allRequiredExtenstions.push_back(VK_KHR_WIN32_SURFACE_EXTENSION_NAME);
-//
-//	if(enableValidationLayers)
-//	{
-//		allRequiredExtenstions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
-//	}
-//	return allRequiredExtenstions;
-//}
-
 void YasEngine::createVulkanInstance()
 {
 	vulkanInstance.createVulkanInstance(enableValidationLayers);
@@ -320,12 +218,8 @@ void YasEngine::selectPhysicalDevice()
 	std::vector<VkPhysicalDevice> physicalDevices(deviceCount);
 	vkEnumeratePhysicalDevices(vulkanInstance.instance, &deviceCount, physicalDevices.data());
 
-	//std::cout << " vulkanInstance.instance << std::endl;
-	YasLog<VkInstance>::log("YasLog:  YasEngine::selectPhysicalDevice() ", " - " ,vulkanInstance.instance);
-
 	for(const VkPhysicalDevice& device: physicalDevices)
 	{
-		YasLog<std::string>::log("after isPhysicalDeviceSuitable\nin YasEngine::selectPhysicalDevice()", "", "");
 		if(isPhysicalDeviceSuitable(device))
 		{
 			physicalDevice = device;

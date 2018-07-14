@@ -50,5 +50,4 @@ void VulkanInstance::createVulkanInstance(bool areValidationLayersEnabled)
 	{
 		throw std::runtime_error("Failed to create Vulkan instance!");
 	}
-	YasLog<VkInstance>::log("YasLog: After creating vulkan instance", " - ", instance);
 }

@@ -1,7 +1,6 @@
 #ifndef VULKANLAYERSANDEXTENSIONS_HPP
 #define VULKANLAYERSANDEXTENSIONS_HPP
 #include"stdafx.hpp"
-#include"YasLog.hpp"
 
 class VulkanLayersAndExtensions
 {

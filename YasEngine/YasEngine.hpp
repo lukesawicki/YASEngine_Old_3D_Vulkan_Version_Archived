@@ -4,7 +4,6 @@
 #include"VulkanSwapchain.hpp"
 #include"VariousTools.hpp"
 #include"VulkanInstance.hpp"
-#include"YasLog.hpp"
 
 
 VkResult createDebugReportCallbackEXT
@@ -63,10 +62,6 @@ class YasEngine
 		//Vulkan variables and functions
 		void					createVulkanInstance();
 		void					initializeVulkan();
-		//std::vector<const char*> getRequiredExtensions();
-		bool					checkForExtensionsSupport(const std::vector<const char*> &enabledExtensions, uint32_t numberOfEnabledExtensions);
-		//bool					checkPhysicalDeviceExtensionSupport(VkPhysicalDevice physicalDevice); // moze lepiej przez reerencje
-		//bool					checkValidationLayerSupport();
 
 		void					setupDebugCallback();
 		void					selectPhysicalDevice();
@@ -91,7 +86,6 @@ class YasEngine
 		std::vector<VkSemaphore> renderFinishedSemaphores;
 		std::vector<VkFence> inFlightFences;
 		VulkanInstance				vulkanInstance;
-		//VkInstance				vulkanInstance;
 		VkDebugReportCallbackEXT callback;
 		VkDevice				vulkanLogicalDevice;
 		VkSurfaceKHR			surface;
@@ -105,16 +99,6 @@ class YasEngine
 		std::vector<VkFramebuffer> swapchainFramebuffers;
 		VkCommandPool			commandPool;
 		std::vector<VkCommandBuffer> commandBuffers;
-		
-		//const std::vector<const char*> validationLayers =
-		//{
-		//	"VK_LAYER_LUNARG_standard_validation"	
-		//};
-
-		//const std::vector<const char*> deviceExtensions =
-		//{
-		//	VK_KHR_SWAPCHAIN_EXTENSION_NAME
-		//};
 		
 	//private end
 };
