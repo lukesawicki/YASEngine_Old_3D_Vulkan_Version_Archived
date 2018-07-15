@@ -30,8 +30,6 @@ class VulkanSwapchain
 		VkPresentModeKHR				chooseSwapPresentMode(const std::vector<VkPresentModeKHR> availablePresentModes);
 		VkExtent2D						chooseSwapExtent(const VkSurfaceCapabilitiesKHR surfaceCapabilities,
 											int windowWidth, int windowHeight);
-
-		
 };
 
 #endif

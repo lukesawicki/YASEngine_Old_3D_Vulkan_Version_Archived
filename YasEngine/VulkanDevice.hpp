@@ -1,7 +1,7 @@
 #ifndef VULKANDEVICE_HPP
 #define VULKANDEVICE_HPP
 #include"stdafx.hpp"
-#include"VariousTools.hpp"
+#include"VulkanDevice.hpp"
 #include"VulkanInstance.hpp"
 
 //-----------------------------------------------------------------------------|---------------------------------------|

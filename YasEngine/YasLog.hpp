@@ -13,7 +13,7 @@ class YasLog
 			std::cout << prefix << additionalText << loggedVariable << std::endl;
 		}
 	private:
-		
+
 };
 
 #endif
