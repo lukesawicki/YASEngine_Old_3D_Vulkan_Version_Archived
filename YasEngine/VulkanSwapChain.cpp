@@ -4,6 +4,8 @@
 
 //-----------------------------------------------------------------------------|---------------------------------------|
 
+
+
 SwapchainSupportDetails	VulkanSwapchain::querySwapchainSupport(VkPhysicalDevice device, VkSurfaceKHR surface)
 {
 	SwapchainSupportDetails swapchainDetails;
@@ -67,7 +69,7 @@ VkPresentModeKHR VulkanSwapchain::chooseSwapPresentMode(const std::vector<VkPres
 	return chosenPresentMode;
 }
 
-VkExtent2D	VulkanSwapchain::chooseSwapExtent(const VkSurfaceCapabilitiesKHR surfaceCapabilities, int windowWidth, int windowHeight)
+VkExtent2D	VulkanSwapchain::chooseSwapExtent(const VkSurfaceCapabilitiesKHR surfaceCapabilities, HWND& window)
 {
 	if(surfaceCapabilities.currentExtent.width != std::numeric_limits<uint32_t>::max())
 	{
@@ -75,19 +77,22 @@ VkExtent2D	VulkanSwapchain::chooseSwapExtent(const VkSurfaceCapabilitiesKHR surf
 	}
 	else
 	{		
-		VkExtent2D actualExtent = {static_cast<uint32_t>(windowWidth), static_cast<uint32_t>(windowHeight)};
+
+		RECT windowClientRect;
+		GetClientRect(window,&windowClientRect);
+		VkExtent2D actualExtent = {static_cast<uint32_t>(windowClientRect.right - 1), static_cast<uint32_t>(windowClientRect.bottom - 1)};
 		actualExtent.width = std::clamp(actualExtent.width, surfaceCapabilities.minImageExtent.width, surfaceCapabilities.maxImageExtent.width);
 		actualExtent.height = std::clamp(actualExtent.height, surfaceCapabilities.minImageExtent.height, surfaceCapabilities.maxImageExtent.height);		
 		return actualExtent;
 	}
 }
 
-void VulkanSwapchain::createSwapchain(VkPhysicalDevice& physicalDevice, VkSurfaceKHR& surface, VkDevice& vulkanLogicalDevice, QueueFamilyIndices& queueIndices, int windowWidth, int windowHeight)
+void VulkanSwapchain::createSwapchain(VkPhysicalDevice& physicalDevice, VkSurfaceKHR& surface, VkDevice& vulkanLogicalDevice, QueueFamilyIndices& queueIndices, HWND& window)
 {
 	SwapchainSupportDetails swapchainSupport = querySwapchainSupport(physicalDevice, surface);
 	VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(swapchainSupport.formats);
 	VkPresentModeKHR presentMode = chooseSwapPresentMode(swapchainSupport.presentModes);
-	VkExtent2D extent = chooseSwapExtent(swapchainSupport.capabilities, windowWidth, windowHeight);
+	VkExtent2D extent = chooseSwapExtent(swapchainSupport.capabilities, window);
 	uint32_t imageCount = swapchainSupport.capabilities.minImageCount + 1;
 	if(swapchainSupport.capabilities.maxImageCount > 0 && imageCount > swapchainSupport.capabilities.maxImageCount) {
 		imageCount = swapchainSupport.capabilities.maxImageCount;

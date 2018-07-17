@@ -9,11 +9,15 @@ int YasEngine::windowWidth					= 640;
 int YasEngine::windowHeight					= 480;
 
 const int MAX_FRAMES_IN_FLIGHT = 2;
+bool YasEngine::framebufferResized = false;
 
 LRESULT CALLBACK windowProcedure(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	switch(message)
 	{
+		case WM_DISPLAYCHANGE:
+			YasEngine::framebufferResized = true;
+			break;
 		case WM_DESTROY:
 			PostQuitMessage(0);
 			return(0);
@@ -281,11 +285,24 @@ void YasEngine::createCommandBuffers()
 void YasEngine::drawFrame()
 {
 	vkWaitForFences(vulkanDevice->logicalDevice, 1, &inFlightFences[currentFrame], VK_TRUE, std::numeric_limits<uint64_t>::max());
-	vkResetFences(vulkanDevice->logicalDevice, 1, &inFlightFences[currentFrame]);
 	
-uint32_t imageIndex;
-	vkAcquireNextImageKHR(vulkanDevice->logicalDevice, vulkanSwapchain.swapchain, std::numeric_limits<uint64_t>::max(), imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
 	
+	uint32_t imageIndex;
+	VkResult result = vkAcquireNextImageKHR(vulkanDevice->logicalDevice, vulkanSwapchain.swapchain, std::numeric_limits<uint64_t>::max(), imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
+	
+	if(result == VK_ERROR_OUT_OF_DATE_KHR)
+	{
+		recreateSwapchain();
+		return;
+	}
+	else
+	{
+		if(result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
+		{
+			throw std::runtime_error("Failed to acquire swap chain image!");
+		}
+	}
+
 	VkSubmitInfo submitInfo = {};
 	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
@@ -300,6 +317,8 @@ uint32_t imageIndex;
 	VkSemaphore signalSemaphores[] = {renderFinishedSemaphores[currentFrame]};
 	submitInfo.signalSemaphoreCount = 1;
 	submitInfo.pSignalSemaphores = signalSemaphores;
+
+	vkResetFences(vulkanDevice->logicalDevice, 1, &inFlightFences[currentFrame]);
 
 	if(vkQueueSubmit(graphicsQueue, 1, &submitInfo, inFlightFences[currentFrame]) != VK_SUCCESS)
 	{
@@ -316,9 +335,22 @@ uint32_t imageIndex;
 	presentInfoKhr.swapchainCount = 1;
 	presentInfoKhr.pSwapchains = swapChains;
 	presentInfoKhr.pImageIndices = &imageIndex;
-	presentInfoKhr.pResults = nullptr;
 
-	vkQueuePresentKHR(presentationQueue, &presentInfoKhr);
+
+	result = vkQueuePresentKHR(presentationQueue, &presentInfoKhr);
+
+	if(result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || YasEngine::framebufferResized)
+	{
+		YasEngine::framebufferResized = false;
+		recreateSwapchain();
+	}
+	else
+	{
+		if(result != VK_SUCCESS)
+		{
+			throw std::runtime_error("Failed to presesnt swap chain image.");
+		}
+	}
 
 	currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 }
@@ -373,12 +405,43 @@ void YasEngine::createSurface()
 void YasEngine::createSwapchain()
 {
 	QueueFamilyIndices queueIndices = findQueueFamilies(vulkanDevice->physicalDevice, surface);
-	vulkanSwapchain.createSwapchain(vulkanDevice->physicalDevice, surface, vulkanDevice->logicalDevice, queueIndices, windowWidth, windowHeight);
+	vulkanSwapchain.createSwapchain(vulkanDevice->physicalDevice, surface, vulkanDevice->logicalDevice, queueIndices, window);
+}
+
+void YasEngine::recreateSwapchain()
+{
+	vkDeviceWaitIdle(vulkanDevice->logicalDevice);
+	cleanupSwapchain();
+	createSwapchain();
+	createImageViews();
+	createRenderPass();
+	createGraphicsPipeline();
+	createFramebuffers();
+	createCommandBuffers();
 }
 
 void YasEngine::createImageViews()
 {
 	vulkanSwapchain.createImageViews(vulkanDevice->logicalDevice);
+}
+
+void YasEngine::cleanupSwapchain()
+{
+	for(size_t i=0; i < swapchainFramebuffers.size(); i++)
+	{
+		vkDestroyFramebuffer(vulkanDevice->logicalDevice, swapchainFramebuffers[i], nullptr);
+	}
+
+	vkFreeCommandBuffers(vulkanDevice->logicalDevice, commandPool, static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data());
+	vkDestroyPipeline(vulkanDevice->logicalDevice, graphicsPipeline, nullptr);
+	vkDestroyRenderPass(vulkanDevice->logicalDevice, renderPass, nullptr);
+
+	for(size_t i=0; i<vulkanSwapchain.swapchainImageViews.size(); i++)
+	{
+		vkDestroyImageView(vulkanDevice->logicalDevice, vulkanSwapchain.swapchainImageViews[i], nullptr);
+	}
+	
+	vkDestroySwapchainKHR(vulkanDevice->logicalDevice, vulkanSwapchain.swapchain, nullptr);
 }
 
 void YasEngine::createRenderPass()
@@ -615,6 +678,8 @@ void YasEngine::destroySwapchain()
 
 void YasEngine::cleanUp()
 {
+	cleanupSwapchain();	
+
 	for(size_t i = 0; i<MAX_FRAMES_IN_FLIGHT; i++)
 	{
 		vkDestroySemaphore(vulkanDevice->logicalDevice, renderFinishedSemaphores[i], nullptr);

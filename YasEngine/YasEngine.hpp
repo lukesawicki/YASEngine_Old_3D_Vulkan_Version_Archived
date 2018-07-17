@@ -47,6 +47,7 @@ class YasEngine
 			const bool					enableValidationLayers = true;
 		#endif
 
+		static bool framebufferResized;
 	//public end
 
 	private:
@@ -70,6 +71,8 @@ class YasEngine
 		void							createLogicalDevice();
 		void							createSurface();
 		void							createSwapchain();
+		void							recreateSwapchain();
+		void							cleanupSwapchain();
 		void							destroySwapchain();
 		void							createImageViews();
 		void							createRenderPass();
@@ -82,6 +85,7 @@ class YasEngine
 		void							createSyncObjects();
 
 		size_t							currentFrame = 0;
+		
 		std::vector<VkSemaphore>		imageAvailableSemaphores;
 		std::vector<VkSemaphore>		renderFinishedSemaphores;
 		std::vector<VkFence>			inFlightFences;
