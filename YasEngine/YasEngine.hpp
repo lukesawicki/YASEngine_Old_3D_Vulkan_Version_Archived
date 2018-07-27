@@ -81,11 +81,12 @@ class YasEngine
 		VkShaderModule					createShaderModule(const std::vector<char>& code);
 		void							createCommandPool();
 		void							createCommandBuffers();
+		void							createVertexBuffer();
+		uint32_t						findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags memoryPropertiesFlags);
+
 		void							drawFrame();
 		void							createSyncObjects();
-
 		size_t							currentFrame = 0;
-		
 		std::vector<VkSemaphore>		imageAvailableSemaphores;
 		std::vector<VkSemaphore>		renderFinishedSemaphores;
 		std::vector<VkFence>			inFlightFences;
@@ -102,7 +103,14 @@ class YasEngine
 		std::vector<VkFramebuffer>		swapchainFramebuffers;
 		VkCommandPool					commandPool;
 		std::vector<VkCommandBuffer>	commandBuffers;
+		VkBuffer						vertexBuffer;
+		VkDeviceMemory					vertexBufferMemory;
 		
+		const std::vector<Vertex> vertices = {
+			{{0.0F, -0.05F}, {1.0F, 2.0F, 0.0F}},
+			{{0.5F, 0.5F}, {0.0F, 1.0F, 0.0F}},
+			{{-0.5F, 0.5F}, {0.0F, 0.0F, 1.0F}}
+		};
 	//private end
 };
 #endif

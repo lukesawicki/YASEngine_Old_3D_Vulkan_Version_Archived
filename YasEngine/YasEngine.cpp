@@ -204,6 +204,7 @@ void YasEngine::initializeVulkan()
 	createGraphicsPipeline();
 	createFramebuffers();
 	createCommandPool();
+	createVertexBuffer();
 	createCommandBuffers();
 	createSyncObjects();
 }
@@ -232,6 +233,55 @@ void YasEngine::createCommandPool()
 	}
 }
 
+void YasEngine::createVertexBuffer()
+{
+	VkBufferCreateInfo bufferCreateInfo = {};
+	bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+	bufferCreateInfo.size = sizeof(vertices[0]) * vertices.size();
+	bufferCreateInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+	bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+	
+	if(vkCreateBuffer(vulkanDevice->logicalDevice, &bufferCreateInfo, nullptr, &vertexBuffer) != VK_SUCCESS)
+	{
+		throw std::runtime_error("Failed to create vertex buffer.");
+	}
+
+	VkMemoryRequirements memoryRequirements;
+	vkGetBufferMemoryRequirements(vulkanDevice->logicalDevice, vertexBuffer, &memoryRequirements);
+
+	VkMemoryAllocateInfo memoryAllocateInfo = {};
+	memoryAllocateInfo.sType =VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+	memoryAllocateInfo.allocationSize = memoryRequirements.size;
+	memoryAllocateInfo.memoryTypeIndex = findMemoryType(memoryRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+
+	if(vkAllocateMemory(vulkanDevice->logicalDevice, &memoryAllocateInfo, nullptr, &vertexBufferMemory) != VK_SUCCESS)
+	{
+		throw std::runtime_error("Failed to allocate vertex buffer memory!");
+	}
+
+	vkBindBufferMemory(vulkanDevice->logicalDevice, vertexBuffer, vertexBufferMemory, 0);
+
+	void* data;
+	vkMapMemory(vulkanDevice->logicalDevice, vertexBufferMemory, 0, bufferCreateInfo.size, 0, &data);
+	memcpy(data, vertices.data(), (size_t)bufferCreateInfo.size);
+	vkUnmapMemory(vulkanDevice->logicalDevice, vertexBufferMemory);
+}
+
+uint32_t YasEngine::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags memoryPropertiesFlags)
+{
+	VkPhysicalDeviceMemoryProperties physicalDeviceMemoryProperties;
+	vkGetPhysicalDeviceMemoryProperties(vulkanDevice->physicalDevice, &physicalDeviceMemoryProperties);
+	
+	for(uint32_t i=0; i<physicalDeviceMemoryProperties.memoryTypeCount; i++)
+	{
+		if(typeFilter & (1 << i) && (physicalDeviceMemoryProperties.memoryTypes[i].propertyFlags & memoryPropertiesFlags) == memoryPropertiesFlags)
+		{
+			return i;
+		}
+	}
+	throw std::runtime_error("Filed to find suitable memory type.");
+}
+
 void YasEngine::createCommandBuffers()
 {
 	commandBuffers.resize(swapchainFramebuffers.size());
@@ -241,6 +291,7 @@ void YasEngine::createCommandBuffers()
 	commandBufferAllocateInfo.commandPool = commandPool;
 	commandBufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 	commandBufferAllocateInfo.commandBufferCount = (uint32_t)commandBuffers.size();
+
 	if(vkAllocateCommandBuffers(vulkanDevice->logicalDevice, &commandBufferAllocateInfo, commandBuffers.data()) != VK_SUCCESS)
 	{
 		throw std::runtime_error("Failed to allocatae command buffers.");
@@ -271,7 +322,13 @@ void YasEngine::createCommandBuffers()
 		
 		vkCmdBeginRenderPass(commandBuffers[i], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 		vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
-		vkCmdDraw(commandBuffers[i], 3, 1, 0, 0);
+		
+		VkBuffer vertexBuffers[] = {vertexBuffer};
+		VkDeviceSize offsets[] = {0};
+
+		vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, vertexBuffers, offsets);
+		// ponizej wywala sie w trakcie wykonania
+		vkCmdDraw(commandBuffers[i], static_cast<uint32_t>(vertices.size()), 1, 0, 0);
 		vkCmdEndRenderPass(commandBuffers[i]);
 		if(vkEndCommandBuffer(commandBuffers[i]) != VK_SUCCESS)
 		{
@@ -410,7 +467,16 @@ void YasEngine::createSwapchain()
 
 void YasEngine::recreateSwapchain()
 {
+	//int width = 0;
+	//int heidht = 0;
+
+	//while(width == 0 || height = 0)
+	//{
+	//	
+	//}
+
 	vkDeviceWaitIdle(vulkanDevice->logicalDevice);
+
 	cleanupSwapchain();
 	createSwapchain();
 	createImageViews();
@@ -512,16 +578,15 @@ void YasEngine::createGraphicsPipeline()
 	fragShaderStageInfo.pName = "main";
 
 	VkPipelineShaderStageCreateInfo shaderStages[] = {vertShaderStageInfo, fragShaderStageInfo};
-	// For now vertex data are hard coded in vertex shader so
-	// VkPiplineVertexInputStateCreateInfo is specified that there is no
-	// vertex data to load for now.
+	auto bindingDescription = Vertex::getBindingDescription();
+	auto attributeDescriptions = Vertex::getAttributeDescriptions();
 
 	VkPipelineVertexInputStateCreateInfo vertexInputInfo = {};
 	vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-	vertexInputInfo.vertexBindingDescriptionCount = 0;
-	vertexInputInfo.pVertexBindingDescriptions = nullptr;
-	vertexInputInfo.vertexAttributeDescriptionCount = 0;
-	vertexInputInfo.pVertexAttributeDescriptions = nullptr;
+	vertexInputInfo.vertexBindingDescriptionCount = 1;
+	vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
+	vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
+	vertexInputInfo.pVertexAttributeDescriptions =  attributeDescriptions.data();
 
 	VkPipelineInputAssemblyStateCreateInfo inputAssembly = {};
 	inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -680,6 +745,8 @@ void YasEngine::cleanUp()
 {
 	cleanupSwapchain();	
 
+	vkDestroyBuffer(vulkanDevice->logicalDevice, vertexBuffer, nullptr);
+	vkFreeMemory(vulkanDevice->logicalDevice, vertexBufferMemory, nullptr);
 	for(size_t i = 0; i<MAX_FRAMES_IN_FLIGHT; i++)
 	{
 		vkDestroySemaphore(vulkanDevice->logicalDevice, renderFinishedSemaphores[i], nullptr);
@@ -688,24 +755,16 @@ void YasEngine::cleanUp()
 	}
 
 	vkDestroyCommandPool(vulkanDevice->logicalDevice, commandPool, nullptr);
-	for(VkFramebuffer framebuffer: swapchainFramebuffers)
-	{
-		vkDestroyFramebuffer(vulkanDevice->logicalDevice, framebuffer, nullptr);
-	}
-	vkDestroyPipeline(vulkanDevice->logicalDevice, graphicsPipeline, nullptr);
-	vkDestroyPipelineLayout(vulkanDevice->logicalDevice, pipelineLayout, nullptr);
-	vkDestroyRenderPass(vulkanDevice->logicalDevice, renderPass, nullptr);
-	
-	destroySwapchain();
-	
+
 	vkDestroyDevice(vulkanDevice->logicalDevice, nullptr);
-	
+
 	if(enableValidationLayers)
 	{
 		destroyDebugReportCallbackEXT(vulkanInstance.instance, callback, nullptr);
 	}
+
 	vkDestroySurfaceKHR(vulkanInstance.instance, surface, nullptr);
-	//Second parameter is optional allocator which for this version will not be used.
+
 	vkDestroyInstance(vulkanInstance.instance, nullptr);
 	DestroyWindow(window);
 }
