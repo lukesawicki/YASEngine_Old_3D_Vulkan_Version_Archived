@@ -7,6 +7,7 @@
 #include"VulkanDevice.hpp"
 //-----------------------------------------------------------------------------|---------------------------------------|
 
+
 VkResult createDebugReportCallbackEXT
 (
 	VkInstance& vulkanInstance,
@@ -107,7 +108,7 @@ class YasEngine
 		VkDeviceMemory					vertexBufferMemory;
 		
 		const std::vector<Vertex> vertices = {
-			{{0.0F, -0.05F}, {1.0F, 2.0F, 0.0F}},
+			{{0.0F, -0.05F}, {1.0F, 0.0F, 0.0F}},
 			{{0.5F, 0.5F}, {0.0F, 1.0F, 0.0F}},
 			{{-0.5F, 0.5F}, {0.0F, 0.0F, 1.0F}}
 		};
