@@ -84,9 +84,11 @@ class YasEngine
 		void							createCommandBuffers();
 		void							createVertexBuffer();
 		uint32_t						findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags memoryPropertiesFlags);
-
 		void							drawFrame();
 		void							createSyncObjects();
+		void							createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
+		void							copyBuffer(VkBuffer sourceBuffer, VkBuffer destinationBuffer, VkDeviceSize deviceSize);
+
 		size_t							currentFrame = 0;
 		std::vector<VkSemaphore>		imageAvailableSemaphores;
 		std::vector<VkSemaphore>		renderFinishedSemaphores;

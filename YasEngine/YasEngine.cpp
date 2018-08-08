@@ -235,36 +235,25 @@ void YasEngine::createCommandPool()
 
 void YasEngine::createVertexBuffer()
 {
-	VkBufferCreateInfo bufferCreateInfo = {};
-	bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-	bufferCreateInfo.size = sizeof(vertices[0]) * vertices.size();
-	bufferCreateInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
-	bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-	
-	if(vkCreateBuffer(vulkanDevice->logicalDevice, &bufferCreateInfo, nullptr, &vertexBuffer) != VK_SUCCESS)
-	{
-		throw std::runtime_error("Failed to create vertex buffer.");
-	}
+	//VkDeviceSize is alias to uint64_t
+	VkDeviceSize vertexBufferSize = sizeof(vertices[0]) * vertices.size();
 
-	VkMemoryRequirements memoryRequirements;
-	vkGetBufferMemoryRequirements(vulkanDevice->logicalDevice, vertexBuffer, &memoryRequirements);
-
-	VkMemoryAllocateInfo memoryAllocateInfo = {};
-	memoryAllocateInfo.sType =VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-	memoryAllocateInfo.allocationSize = memoryRequirements.size;
-	memoryAllocateInfo.memoryTypeIndex = findMemoryType(memoryRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-
-	if(vkAllocateMemory(vulkanDevice->logicalDevice, &memoryAllocateInfo, nullptr, &vertexBufferMemory) != VK_SUCCESS)
-	{
-		throw std::runtime_error("Failed to allocate vertex buffer memory!");
-	}
-
-	vkBindBufferMemory(vulkanDevice->logicalDevice, vertexBuffer, vertexBufferMemory, 0);
+	VkBuffer stagingBuffer;
+	VkDeviceMemory stagingBufferMemory;
+	createBuffer(vertexBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+		stagingBuffer, stagingBufferMemory);
 
 	void* data;
-	vkMapMemory(vulkanDevice->logicalDevice, vertexBufferMemory, 0, bufferCreateInfo.size, 0, &data);
-	memcpy(data, vertices.data(), (size_t)bufferCreateInfo.size);
-	vkUnmapMemory(vulkanDevice->logicalDevice, vertexBufferMemory);
+	vkMapMemory(vulkanDevice->logicalDevice, stagingBufferMemory, 0, vertexBufferSize, 0, &data);
+	memcpy(data, vertices.data(), (size_t)vertexBufferSize);
+	vkUnmapMemory(vulkanDevice->logicalDevice, stagingBufferMemory);
+
+	createBuffer(vertexBufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vertexBuffer, vertexBufferMemory);
+
+	copyBuffer(stagingBuffer, vertexBuffer, vertexBufferSize);
+
+	vkDestroyBuffer(vulkanDevice->logicalDevice, stagingBuffer, nullptr);
+	vkFreeMemory(vulkanDevice->logicalDevice, stagingBufferMemory, nullptr);
 }
 
 uint32_t YasEngine::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags memoryPropertiesFlags)
@@ -436,6 +425,73 @@ void YasEngine::createSyncObjects()
 		}
 	}
 
+}
+
+void YasEngine::createBuffer(VkDeviceSize size,VkBufferUsageFlags usage,VkMemoryPropertyFlags properties,VkBuffer & buffer,VkDeviceMemory & bufferMemory)
+{
+	VkBufferCreateInfo bufferCreateInfo = {};
+	bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+	bufferCreateInfo.size = size;
+	bufferCreateInfo.usage = usage;
+	bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+	
+	if(vkCreateBuffer(vulkanDevice->logicalDevice, &bufferCreateInfo, nullptr, &buffer) != VK_SUCCESS)
+	{
+		throw std::runtime_error("Failed to create vertex buffer.");
+	}
+
+	VkMemoryRequirements memoryRequirements;
+	vkGetBufferMemoryRequirements(vulkanDevice->logicalDevice, buffer, &memoryRequirements);
+
+	VkMemoryAllocateInfo memoryAllocateInfo = {};
+	memoryAllocateInfo.sType =VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+	memoryAllocateInfo.allocationSize = memoryRequirements.size;
+	memoryAllocateInfo.memoryTypeIndex = findMemoryType(memoryRequirements.memoryTypeBits, properties);
+
+	if(vkAllocateMemory(vulkanDevice->logicalDevice, &memoryAllocateInfo, nullptr, &bufferMemory) != VK_SUCCESS)
+	{
+		throw std::runtime_error("Failed to allocate vertex buffer memory!");
+	}
+
+	vkBindBufferMemory(vulkanDevice->logicalDevice, buffer, bufferMemory, 0);
+
+}
+
+void YasEngine::copyBuffer(VkBuffer sourceBuffer,VkBuffer destinationBuffer,VkDeviceSize deviceSize)
+{
+	VkCommandBufferAllocateInfo commandBufferAllocateInfo = {};
+	commandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+	commandBufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+	commandBufferAllocateInfo.commandPool = commandPool;
+	commandBufferAllocateInfo.commandBufferCount = 1;
+
+	VkCommandBuffer commandBuffer;
+	vkAllocateCommandBuffers(vulkanDevice->logicalDevice, &commandBufferAllocateInfo, &commandBuffer);
+
+	VkCommandBufferBeginInfo commandBufferBeginInfo = {};
+	commandBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+	commandBufferBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+	vkBeginCommandBuffer(commandBuffer, &commandBufferBeginInfo);
+	
+	VkBufferCopy bufferCopyRegion = {};
+	bufferCopyRegion.srcOffset = 0;
+	bufferCopyRegion.dstOffset = 0;
+	bufferCopyRegion.size = deviceSize;
+	vkCmdCopyBuffer(commandBuffer, sourceBuffer, destinationBuffer, 1, &bufferCopyRegion);
+	
+	vkEndCommandBuffer(commandBuffer);
+
+	VkSubmitInfo submitInfo = {};
+	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+	submitInfo.commandBufferCount = 1;
+	submitInfo.pCommandBuffers = &commandBuffer;
+
+	vkQueueSubmit(graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
+	vkQueueWaitIdle(graphicsQueue);
+
+	vkFreeCommandBuffers(vulkanDevice->logicalDevice, commandPool, 1, &commandBuffer);
+	
 }
 
 void YasEngine::createLogicalDevice()
