@@ -1,6 +1,7 @@
 #ifndef VARIOUSTOOLS_HPP
 #define VARIOUSTOOLS_HPP
 #include"stdafx.hpp"
+#include"YasMathLib.hpp"
 
 
 //-----------------------------------------------------------------------------|---------------------------------------|
@@ -106,25 +107,25 @@ class TimePicker
 		}
 };
 
-	struct vec2
-	{
-		float x;
-		float y;
-	};
+	//struct vec2
+	//{
+	//	float x;
+	//	float y;
+	//};
 
-	struct vec3
-	{
-		float x;
-		float y;
-		float z;
-	};
+	//struct vec3
+	//{
+	//	float x;
+	//	float y;
+	//	float z;
+	//};
 	
 	struct Vertex
 	{
-		//glm::vec2 pos;
-		//glm::vec3 color;
-		vec2 pos;
-		vec3 color;
+		glm::vec2 pos;
+		glm::vec3 color;
+		//YasMathLib::vec2 pos;
+		//YasMathLib::vec3 color;
 		
 		static VkVertexInputBindingDescription getBindingDescription()
 		{

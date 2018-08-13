@@ -83,11 +83,19 @@ class YasEngine
 		void							createCommandPool();
 		void							createCommandBuffers();
 		void							createVertexBuffer();
+		void							createIndexBuffer();
 		uint32_t						findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags memoryPropertiesFlags);
-		void							drawFrame();
+		void							drawFrame(float deltaTime);
 		void							createSyncObjects();
 		void							createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
 		void							copyBuffer(VkBuffer sourceBuffer, VkBuffer destinationBuffer, VkDeviceSize deviceSize);
+		void							createDescriptorSetLayout();
+		void							createUniformBuffer();
+		void							updateUniformBuffer(uint32_t currentImage, float deltaTime);
+		void							createDescriptorPool();
+		void							createDescriptorSets();
+
+
 
 		size_t							currentFrame = 0;
 		std::vector<VkSemaphore>		imageAvailableSemaphores;
@@ -101,6 +109,7 @@ class YasEngine
 		VkQueue							presentationQueue;
 		VulkanSwapchain					vulkanSwapchain;
 		VkRenderPass					renderPass;
+		VkDescriptorSetLayout			descriptorSetLayout;
 		VkPipelineLayout				pipelineLayout;
 		VkPipeline						graphicsPipeline;
 		std::vector<VkFramebuffer>		swapchainFramebuffers;
@@ -108,13 +117,32 @@ class YasEngine
 		std::vector<VkCommandBuffer>	commandBuffers;
 		VkBuffer						vertexBuffer;
 		VkDeviceMemory					vertexBufferMemory;
-		
+		VkBuffer						indexBuffer;
+		VkDeviceMemory					indexBufferMemory;
+		std::vector<VkBuffer>			uniformBuffers;
+		std::vector<VkDeviceMemory>		uniformBuffersMemory;
+		VkDescriptorPool				descriptorPool;
+		std::vector<VkDescriptorSet>	descriptorSets;
+
+		float zeroTime = 0;
+
 		const std::vector<Vertex> vertices = {
-			{{0.0F, -0.05F}, {1.0F, 0.0F, 0.0F}},
-			{{0.5F, 0.5F}, {0.0F, 1.0F, 0.0F}},
-			{{-0.5F, 0.5F}, {0.0F, 0.0F, 1.0F}}
+			{{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
+			{{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
+			{{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
+			{{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}}
 		};
+		//can use uint32_t
+		const std::vector<uint16_t> indices = {
+			0, 1, 2, 2, 3, 0
+		};
+
 	//private end
 };
 #endif
 
+		//const std::vector<Vertex> vertices = {
+		//	{{0.0F, -0.05F}, {1.0F, 0.0F, 0.0F}},
+		//	{{0.5F, 0.5F}, {0.0F, 1.0F, 0.0F}},
+		//	{{-0.5F, 0.5F}, {0.0F, 0.0F, 1.0F}}
+		//};
