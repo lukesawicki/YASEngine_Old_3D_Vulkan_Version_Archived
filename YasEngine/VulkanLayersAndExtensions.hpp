@@ -4,8 +4,7 @@
 
 //-----------------------------------------------------------------------------|---------------------------------------|
 
-class VulkanLayersAndExtensions
-{
+class VulkanLayersAndExtensions {
 	public:
 		VulkanLayersAndExtensions();
 		std::vector<const char*>		validationLayers;

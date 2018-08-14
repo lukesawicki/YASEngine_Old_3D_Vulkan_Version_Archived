@@ -3,15 +3,13 @@
 
 //-----------------------------------------------------------------------------|---------------------------------------|
 
-VulkanInstance::VulkanInstance()
-{
+VulkanInstance::VulkanInstance() {
 	layersAndExtensions = new VulkanLayersAndExtensions();
 }
 
-void VulkanInstance::createVulkanInstance(bool areValidationLayersEnabled)
-{
-	if(areValidationLayersEnabled && !layersAndExtensions->CheckIfAllRequestedLayersAreSupported())
-	{
+void VulkanInstance::createVulkanInstance(bool areValidationLayersEnabled) {
+
+	if(areValidationLayersEnabled && !layersAndExtensions->CheckIfAllRequestedLayersAreSupported()) {
 		throw std::runtime_error("Requested validation layers are not available");
 	}	
 
@@ -30,26 +28,21 @@ void VulkanInstance::createVulkanInstance(bool areValidationLayersEnabled)
 
 	bool allExtensionsAvailable = layersAndExtensions->CheckIfAllRequestedInstanceExtensionAreSupported();
 
-	if(!allExtensionsAvailable)
-	{
+	if(!allExtensionsAvailable) {
 		throw std::runtime_error("Not all required extensions available! Can't create Vulkan Instance");
 	}
 
 	createInfo.enabledExtensionCount = static_cast<uint32_t>(layersAndExtensions->instanceExtensions.size());
 	createInfo.ppEnabledExtensionNames = layersAndExtensions->instanceExtensions.data();
 
-	if(areValidationLayersEnabled)
-	{
+	if(areValidationLayersEnabled) {
 		createInfo.enabledLayerCount = static_cast<uint32_t>(layersAndExtensions->validationLayers.size());
 		createInfo.ppEnabledLayerNames = layersAndExtensions->validationLayers.data();
-	}
-	else
-	{
+	} else {
 		createInfo.enabledLayerCount = 0;
 	}
 
-	if(vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS)
-	{
+	if(vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS) {
 		throw std::runtime_error("Failed to create Vulkan instance!");
 	}
 }

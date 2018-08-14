@@ -7,8 +7,7 @@
 
 //-----------------------------------------------------------------------------|---------------------------------------|
 
-class VulkanSwapchain
-{
+class VulkanSwapchain {
 	public:
 
 		static SwapchainSupportDetails	querySwapchainSupport(VkPhysicalDevice device, VkSurfaceKHR surface);		

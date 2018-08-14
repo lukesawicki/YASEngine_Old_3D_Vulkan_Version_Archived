@@ -5,8 +5,7 @@
 
 //-----------------------------------------------------------------------------|---------------------------------------|
 
-class VulkanInstance
-{
+class VulkanInstance {
 	public:
 		VulkanInstance();
 		void							createVulkanInstance(bool areValidationLayersEnabled);

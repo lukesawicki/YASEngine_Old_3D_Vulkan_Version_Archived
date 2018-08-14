@@ -6,8 +6,7 @@
 
 //-----------------------------------------------------------------------------|---------------------------------------|
 
-class VulkanDevice
-{
+class VulkanDevice {
 	public:
 		VulkanDevice(VulkanInstance& vulkanInstance, VkSurfaceKHR& surface, VkQueue& graphicsQueue, VkQueue& presentationQueue, bool enableValidationLayers);
 		VkDevice						logicalDevice;
@@ -18,7 +17,6 @@ class VulkanDevice
 		void							selectPhysicalDevice(VulkanInstance& vulkanInstance, VkSurfaceKHR& surface);
 		void							createLogicalDevice(VulkanInstance& vulkanInstance, VkSurfaceKHR& surface,
 											VkQueue& graphicsQueue, VkQueue& presentationQueue, bool enableValidationLayers);
-
 
 	private:
 

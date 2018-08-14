@@ -8,16 +8,11 @@
 //-----------------------------------------------------------------------------|---------------------------------------|
 
 
-VkResult createDebugReportCallbackEXT
-(
-	VkInstance& vulkanInstance,
-	const VkDebugReportCallbackCreateInfoEXT* createInfo,
-	const VkAllocationCallbacks* allocator,
-	VkDebugReportCallbackEXT* callback
+VkResult createDebugReportCallbackEXT ( VkInstance& vulkanInstance, const VkDebugReportCallbackCreateInfoEXT* createInfo,
+	const VkAllocationCallbacks* allocator, VkDebugReportCallbackEXT* callback
 );
 
-class YasEngine
-{
+class YasEngine {
 
 	public:
 		YasEngine();
@@ -30,17 +25,10 @@ class YasEngine
 		static int						windowWidth;
 		static int						windowHeight;
 		
-		static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback
-			(
-				VkDebugReportFlagsEXT debugReportFlags,
-				VkDebugReportObjectTypeEXT objectType,
-				uint64_t object,
-				size_t location,
-				int32_t code,
-				const char* layerPrefix,
-				const char* msg,
-				void* userData
-			);
+		static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback( VkDebugReportFlagsEXT debugReportFlags,
+			VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t code,
+			const char* layerPrefix, const char* msg, void* userData
+		);
 
 		#ifdef NDEBUG
 			const bool					enableValidationLayers = false;
