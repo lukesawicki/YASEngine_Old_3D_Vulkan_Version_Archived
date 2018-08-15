@@ -8,10 +8,3 @@
 	;
 
 #endif
-
-//SwapChain
-//VariousTools
-//Pipeline
-//Device
-//System specific Window
-//

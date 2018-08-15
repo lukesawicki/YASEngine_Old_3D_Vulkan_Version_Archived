@@ -6,17 +6,15 @@
 //-----------------------------------------------------------------------------|---------------------------------------|
 
 class VulkanInstance {
+
 	public:
-		VulkanInstance();
+										VulkanInstance();
 		void							createVulkanInstance(bool areValidationLayersEnabled);
 		
-		// Vulkan types
 		VkInstance						instance;
-
-		// YasEngine types
 		VulkanLayersAndExtensions*		layersAndExtensions;
+
 	private:
-		//...
 };
 
 #endif

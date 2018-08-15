@@ -7,9 +7,8 @@ int YasEngine::windowPositionX				= 64;
 int YasEngine::windowPositionY				= 64;
 int YasEngine::windowWidth					= 640;
 int YasEngine::windowHeight					= 480;
-
-const int MAX_FRAMES_IN_FLIGHT = 2;
 bool YasEngine::framebufferResized = false;
+const int MAX_FRAMES_IN_FLIGHT = 2;
 
 LRESULT CALLBACK windowProcedure(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
 	
@@ -27,6 +26,7 @@ LRESULT CALLBACK windowProcedure(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 VkResult createDebugReportCallbackEXT(VkInstance& vulkanInstance, const VkDebugReportCallbackCreateInfoEXT* createInfo, const VkAllocationCallbacks* allocator, VkDebugReportCallbackEXT* callback) {
 
 	PFN_vkCreateDebugReportCallbackEXT debugReportCallbackFunction = (PFN_vkCreateDebugReportCallbackEXT)vkGetInstanceProcAddr(vulkanInstance, "vkCreateDebugReportCallbackEXT");
+	
 	if(debugReportCallbackFunction != nullptr) {
 		return debugReportCallbackFunction(vulkanInstance, createInfo, allocator, callback);
 	} else {
@@ -37,6 +37,7 @@ VkResult createDebugReportCallbackEXT(VkInstance& vulkanInstance, const VkDebugR
 void destroyDebugReportCallbackEXT(VkInstance vulkanInstance, VkDebugReportCallbackEXT callback, const VkAllocationCallbacks* allocator) {
 
 	PFN_vkDestroyDebugReportCallbackEXT destroyFunction = (PFN_vkDestroyDebugReportCallbackEXT)vkGetInstanceProcAddr(vulkanInstance, "vkDestroyDebugReportCallbackEXT");
+	
 	if(destroyFunction != nullptr) {
 		destroyFunction(vulkanInstance, callback, allocator);
 	}
@@ -90,6 +91,7 @@ void YasEngine::run(HINSTANCE hInstance) {
 void YasEngine::createWindow(HINSTANCE hInstance) {
 
 	WNDCLASSEX windowClassEx;
+
 	windowClassEx.cbSize				= sizeof(WNDCLASSEX);
 	windowClassEx.style					= CS_VREDRAW | CS_HREDRAW;
 	windowClassEx.lpfnWndProc			= windowProcedure;
@@ -106,7 +108,6 @@ void YasEngine::createWindow(HINSTANCE hInstance) {
 	RegisterClassEx(&windowClassEx);
 
 	application = hInstance;
-
 	window =  CreateWindowEx(NULL, "YASEngine window class", "YASEngine", WS_OVERLAPPEDWINDOW, windowPositionX, windowPositionY, windowWidth, windowHeight, NULL, NULL, application, NULL);
 
 	ShowWindow(window, SW_NORMAL);
@@ -122,6 +123,7 @@ void YasEngine::mainLoop() {
 	float fps, fpsTime;
 	unsigned int frames;
 	MSG message;
+
 	TimePicker* timePicker = TimePicker::getTimePicker();
 	time = timePicker->getSeconds();
 	fpsTime = 0.0F;
@@ -137,11 +139,7 @@ void YasEngine::mainLoop() {
 			newTime = timePicker->getSeconds();
 			deltaTime = newTime - time;
 			time = newTime;
-
-			// Calculating and drawing
-			//std::cout << "dt---> " << deltaTime << std::endl;
 			drawFrame(deltaTime);			
-
 			frames++;
 			fpsTime = fpsTime + deltaTime;
 			if(fpsTime >= 1.0F)
@@ -177,21 +175,24 @@ void YasEngine::initializeVulkan() {
 }
 
 void YasEngine::createVulkanInstance() {
+
 	vulkanInstance.createVulkanInstance(enableValidationLayers);
 }
 
 void YasEngine::selectPhysicalDevice() {
+
 	vulkanDevice->selectPhysicalDevice(vulkanInstance, surface);
 }
 
 void YasEngine::createCommandPool() {
 
 	QueueFamilyIndices queueFamilyIndices = findQueueFamilies(vulkanDevice->physicalDevice, surface);
-	
+
 	VkCommandPoolCreateInfo commandPoolCreateInfo = {};
 	commandPoolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 	commandPoolCreateInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily;
 	commandPoolCreateInfo.flags = 0;
+
 	if(vkCreateCommandPool(vulkanDevice->logicalDevice, &commandPoolCreateInfo, nullptr, &commandPool) != VK_SUCCESS) {
 		throw std::runtime_error("Failed to create command pool!");
 	}
@@ -201,19 +202,18 @@ void YasEngine::createVertexBuffer() {
 
 	//VkDeviceSize is alias to uint64_t
 	VkDeviceSize vertexBufferSize = sizeof(vertices[0]) * vertices.size();
-
 	VkBuffer stagingBuffer;
 	VkDeviceMemory stagingBufferMemory;
-	createBuffer(vertexBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-		stagingBuffer, stagingBufferMemory);
+
+	createBuffer(vertexBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
 
 	void* data;
+
 	vkMapMemory(vulkanDevice->logicalDevice, stagingBufferMemory, 0, vertexBufferSize, 0, &data);
 	memcpy(data, vertices.data(), (size_t)vertexBufferSize);
 	vkUnmapMemory(vulkanDevice->logicalDevice, stagingBufferMemory);
 
 	createBuffer(vertexBufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vertexBuffer, vertexBufferMemory);
-
 	copyBuffer(stagingBuffer, vertexBuffer, vertexBufferSize);
 
 	vkDestroyBuffer(vulkanDevice->logicalDevice, stagingBuffer, nullptr);
@@ -223,22 +223,20 @@ void YasEngine::createVertexBuffer() {
 void YasEngine::createIndexBuffer() {
 
 	VkDeviceSize indexBufferSize = sizeof(indices[0]) * indices.size();
-	
 	VkBuffer stagingBuffer;
 	VkDeviceMemory stagingBufferMemory;
-	createBuffer(indexBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT
-		| VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+
+	createBuffer(indexBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT	| VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
 
 	void* data;
+
 	vkMapMemory(vulkanDevice->logicalDevice, stagingBufferMemory, 0, indexBufferSize, 0, &data);
 	memcpy(data, indices.data(), (size_t)indexBufferSize);
 	vkUnmapMemory(vulkanDevice->logicalDevice, stagingBufferMemory);
 
-	createBuffer(indexBufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
-		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, indexBuffer, indexBufferMemory);
-
+	createBuffer(indexBufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, indexBuffer, indexBufferMemory);
 	copyBuffer(stagingBuffer, indexBuffer, indexBufferSize);
-	
+
 	vkDestroyBuffer(vulkanDevice->logicalDevice, stagingBuffer, nullptr);
 	vkFreeMemory(vulkanDevice->logicalDevice, stagingBufferMemory, nullptr);	
 }
@@ -246,6 +244,7 @@ void YasEngine::createIndexBuffer() {
 uint32_t YasEngine::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags memoryPropertiesFlags) {
 
 	VkPhysicalDeviceMemoryProperties physicalDeviceMemoryProperties;
+
 	vkGetPhysicalDeviceMemoryProperties(vulkanDevice->physicalDevice, &physicalDeviceMemoryProperties);
 	
 	for(uint32_t i=0; i<physicalDeviceMemoryProperties.memoryTypeCount; i++) {
@@ -286,11 +285,10 @@ void YasEngine::createCommandBuffers() {
 		renderPassBeginInfo.framebuffer = swapchainFramebuffers[i];
 		renderPassBeginInfo.renderArea.offset = {0, 0};
 		renderPassBeginInfo.renderArea.extent = vulkanSwapchain.swapchainExtent;
-
-		VkClearValue clearColor = {0.0F, 0.0F, 0.0F, 1.0F};
 		renderPassBeginInfo.clearValueCount = 1;
+		VkClearValue clearColor = {0.0F, 0.0F, 0.0F, 1.0F};
 		renderPassBeginInfo.pClearValues = &clearColor;
-		
+
 		vkCmdBeginRenderPass(commandBuffers[i], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 		vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
 		
@@ -300,16 +298,15 @@ void YasEngine::createCommandBuffers() {
 		vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, vertexBuffers, offsets);
 		vkCmdBindIndexBuffer(commandBuffers[i], indexBuffer, 0, VK_INDEX_TYPE_UINT16);
 
-		// tutaj sie wywala
 		vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSets[i], 0, nullptr);
 		vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
 		vkCmdEndRenderPass(commandBuffers[i]);
+
 		if(vkEndCommandBuffer(commandBuffers[i]) != VK_SUCCESS) {
 			throw std::runtime_error("Failed to record command buffer");
 		}
-		
-	}
 
+	}
 }
 
 void YasEngine::drawFrame(float deltaTime) {
@@ -317,6 +314,7 @@ void YasEngine::drawFrame(float deltaTime) {
 	vkWaitForFences(vulkanDevice->logicalDevice, 1, &inFlightFences[currentFrame], VK_TRUE, std::numeric_limits<uint64_t>::max());
 	
 	uint32_t imageIndex;
+
 	VkResult result = vkAcquireNextImageKHR(vulkanDevice->logicalDevice, vulkanSwapchain.swapchain, std::numeric_limits<uint64_t>::max(), imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
 	
 	if(result == VK_ERROR_OUT_OF_DATE_KHR) {
@@ -335,13 +333,15 @@ void YasEngine::drawFrame(float deltaTime) {
 
 	VkSemaphore waitSemaphores[] = {imageAvailableSemaphores[currentFrame]};
 	VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+
 	submitInfo.waitSemaphoreCount = 1;
 	submitInfo.pWaitSemaphores = waitSemaphores;
 	submitInfo.pWaitDstStageMask = waitStages;
 	submitInfo.commandBufferCount = 1;
 	submitInfo.pCommandBuffers = &commandBuffers[imageIndex];
-	
+
 	VkSemaphore signalSemaphores[] = {renderFinishedSemaphores[currentFrame]};
+
 	submitInfo.signalSemaphoreCount = 1;
 	submitInfo.pSignalSemaphores = signalSemaphores;
 
@@ -355,14 +355,12 @@ void YasEngine::drawFrame(float deltaTime) {
 	presentInfoKhr.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 	presentInfoKhr.waitSemaphoreCount = 1;
 	presentInfoKhr.pWaitSemaphores = signalSemaphores;
-	
+
 	VkSwapchainKHR swapChains[] = {vulkanSwapchain.swapchain};
-	
+
 	presentInfoKhr.swapchainCount = 1;
 	presentInfoKhr.pSwapchains = swapChains;
 	presentInfoKhr.pImageIndices = &imageIndex;
-
-
 	result = vkQueuePresentKHR(presentationQueue, &presentInfoKhr);
 
 	if(result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || YasEngine::framebufferResized) {
@@ -373,7 +371,6 @@ void YasEngine::drawFrame(float deltaTime) {
 			throw std::runtime_error("Failed to presesnt swap chain image.");
 		}
 	}
-
 	currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 }
 
@@ -384,6 +381,7 @@ void YasEngine::createSyncObjects() {
 	inFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
 
 	VkSemaphoreCreateInfo semaphoreCreateInfo = {};
+
 	semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
 	VkFenceCreateInfo fenceCreateInfo = {};
@@ -398,7 +396,6 @@ void YasEngine::createSyncObjects() {
 			throw std::runtime_error("Failed to create semaphores for a frame.");
 		}
 	}
-
 }
 
 void YasEngine::createBuffer(VkDeviceSize size,VkBufferUsageFlags usage,VkMemoryPropertyFlags properties,VkBuffer & buffer,VkDeviceMemory & bufferMemory) {
@@ -414,6 +411,7 @@ void YasEngine::createBuffer(VkDeviceSize size,VkBufferUsageFlags usage,VkMemory
 	}
 
 	VkMemoryRequirements memoryRequirements;
+
 	vkGetBufferMemoryRequirements(vulkanDevice->logicalDevice, buffer, &memoryRequirements);
 
 	VkMemoryAllocateInfo memoryAllocateInfo = {};
@@ -424,6 +422,7 @@ void YasEngine::createBuffer(VkDeviceSize size,VkBufferUsageFlags usage,VkMemory
 	if(vkAllocateMemory(vulkanDevice->logicalDevice, &memoryAllocateInfo, nullptr, &bufferMemory) != VK_SUCCESS) {
 		throw std::runtime_error("Failed to allocate vertex buffer memory!");
 	}
+
 	vkBindBufferMemory(vulkanDevice->logicalDevice, buffer, bufferMemory, 0);
 }
 
@@ -436,6 +435,7 @@ void YasEngine::copyBuffer(VkBuffer sourceBuffer,VkBuffer destinationBuffer,VkDe
 	commandBufferAllocateInfo.commandBufferCount = 1;
 
 	VkCommandBuffer commandBuffer;
+
 	vkAllocateCommandBuffers(vulkanDevice->logicalDevice, &commandBufferAllocateInfo, &commandBuffer);
 
 	VkCommandBufferBeginInfo commandBufferBeginInfo = {};
@@ -448,6 +448,7 @@ void YasEngine::copyBuffer(VkBuffer sourceBuffer,VkBuffer destinationBuffer,VkDe
 	bufferCopyRegion.srcOffset = 0;
 	bufferCopyRegion.dstOffset = 0;
 	bufferCopyRegion.size = deviceSize;
+
 	vkCmdCopyBuffer(commandBuffer, sourceBuffer, destinationBuffer, 1, &bufferCopyRegion);
 	
 	vkEndCommandBuffer(commandBuffer);
@@ -459,7 +460,6 @@ void YasEngine::copyBuffer(VkBuffer sourceBuffer,VkBuffer destinationBuffer,VkDe
 
 	vkQueueSubmit(graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
 	vkQueueWaitIdle(graphicsQueue);
-
 	vkFreeCommandBuffers(vulkanDevice->logicalDevice, commandPool, 1, &commandBuffer);
 }
 
@@ -504,7 +504,9 @@ void YasEngine::updateUniformBuffer(uint32_t currentImage, float deltaTime) {
 	uniformBufferObject.view = glm::lookAt(glm::vec3(2.0F, 2.0F, 2.0F), glm::vec3(0.0F, 0.0F, 0.0F), glm::vec3(0.0F, 0.0F, 1.0F));
 	uniformBufferObject.proj = glm::perspective(glm::radians(45.0F), vulkanSwapchain.swapchainExtent.width / (float) vulkanSwapchain.swapchainExtent.height, 0.1f, 10.0F);
 	uniformBufferObject.proj[1][1] *= -1;
+
 	void* data;
+
 	vkMapMemory(vulkanDevice->logicalDevice, uniformBuffersMemory[currentImage], 0, sizeof(uniformBufferObject), 0, &data);
 	memcpy(data, &uniformBufferObject, sizeof(uniformBufferObject));
 	vkUnmapMemory(vulkanDevice->logicalDevice, uniformBuffersMemory[currentImage]);
@@ -525,6 +527,7 @@ void YasEngine::createSurface() {
 	surfaceCreateInfo.hwnd = window;
 
 	VkResult result = vkCreateWin32SurfaceKHR(vulkanInstance.instance, &surfaceCreateInfo, NULL, &surface);
+
 	if(!(result == VK_SUCCESS)) {
 		throw std::runtime_error("Failed to create Vulkan surface!");
 	}
@@ -539,7 +542,6 @@ void YasEngine::createSwapchain() {
 void YasEngine::recreateSwapchain() {
 
 	vkDeviceWaitIdle(vulkanDevice->logicalDevice);
-
 	cleanupSwapchain();
 	createSwapchain();
 	createImageViews();
@@ -591,7 +593,7 @@ void YasEngine::createRenderPass() {
 	subpassDescription.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
 	subpassDescription.colorAttachmentCount = 1;
 	subpassDescription.pColorAttachments = &colorAttachmentReference;
-	
+
 	VkSubpassDependency subpassDependency = {};
 	subpassDependency.srcSubpass = VK_SUBPASS_EXTERNAL;
 	subpassDependency.dstSubpass = 0;
@@ -688,10 +690,8 @@ void YasEngine::createGraphicsPipeline() {
 	multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
 
 	VkPipelineColorBlendAttachmentState colorBlendAttachment = {};
-	colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT |
-	VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+	colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
 	colorBlendAttachment.blendEnable = VK_FALSE;
-
 
 	VkPipelineColorBlendStateCreateInfo colorBlending = {};
 	colorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
@@ -741,9 +741,9 @@ void YasEngine::createGraphicsPipeline() {
 void YasEngine::createFramebuffers() {
 
 	swapchainFramebuffers.resize(vulkanSwapchain.swapchainImageViews.size());
+
 	for(size_t i=0; i<swapchainFramebuffers.size(); i++) {
 		VkImageView attachments[] = { vulkanSwapchain.swapchainImageViews[i] };
-
 		VkFramebufferCreateInfo framebufferCreateInfo = {};
 		framebufferCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
 		framebufferCreateInfo.renderPass = renderPass;
@@ -756,9 +756,7 @@ void YasEngine::createFramebuffers() {
 		if(vkCreateFramebuffer(vulkanDevice->logicalDevice, &framebufferCreateInfo, nullptr, &swapchainFramebuffers[i]) != VK_SUCCESS) {
 			throw std::runtime_error("Failed to create framebuffer.");
 		}
-
 	}
-
 }
 
 VkShaderModule YasEngine::createShaderModule(const std::vector<char>& code) {
@@ -767,8 +765,9 @@ VkShaderModule YasEngine::createShaderModule(const std::vector<char>& code) {
 	createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
 	createInfo.codeSize = code.size();
 	createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
-	
+
 	VkShaderModule shaderModule;
+
 	if(vkCreateShaderModule(vulkanDevice->logicalDevice, &createInfo, nullptr, &shaderModule) != VK_SUCCESS) {
 		throw std::runtime_error("Failed to create shader module");
 	}
@@ -783,9 +782,7 @@ void YasEngine::destroySwapchain() {
 void YasEngine::cleanUp() {
 
 	cleanupSwapchain();
-
 	vkDestroyDescriptorPool(vulkanDevice->logicalDevice, descriptorPool, nullptr);
-
 	vkDestroyDescriptorSetLayout(vulkanDevice->logicalDevice, descriptorSetLayout, nullptr);
 
 	for(size_t i=0; i<vulkanSwapchain.swapchainImages.size(); i++) {
@@ -806,7 +803,6 @@ void YasEngine::cleanUp() {
 	}
 
 	vkDestroyCommandPool(vulkanDevice->logicalDevice, commandPool, nullptr);
-
 	vkDestroyDevice(vulkanDevice->logicalDevice, nullptr);
 
 	if(enableValidationLayers) {
@@ -814,7 +810,6 @@ void YasEngine::cleanUp() {
 	}
 
 	vkDestroySurfaceKHR(vulkanInstance.instance, surface, nullptr);
-
 	vkDestroyInstance(vulkanInstance.instance, nullptr);
 	DestroyWindow(window);
 }
@@ -824,12 +819,11 @@ void YasEngine::createDescriptorPool() {
 	VkDescriptorPoolSize descriptorPoolSize = {};
 	descriptorPoolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 	descriptorPoolSize.descriptorCount = static_cast<uint32_t>(vulkanSwapchain.swapchainImages.size());
-	
+
 	VkDescriptorPoolCreateInfo descriptorPoolCreateInfo = {};
 	descriptorPoolCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 	descriptorPoolCreateInfo.poolSizeCount = 1;
 	descriptorPoolCreateInfo.pPoolSizes = &descriptorPoolSize;
-
 	descriptorPoolCreateInfo.maxSets = static_cast<uint32_t>(vulkanSwapchain.swapchainImages.size());
 
 	if(vkCreateDescriptorPool(vulkanDevice->logicalDevice, &descriptorPoolCreateInfo, nullptr, &descriptorPool) != VK_SUCCESS) {
@@ -841,11 +835,13 @@ void YasEngine::createDescriptorPool() {
 void YasEngine::createDescriptorSets()
 {
 	std::vector<VkDescriptorSetLayout> descriptorSetLayouts(vulkanSwapchain.swapchainImages.size(), descriptorSetLayout);
+
 	VkDescriptorSetAllocateInfo allocInfo = {};
 	allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
 	allocInfo.descriptorPool = descriptorPool;
 	allocInfo.descriptorSetCount = static_cast<uint32_t>(vulkanSwapchain.swapchainImages.size());
 	allocInfo.pSetLayouts = descriptorSetLayouts.data();
+
 	descriptorSets.resize(vulkanSwapchain.swapchainImages.size());
 	if(vkAllocateDescriptorSets(vulkanDevice->logicalDevice, &allocInfo, &descriptorSets[0]) != VK_SUCCESS) {
 		throw std::runtime_error("failed to allocate descriptor sets!");
@@ -864,7 +860,6 @@ void YasEngine::createDescriptorSets()
 		writeDescriptorSet.dstArrayElement = 0;
 		writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 		writeDescriptorSet.descriptorCount = 1;
-
 		writeDescriptorSet.pBufferInfo = &descriptorBufferInfo;
 		writeDescriptorSet.pImageInfo = nullptr;
 		writeDescriptorSet.pTexelBufferView = nullptr;

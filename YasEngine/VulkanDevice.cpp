@@ -9,12 +9,11 @@
 bool VulkanDevice::isPhysicalDeviceSuitable(VkPhysicalDevice physDevice, VulkanInstance& vulkanInstance, VkSurfaceKHR surface) {
 
 	QueueFamilyIndices indices = findQueueFamilies(physDevice, surface);
-
 	VkPhysicalDeviceProperties physicalDeviceProperties;
 	vkGetPhysicalDeviceProperties(physDevice, &physicalDeviceProperties);
-
 	VkPhysicalDeviceFeatures physicalDeviceFeatures;
 	vkGetPhysicalDeviceFeatures(physDevice, &physicalDeviceFeatures);
+
 	if(physicalDeviceProperties.vendorID == 4130) {
 		std::cout << "Physical device vendor: AMD" << std::endl;
 	} else {
@@ -39,6 +38,7 @@ bool VulkanDevice::isPhysicalDeviceSuitable(VkPhysicalDevice physDevice, VulkanI
 		swapchainSuitable = !swapchainSupport.formats.empty() && !swapchainSupport.presentModes.empty();
 		std::cout <<"swapchainSuitable= " << swapchainSuitable << std::endl;
 	}
+
 	std::cout << "Before return in isPhysicalDeviceSuitable(VkPhysicalDevice device) " << std::endl;
 	return indices.isComplete() && extensionsSupported && swapchainSuitable;
 }
@@ -57,6 +57,7 @@ void VulkanDevice::selectPhysicalDevice(VulkanInstance& vulkanInstance, VkSurfac
 	if(deviceCount == 0) {
 		throw std::runtime_error("Failed to find Graphics Cards with Vulkan support.");
 	}
+
 	std::vector<VkPhysicalDevice> physicalDevices(deviceCount);
 	vkEnumeratePhysicalDevices(vulkanInstance.instance, &deviceCount, physicalDevices.data());
 
@@ -76,7 +77,6 @@ void VulkanDevice::selectPhysicalDevice(VulkanInstance& vulkanInstance, VkSurfac
 void VulkanDevice::createLogicalDevice(VulkanInstance& vulkanInstance, VkSurfaceKHR& surface, VkQueue& graphicsQueue, VkQueue& presentationQueue, bool enableValidationLayers) {
 
 	QueueFamilyIndices indices = findQueueFamilies(physicalDevice, surface);
-	
 	std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
 	std::set<int> uniqueQueueFamilies = {indices.graphicsFamily, indices.presentationFamily};
 	
@@ -95,7 +95,6 @@ void VulkanDevice::createLogicalDevice(VulkanInstance& vulkanInstance, VkSurface
 
 	VkDeviceCreateInfo createInfo = {};
 	createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-
 	createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
 	createInfo.pQueueCreateInfos = queueCreateInfos.data();
 	createInfo.pEnabledFeatures = &physicalDeviceFeatures;

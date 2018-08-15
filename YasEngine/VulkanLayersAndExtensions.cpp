@@ -6,9 +6,7 @@
 VulkanLayersAndExtensions::VulkanLayersAndExtensions() {
 	
 	validationLayers.push_back("VK_LAYER_LUNARG_standard_validation");
-	
 	deviceExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
-	
 	instanceExtensions.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
 	instanceExtensions.push_back(VK_KHR_WIN32_SURFACE_EXTENSION_NAME);
 	instanceExtensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
@@ -19,7 +17,6 @@ bool VulkanLayersAndExtensions::CheckIfAllRequestedInstanceExtensionAreSupported
 	bool allEnabletExtensionsAreAvailable = false;
 	uint32_t numberOfAvailableExtensions = 0;
 	vkEnumerateInstanceExtensionProperties(nullptr, &numberOfAvailableExtensions, nullptr);
-	
 	std::vector<VkExtensionProperties> availableExtensions(numberOfAvailableExtensions);
 	vkEnumerateInstanceExtensionProperties(nullptr, &numberOfAvailableExtensions, availableExtensions.data());
 	int extensionsCounter = 0;
@@ -42,7 +39,6 @@ bool VulkanLayersAndExtensions::CheckIfAllRequestedPhysicalDeviceExtensionAreSup
 
 	uint32_t extensionsCount;
 	vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionsCount, nullptr);
-	
 	std::vector<VkExtensionProperties> availableExtensions(extensionsCount);
 	vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionsCount, availableExtensions.data());
 	
@@ -59,7 +55,6 @@ bool VulkanLayersAndExtensions::CheckIfAllRequestedPhysicalDeviceExtensionAreSup
 			return false;
 		}
 	}
-
 	return true;
 }
 
@@ -67,7 +62,6 @@ bool VulkanLayersAndExtensions::CheckIfAllRequestedLayersAreSupported() {
 
 	uint32_t instanceLayersCount;
 	vkEnumerateInstanceLayerProperties(&instanceLayersCount, nullptr);
-	
 	std::vector<VkLayerProperties> availableLayers(instanceLayersCount);
 	vkEnumerateInstanceLayerProperties(&instanceLayersCount, availableLayers.data());
 	

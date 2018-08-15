@@ -5,18 +5,19 @@
 //-----------------------------------------------------------------------------|---------------------------------------|
 
 class VulkanLayersAndExtensions {
-	public:
-		VulkanLayersAndExtensions();
-		std::vector<const char*>		validationLayers;
-		std::vector<const char*>		instanceExtensions;
-		std::vector<const char*>		deviceExtensions;
 
+	public:
+
+		VulkanLayersAndExtensions();
 		bool							CheckIfAllRequestedLayersAreSupported();
 		bool							CheckIfAllRequestedInstanceExtensionAreSupported();
 		bool							CheckIfAllRequestedPhysicalDeviceExtensionAreSupported(VkPhysicalDevice device);
 
-	private:
-		
+		std::vector<const char*>		validationLayers;
+		std::vector<const char*>		instanceExtensions;
+		std::vector<const char*>		deviceExtensions;
+
+	private:		
 };
 
 #endif

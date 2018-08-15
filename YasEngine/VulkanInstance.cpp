@@ -4,6 +4,7 @@
 //-----------------------------------------------------------------------------|---------------------------------------|
 
 VulkanInstance::VulkanInstance() {
+
 	layersAndExtensions = new VulkanLayersAndExtensions();
 }
 

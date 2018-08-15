@@ -4,13 +4,10 @@
 
 //-----------------------------------------------------------------------------|---------------------------------------|
 
-
-
 SwapchainSupportDetails	VulkanSwapchain::querySwapchainSupport(VkPhysicalDevice device, VkSurfaceKHR surface) {
 
 	SwapchainSupportDetails swapchainDetails;
 	vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, surface, &swapchainDetails.capabilities);
-
 	uint32_t formatCount;
 	vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &formatCount, nullptr);
 	
@@ -44,6 +41,7 @@ VkSurfaceFormatKHR VulkanSwapchain::chooseSwapSurfaceFormat(const std::vector<Vk
 }
 
 VkPresentModeKHR VulkanSwapchain::chooseSwapPresentMode(const std::vector<VkPresentModeKHR> availablePresentModes) {
+
 	VkPresentModeKHR chosenPresentMode = VK_PRESENT_MODE_FIFO_KHR;
 	//To avoid tearing it is goode idea to choose tripple buffering
 	for(const VkPresentModeKHR& availablePresentMode: availablePresentModes) {
@@ -119,8 +117,6 @@ void VulkanSwapchain::createSwapchain(VkPhysicalDevice& physicalDevice, VkSurfac
 	vkGetSwapchainImagesKHR(vulkanLogicalDevice, swapchain, &imageCount, nullptr);
 	swapchainImages.resize(imageCount);
 	vkGetSwapchainImagesKHR(vulkanLogicalDevice, swapchain, &imageCount, swapchainImages.data());
-
-
 	swapchainImageFormat = surfaceFormat.format;
 	swapchainExtent = extent;
 }

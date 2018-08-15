@@ -8,27 +8,21 @@
 //-----------------------------------------------------------------------------|---------------------------------------|
 
 
-VkResult createDebugReportCallbackEXT ( VkInstance& vulkanInstance, const VkDebugReportCallbackCreateInfoEXT* createInfo,
-	const VkAllocationCallbacks* allocator, VkDebugReportCallbackEXT* callback
-);
+VkResult createDebugReportCallbackEXT ( VkInstance& vulkanInstance, const VkDebugReportCallbackCreateInfoEXT* createInfo, const VkAllocationCallbacks* allocator, VkDebugReportCallbackEXT* callback);
 
 class YasEngine {
 
 	public:
-		YasEngine();
-		//Window variables and functionss
-		void							run(HINSTANCE hInstance);
 
-		//Vulkan variables and functions
+		YasEngine();
+		void							run(HINSTANCE hInstance);
+		static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback( VkDebugReportFlagsEXT debugReportFlags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t code, const char* layerPrefix, const char* msg, void* userData);
+
 		static int						windowPositionX;
 		static int						windowPositionY;
 		static int						windowWidth;
 		static int						windowHeight;
 		
-		static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback( VkDebugReportFlagsEXT debugReportFlags,
-			VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t code,
-			const char* layerPrefix, const char* msg, void* userData
-		);
 
 		#ifdef NDEBUG
 			const bool					enableValidationLayers = false;
@@ -41,20 +35,11 @@ class YasEngine {
 
 	private:
 
-		//Window variables and functions
 		void							createWindow(HINSTANCE hInstance);
 		void							mainLoop();
-
-		HINSTANCE						application;
-		HWND							window;
-
-		//Both Window and Vulkan variable and functions
 		void							cleanUp();
-
-		//Vulkan variables and functions
 		void							createVulkanInstance();
 		void							initializeVulkan();
-
 		void							setupDebugCallback();
 		void							selectPhysicalDevice();
 		void							createLogicalDevice();
@@ -83,8 +68,8 @@ class YasEngine {
 		void							createDescriptorPool();
 		void							createDescriptorSets();
 
-
-
+		HINSTANCE						application;
+		HWND							window;
 		size_t							currentFrame = 0;
 		std::vector<VkSemaphore>		imageAvailableSemaphores;
 		std::vector<VkSemaphore>		renderFinishedSemaphores;
@@ -127,10 +112,5 @@ class YasEngine {
 
 	//private end
 };
-#endif
 
-		//const std::vector<Vertex> vertices = {
-		//	{{0.0F, -0.05F}, {1.0F, 0.0F, 0.0F}},
-		//	{{0.5F, 0.5F}, {0.0F, 1.0F, 0.0F}},
-		//	{{-0.5F, 0.5F}, {0.0F, 0.0F, 1.0F}}
-		//};
+#endif

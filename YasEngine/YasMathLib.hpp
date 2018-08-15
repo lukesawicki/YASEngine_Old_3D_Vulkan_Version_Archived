@@ -2,6 +2,7 @@
 #define YASMATHLIB_HPP
 
 namespace YasMathLib {
+
 	struct vec2 {
 		float x;
 		float y;
@@ -41,7 +42,6 @@ namespace YasMathLib {
 		float z3;
 		float w3;
 	};
-
 
 }
 

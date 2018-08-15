@@ -8,14 +8,14 @@
 //-----------------------------------------------------------------------------|---------------------------------------|
 
 class VulkanSwapchain {
+
 	public:
 
-		static SwapchainSupportDetails	querySwapchainSupport(VkPhysicalDevice device, VkSurfaceKHR surface);		
-
 		void							createSwapchain(VkPhysicalDevice& physicalDevice, VkSurfaceKHR& surface, VkDevice& vulkanLogicalDevice, QueueFamilyIndices& queueIndices, HWND& window);
-
+		static SwapchainSupportDetails	querySwapchainSupport(VkPhysicalDevice device, VkSurfaceKHR surface);		
 		void							destroySwapchain(VkDevice vulkanLogicalDevice);
 		void							createImageViews(VkDevice& device);
+
 		VkFormat						swapchainImageFormat;
 		VkExtent2D						swapchainExtent;
 		VkSwapchainKHR					swapchain;
@@ -23,10 +23,10 @@ class VulkanSwapchain {
 		std::vector<VkImageView>		swapchainImageViews;
 
 	private:
+
 		VkSurfaceFormatKHR				chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &availableFormats);
 		VkPresentModeKHR				chooseSwapPresentMode(const std::vector<VkPresentModeKHR> availablePresentModes);
 		VkExtent2D						chooseSwapExtent(const VkSurfaceCapabilitiesKHR surfaceCapabilities, HWND& window);
 };
 
 #endif
-

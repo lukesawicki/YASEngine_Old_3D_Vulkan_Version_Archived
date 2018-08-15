@@ -3,14 +3,12 @@
 #include"stdafx.hpp"
 #include"YasMathLib.hpp"
 
-
 //-----------------------------------------------------------------------------|---------------------------------------|
 
 struct QueueFamilyIndices {
 
 	int graphicsFamily = -1;
 	int presentationFamily = -1;
-	
 	bool isComplete() {
 		return graphicsFamily >= 0 && presentationFamily >= 0;
 	}
@@ -44,8 +42,8 @@ static std::vector<char> readFile(const std::string& fileName) {
 static QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device, VkSurfaceKHR& surface) {
 
 	QueueFamilyIndices queueFamilyIndices;
-
 	uint32_t queueFamilyCount = 0;
+	
 	vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
 
 	std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
@@ -53,7 +51,6 @@ static QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device, VkSurfaceKH
 
 	int i = 0;
 	for(const VkQueueFamilyProperties& queueFamily : queueFamilies) {
-
 		if((queueFamily.queueCount > 0) && (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT)) {
 			queueFamilyIndices.graphicsFamily = i;
 		}
@@ -80,6 +77,7 @@ class TimePicker {
 
 		LARGE_INTEGER frequency;
 		bool isFrequencyOfThePerformanceCounterPickedUp;
+
 		TimePicker() {
 			isFrequencyOfThePerformanceCounterPickedUp = (QueryPerformanceFrequency(&frequency) != 0);
 		}
@@ -115,27 +113,28 @@ class TimePicker {
 	};
 */
 struct Vertex {
+
 	glm::vec2 pos;
 	glm::vec3 color;
 	//YasMathLib::vec2 pos;
 	//YasMathLib::vec3 color;
 		
 	static VkVertexInputBindingDescription getBindingDescription() {
+
 		VkVertexInputBindingDescription vertInBindingDescription = {};
 		vertInBindingDescription.binding = 0;
 		vertInBindingDescription.stride = sizeof(Vertex);
 		vertInBindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-			
 		return vertInBindingDescription;
 	}
 
 	static std::array<VkVertexInputAttributeDescription, 2> getAttributeDescriptions() {
+
 		std::array<VkVertexInputAttributeDescription, 2> attributeDescriptions = {};
 		attributeDescriptions[0].binding = 0;
 		attributeDescriptions[0].location = 0;
 		attributeDescriptions[0].format = VK_FORMAT_R32G32_SFLOAT;
 		attributeDescriptions[0].offset = offsetof(Vertex, pos);
-
 		attributeDescriptions[1].binding = 0;
 		attributeDescriptions[1].location = 1;
 		attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
@@ -146,4 +145,3 @@ struct Vertex {
 };
 
 #endif
-

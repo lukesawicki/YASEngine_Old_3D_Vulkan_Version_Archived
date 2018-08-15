@@ -6,12 +6,13 @@
 
 template<typename T>
 class YasLog {
+
 	public:
 		static void log(std::string prefix, std::string additionalText, T loggedVariable) {
 			std::cout << prefix << additionalText << loggedVariable << std::endl;
 		}
-	private:
 
+	private:
 };
 
 #endif
