@@ -106,7 +106,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\VulkanSDK\1.1.77.0\Include;C:\devlibs\latest_glm\glm</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\devlibs\stb-master;C:\VulkanSDK\1.1.77.0\Include;C:\devlibs\latest_glm\glm</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>VK_USE_PLATFORM_WIN32_KHR;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <CompileAs>CompileAsCpp</CompileAs>
       <PrecompiledHeader>Create</PrecompiledHeader>
@@ -141,7 +141,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\VulkanSDK\1.1.77.0\Include;C:\devlibs\latest_glm\glm</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\devlibs\stb-master;C:\VulkanSDK\1.1.77.0\Include;C:\devlibs\latest_glm\glm</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>VK_USE_PLATFORM_WIN32_KHR;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <CompileAs>CompileAsCpp</CompileAs>
       <PrecompiledHeader>Create</PrecompiledHeader>

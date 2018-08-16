@@ -1,6 +1,8 @@
+#define STB_IMAGE_IMPLEMENTATION
 #include"stdafx.hpp"
 #include"YasEngine.hpp"
 #include"VariousTools.hpp"
+
 //-----------------------------------------------------------------------------|---------------------------------------|
 
 int YasEngine::windowPositionX				= 64;
@@ -398,7 +400,7 @@ void YasEngine::createSyncObjects() {
 	}
 }
 
-void YasEngine::createBuffer(VkDeviceSize size,VkBufferUsageFlags usage,VkMemoryPropertyFlags properties,VkBuffer & buffer,VkDeviceMemory & bufferMemory) {
+void YasEngine::createBuffer(VkDeviceSize size,VkBufferUsageFlags usage,VkMemoryPropertyFlags properties,VkBuffer &buffer,VkDeviceMemory &bufferMemory) {
 
 	VkBufferCreateInfo bufferCreateInfo = {};
 	bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -428,39 +430,13 @@ void YasEngine::createBuffer(VkDeviceSize size,VkBufferUsageFlags usage,VkMemory
 
 void YasEngine::copyBuffer(VkBuffer sourceBuffer,VkBuffer destinationBuffer,VkDeviceSize deviceSize) {
 
-	VkCommandBufferAllocateInfo commandBufferAllocateInfo = {};
-	commandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-	commandBufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-	commandBufferAllocateInfo.commandPool = commandPool;
-	commandBufferAllocateInfo.commandBufferCount = 1;
+	VkCommandBuffer commandBuffer = beginSingleTimeCommands();
 
-	VkCommandBuffer commandBuffer;
+	VkBufferCopy copyRegion = {};
+	copyRegion.size = deviceSize;
+	vkCmdCopyBuffer(commandBuffer, sourceBuffer, destinationBuffer, 1, &copyRegion);
 
-	vkAllocateCommandBuffers(vulkanDevice->logicalDevice, &commandBufferAllocateInfo, &commandBuffer);
-
-	VkCommandBufferBeginInfo commandBufferBeginInfo = {};
-	commandBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-	commandBufferBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-
-	vkBeginCommandBuffer(commandBuffer, &commandBufferBeginInfo);
-	
-	VkBufferCopy bufferCopyRegion = {};
-	bufferCopyRegion.srcOffset = 0;
-	bufferCopyRegion.dstOffset = 0;
-	bufferCopyRegion.size = deviceSize;
-
-	vkCmdCopyBuffer(commandBuffer, sourceBuffer, destinationBuffer, 1, &bufferCopyRegion);
-	
-	vkEndCommandBuffer(commandBuffer);
-
-	VkSubmitInfo submitInfo = {};
-	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-	submitInfo.commandBufferCount = 1;
-	submitInfo.pCommandBuffers = &commandBuffer;
-
-	vkQueueSubmit(graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
-	vkQueueWaitIdle(graphicsQueue);
-	vkFreeCommandBuffers(vulkanDevice->logicalDevice, commandPool, 1, &commandBuffer);
+	endSingleTimeCommands(commandBuffer);
 }
 
 void YasEngine::createDescriptorSetLayout() {
@@ -782,6 +758,8 @@ void YasEngine::destroySwapchain() {
 void YasEngine::cleanUp() {
 
 	cleanupSwapchain();
+    vkDestroyImage(vulkanDevice->logicalDevice, textureImage, nullptr);
+    vkFreeMemory(vulkanDevice->logicalDevice, textureImageMemory, nullptr);
 	vkDestroyDescriptorPool(vulkanDevice->logicalDevice, descriptorPool, nullptr);
 	vkDestroyDescriptorSetLayout(vulkanDevice->logicalDevice, descriptorSetLayout, nullptr);
 
@@ -866,6 +844,171 @@ void YasEngine::createDescriptorSets()
 
 		vkUpdateDescriptorSets(vulkanDevice->logicalDevice, 1, &writeDescriptorSet, 0, nullptr);
 	}
+}
+
+void YasEngine::createTextureImage() {
+	int textureWidth;
+	int textureHeight;
+	int textureChannels;
+	stbi_uc* pixels = stbi_load("Textures/texture.jpg", &textureWidth, &textureHeight, &textureChannels, STBI_rgb_alpha);
+	VkDeviceSize imageSize = textureWidth * textureHeight * 4;
+
+	if(!pixels) {
+		throw std::runtime_error("Failed to load texture image.");
+	}
+
+	VkBuffer stagingBuffer;
+	VkDeviceMemory stagingBufferMemory;
+	
+	createBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+
+	void *data;
+
+	vkMapMemory(vulkanDevice->logicalDevice, stagingBufferMemory, 0, imageSize, 0, &data);
+	memcpy(data, pixels, static_cast<size_t>(imageSize));
+	vkUnmapMemory(vulkanDevice->logicalDevice, stagingBufferMemory);
+	stbi_image_free(pixels);
+	createImage(textureWidth, textureHeight, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureImage, textureImageMemory);
+	transitionImageLayout(textureImage, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+	copyBufferToImage(stagingBuffer, textureImage, static_cast<uint32_t>(textureWidth), static_cast<uint32_t>(textureHeight));
+	transitionImageLayout(textureImage, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+
+    vkDestroyBuffer(vulkanDevice->logicalDevice, stagingBuffer, nullptr);
+    vkFreeMemory(vulkanDevice->logicalDevice, stagingBufferMemory, nullptr);
+}
+
+void YasEngine::createImage(uint32_t textureWidth, uint32_t textureHeight, VkFormat format, VkImageTiling imageTiling, VkImageUsageFlags imageUsageFlags, VkMemoryPropertyFlags memoryProperties, VkImage& image, VkDeviceMemory& imageMemory)
+{
+
+	VkImageCreateInfo imageCreateInfo = {};
+
+	imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+	imageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
+	imageCreateInfo.extent.width = static_cast<uint32_t>(textureWidth);
+	imageCreateInfo.extent.height = static_cast<uint32_t>(textureHeight);
+	imageCreateInfo.extent.depth = 1;
+	imageCreateInfo.mipLevels = 1;
+	imageCreateInfo.arrayLayers = 1;
+	imageCreateInfo.format = format;
+	imageCreateInfo.tiling = imageTiling;
+	imageCreateInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	imageCreateInfo.usage = imageUsageFlags;
+	imageCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+	imageCreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+	imageCreateInfo.flags = 0;
+
+	if(vkCreateImage(vulkanDevice->logicalDevice, &imageCreateInfo, nullptr, &image) != VK_SUCCESS) {
+		throw std::runtime_error("Failed to create image.");
+	}
+
+	VkMemoryRequirements memoryRequirements;
+	vkGetImageMemoryRequirements(vulkanDevice->logicalDevice, image, &memoryRequirements);
+
+	VkMemoryAllocateInfo memoryAllocateInfo = {};
+	memoryAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+	memoryAllocateInfo.allocationSize = memoryRequirements.size;
+	memoryAllocateInfo.memoryTypeIndex = findMemoryType(memoryRequirements.memoryTypeBits, memoryProperties);
+
+	if (vkAllocateMemory(vulkanDevice->logicalDevice, &memoryAllocateInfo, nullptr, &textureImageMemory) != VK_SUCCESS) {
+		throw std::runtime_error("failed to allocate image memory!");
+	}
+
+	vkBindImageMemory(vulkanDevice->logicalDevice, image, textureImageMemory, 0);
+}
+
+VkCommandBuffer YasEngine::beginSingleTimeCommands() {
+    VkCommandBufferAllocateInfo commandBufferAllocateInfo = {};
+    commandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+    commandBufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+    commandBufferAllocateInfo.commandPool = commandPool;
+    commandBufferAllocateInfo.commandBufferCount = 1;
+
+    VkCommandBuffer commandBuffer;
+    vkAllocateCommandBuffers(vulkanDevice->logicalDevice, &commandBufferAllocateInfo, &commandBuffer);
+
+    VkCommandBufferBeginInfo commandBufferBeginInfo = {};
+    commandBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    commandBufferBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+    vkBeginCommandBuffer(commandBuffer, &commandBufferBeginInfo);
+
+    return commandBuffer;
+}
+
+void YasEngine::endSingleTimeCommands(VkCommandBuffer commandBuffer) {
+    vkEndCommandBuffer(commandBuffer);
+
+    VkSubmitInfo submitInfo = {};
+    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    submitInfo.commandBufferCount = 1;
+    submitInfo.pCommandBuffers = &commandBuffer;
+
+    vkQueueSubmit(graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
+    vkQueueWaitIdle(graphicsQueue);
+
+    vkFreeCommandBuffers(vulkanDevice->logicalDevice, commandPool, 1, &commandBuffer);
+}
+
+void YasEngine::transitionImageLayout(VkImage image,VkFormat format,VkImageLayout oldImageLayout,VkImageLayout newImageLayout)
+{
+	VkCommandBuffer commandBuffer = beginSingleTimeCommands();
+	endSingleTimeCommands(commandBuffer);
+
+	VkImageMemoryBarrier imageMemoryBarrier = {};
+	imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+	imageMemoryBarrier.oldLayout = oldImageLayout;
+	imageMemoryBarrier.newLayout = newImageLayout;
+	imageMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	imageMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	imageMemoryBarrier.image = image;
+	imageMemoryBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	imageMemoryBarrier.subresourceRange.baseMipLevel = 0;
+	imageMemoryBarrier.subresourceRange.levelCount = 1;
+	imageMemoryBarrier.subresourceRange.baseArrayLayer = 0;
+	imageMemoryBarrier.subresourceRange.layerCount = 1;
+
+	VkPipelineStageFlags sourcePipelineStageFlag;
+	VkPipelineStageFlags destinationPipelineStageFlags;
+
+	if(oldImageLayout == VK_IMAGE_LAYOUT_UNDEFINED && newImageLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
+		imageMemoryBarrier.srcAccessMask = 0;
+		imageMemoryBarrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+		sourcePipelineStageFlag = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+		destinationPipelineStageFlags = VK_PIPELINE_STAGE_TRANSFER_BIT;
+	} else if(oldImageLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && newImageLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
+		imageMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+		imageMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+		sourcePipelineStageFlag = VK_PIPELINE_STAGE_TRANSFER_BIT;
+		destinationPipelineStageFlags = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+	} else {
+		throw std::invalid_argument("Unsuported layout transition.");
+	}
+
+	vkCmdPipelineBarrier(commandBuffer, 0, 0, 0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier);	
+}
+
+void YasEngine::copyBufferToImage(VkBuffer buffer,VkImage image,uint32_t imageWidth,uint32_t imageHeight)
+{
+	VkCommandBuffer commandBuffer = beginSingleTimeCommands();
+
+	VkBufferImageCopy bufferImageCopyRegion = {};
+	bufferImageCopyRegion.bufferOffset = 0;
+	bufferImageCopyRegion.bufferRowLength = 0;
+	bufferImageCopyRegion.bufferImageHeight = 0;
+	bufferImageCopyRegion.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	bufferImageCopyRegion.imageSubresource.mipLevel = 0;
+	bufferImageCopyRegion.imageSubresource.baseArrayLayer = 0;
+	bufferImageCopyRegion.imageSubresource.layerCount = 1;
+	bufferImageCopyRegion.imageOffset = {0, 0, 0};
+	bufferImageCopyRegion.imageExtent = {
+		imageWidth,
+		imageHeight,
+		1
+	};
+
+	vkCmdCopyBufferToImage(commandBuffer, buffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &bufferImageCopyRegion);
+
+	endSingleTimeCommands(commandBuffer);
 }
 
 //-----------------------------------------------------------------------------|---------------------------------------|
