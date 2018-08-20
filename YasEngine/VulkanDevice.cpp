@@ -11,8 +11,8 @@ bool VulkanDevice::isPhysicalDeviceSuitable(VkPhysicalDevice physDevice, VulkanI
 	QueueFamilyIndices indices = findQueueFamilies(physDevice, surface);
 	VkPhysicalDeviceProperties physicalDeviceProperties;
 	vkGetPhysicalDeviceProperties(physDevice, &physicalDeviceProperties);
-	VkPhysicalDeviceFeatures physicalDeviceFeatures;
-	vkGetPhysicalDeviceFeatures(physDevice, &physicalDeviceFeatures);
+	VkPhysicalDeviceFeatures physicalDeviceSupportedFeatures;
+	vkGetPhysicalDeviceFeatures(physDevice, &physicalDeviceSupportedFeatures);
 
 	if(physicalDeviceProperties.vendorID == 4130) {
 		std::cout << "Physical device vendor: AMD" << std::endl;
@@ -40,7 +40,7 @@ bool VulkanDevice::isPhysicalDeviceSuitable(VkPhysicalDevice physDevice, VulkanI
 	}
 
 	std::cout << "Before return in isPhysicalDeviceSuitable(VkPhysicalDevice device) " << std::endl;
-	return indices.isComplete() && extensionsSupported && swapchainSuitable;
+	return indices.isComplete() && extensionsSupported && swapchainSuitable && physicalDeviceSupportedFeatures.samplerAnisotropy;
 }
 
 VulkanDevice::VulkanDevice(VulkanInstance& vulkanInstance, VkSurfaceKHR& surface, VkQueue& graphicsQueue, VkQueue& presentationQueue, bool enableValidationLayers) {
@@ -92,6 +92,7 @@ void VulkanDevice::createLogicalDevice(VulkanInstance& vulkanInstance, VkSurface
 	}
 	
 	VkPhysicalDeviceFeatures physicalDeviceFeatures = {};
+	physicalDeviceFeatures.samplerAnisotropy = VK_TRUE;
 
 	VkDeviceCreateInfo createInfo = {};
 	createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;

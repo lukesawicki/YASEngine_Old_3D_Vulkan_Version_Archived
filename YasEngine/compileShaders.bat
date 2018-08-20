@@ -7,4 +7,3 @@ REM copy /Y Shaders\vert.spv ..\
 REM copy /Y Shaders\frag.spv ..\
 copy /Y vert.spv Shaders\
 copy /Y frag.spv Shaders\
-cd..

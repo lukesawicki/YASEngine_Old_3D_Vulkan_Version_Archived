@@ -63,7 +63,7 @@ class YasEngine {
 		void							createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
 		void							copyBuffer(VkBuffer sourceBuffer, VkBuffer destinationBuffer, VkDeviceSize deviceSize);
 		void							createDescriptorSetLayout();
-		void							createUniformBuffer();
+		void							createUniformBuffers();
 		void							updateUniformBuffer(uint32_t currentImage, float deltaTime);
 		void							createDescriptorPool();
 		void							createDescriptorSets();
@@ -73,6 +73,9 @@ class YasEngine {
 		void							endSingleTimeCommands(VkCommandBuffer commandBuffer);
 		void							transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldImageLayout, VkImageLayout newImageLayout);
 		void							copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t imageWidth, uint32_t imageHeight);
+		void							createTextureImageView();
+		void							createTextureSampler();
+
 
 		HINSTANCE						application;
 		HWND							window;
@@ -104,14 +107,18 @@ class YasEngine {
 		std::vector<VkDescriptorSet>	descriptorSets;
 		VkImage							textureImage;
 		VkDeviceMemory					textureImageMemory;
+		VkImageView						textureImageView;
+		VkSampler						textureSampler;
+
 		float zeroTime = 0;
 
 		const std::vector<Vertex> vertices = {
-			{{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
-			{{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
-			{{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
-			{{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}}
+			{{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
+			{{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
+			{{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
+			{{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}}
 		};
+
 		//can use uint32_t
 		const std::vector<uint16_t> indices = {
 			0, 1, 2, 2, 3, 0

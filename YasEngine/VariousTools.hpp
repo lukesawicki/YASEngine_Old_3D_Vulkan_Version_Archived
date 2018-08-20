@@ -116,6 +116,7 @@ struct Vertex {
 
 	glm::vec2 pos;
 	glm::vec3 color;
+	glm::vec2 texCoord;
 	//YasMathLib::vec2 pos;
 	//YasMathLib::vec3 color;
 		
@@ -125,23 +126,51 @@ struct Vertex {
 		vertInBindingDescription.binding = 0;
 		vertInBindingDescription.stride = sizeof(Vertex);
 		vertInBindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+		
 		return vertInBindingDescription;
 	}
 
-	static std::array<VkVertexInputAttributeDescription, 2> getAttributeDescriptions() {
+	static std::array<VkVertexInputAttributeDescription, 3> getAttributeDescriptions() {
 
-		std::array<VkVertexInputAttributeDescription, 2> attributeDescriptions = {};
-		attributeDescriptions[0].binding = 0;
-		attributeDescriptions[0].location = 0;
-		attributeDescriptions[0].format = VK_FORMAT_R32G32_SFLOAT;
-		attributeDescriptions[0].offset = offsetof(Vertex, pos);
-		attributeDescriptions[1].binding = 0;
-		attributeDescriptions[1].location = 1;
-		attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
-		attributeDescriptions[1].offset = offsetof(Vertex, color);
+		std::array<VkVertexInputAttributeDescription, 3> vertexInputAttributeDescription = {};
+		vertexInputAttributeDescription[0].binding = 0;
+		vertexInputAttributeDescription[0].location = 0;
+		vertexInputAttributeDescription[0].format = VK_FORMAT_R32G32_SFLOAT;
+		vertexInputAttributeDescription[0].offset = offsetof(Vertex, pos);
 
-		return attributeDescriptions;
+		vertexInputAttributeDescription[1].binding = 0;
+		vertexInputAttributeDescription[1].location = 1;
+		vertexInputAttributeDescription[1].format = VK_FORMAT_R32G32B32_SFLOAT;
+		vertexInputAttributeDescription[1].offset = offsetof(Vertex, color);
+
+        vertexInputAttributeDescription[2].binding = 0;
+        vertexInputAttributeDescription[2].location = 2;
+        vertexInputAttributeDescription[2].format = VK_FORMAT_R32G32_SFLOAT;
+        vertexInputAttributeDescription[2].offset = offsetof(Vertex, texCoord);
+
+		return vertexInputAttributeDescription;
 	}
 };
+
+static VkImageView createImageView(VkImage image, VkFormat format, VkDevice& vulkanLogicDevice) {
+
+	VkImageViewCreateInfo imageViewCreateInfo = {};
+	imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+	imageViewCreateInfo.image = image;
+	imageViewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+	imageViewCreateInfo.format = format;
+	imageViewCreateInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	imageViewCreateInfo.subresourceRange.baseMipLevel = 0;
+	imageViewCreateInfo.subresourceRange.levelCount = 1;
+	imageViewCreateInfo.subresourceRange.baseArrayLayer = 0;
+	imageViewCreateInfo.subresourceRange.layerCount = 1;
+
+	VkImageView imageView;
+
+	if(vkCreateImageView(vulkanLogicDevice, &imageViewCreateInfo, nullptr, &imageView) != VK_SUCCESS) {
+		throw std::runtime_error("Failed to create image view");
+	}
+	return imageView;
+}
 
 #endif
