@@ -125,7 +125,7 @@ void VulkanSwapchain::createImageViews(VkDevice& device) {
 
 	swapchainImageViews.resize(swapchainImages.size());
 	for(size_t i=0; i<swapchainImages.size(); i++) {
-		swapchainImageViews[i] = createImageView(swapchainImages[i], swapchainImageFormat, device);
+		swapchainImageViews[i] = createImageView(swapchainImages[i], swapchainImageFormat, VK_IMAGE_ASPECT_COLOR_BIT, device);
 	}
 }
 

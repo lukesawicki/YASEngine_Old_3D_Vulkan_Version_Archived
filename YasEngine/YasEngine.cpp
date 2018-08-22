@@ -165,8 +165,9 @@ void YasEngine::initializeVulkan() {
 	createRenderPass();
 	createDescriptorSetLayout();
 	createGraphicsPipeline();
-	createFramebuffers();
 	createCommandPool();
+	createDepthResources();
+	createFramebuffers();
 	createTextureImage();
 	createTextureImageView();
 	createTextureSampler();
@@ -288,9 +289,14 @@ void YasEngine::createCommandBuffers() {
 		renderPassBeginInfo.framebuffer = swapchainFramebuffers[i];
 		renderPassBeginInfo.renderArea.offset = {0, 0};
 		renderPassBeginInfo.renderArea.extent = vulkanSwapchain.swapchainExtent;
-		VkClearValue clearColor = {0.0F, 0.0F, 0.0F, 1.0F};
-		renderPassBeginInfo.clearValueCount = 1;
-		renderPassBeginInfo.pClearValues = &clearColor;
+
+		//VkClearValue clearColor = {0.0F, 0.0F, 0.0F, 1.0F};
+		std::array<VkClearValue, 2> clearValues = {};
+		clearValues[0].color = {0.0F, 0.0F, 0.0F, 1.0F};
+		clearValues[1].depthStencil = {1.0F, 0};
+
+		renderPassBeginInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
+		renderPassBeginInfo.pClearValues = clearValues.data();
 
 		vkCmdBeginRenderPass(commandBuffers[i], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 		vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
@@ -533,6 +539,7 @@ void YasEngine::recreateSwapchain() {
 	createImageViews();
 	createRenderPass();
 	createGraphicsPipeline();
+	createDepthResources();
 	createFramebuffers();
 	createCommandBuffers();
 }
@@ -543,6 +550,10 @@ void YasEngine::createImageViews() {
 }
 
 void YasEngine::cleanupSwapchain() {
+
+    vkDestroyImageView(vulkanDevice->logicalDevice, depthImageView, nullptr);
+    vkDestroyImage(vulkanDevice->logicalDevice, depthImage, nullptr);
+    vkFreeMemory(vulkanDevice->logicalDevice, depthImageMemory, nullptr);
 
 	for(size_t i=0; i < swapchainFramebuffers.size(); i++) {
 		vkDestroyFramebuffer(vulkanDevice->logicalDevice, swapchainFramebuffers[i], nullptr);
@@ -561,24 +572,40 @@ void YasEngine::cleanupSwapchain() {
 
 void YasEngine::createRenderPass() {
 
-	VkAttachmentDescription colorAttachment = {};
-	colorAttachment.format = vulkanSwapchain.swapchainImageFormat;
-	colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
-	colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-	colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-	colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-	colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-	colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-	colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+
+	VkAttachmentDescription colorAttachmentDescription = {};
+	colorAttachmentDescription.format = vulkanSwapchain.swapchainImageFormat;
+	colorAttachmentDescription.samples = VK_SAMPLE_COUNT_1_BIT;
+	colorAttachmentDescription.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+	colorAttachmentDescription.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+	colorAttachmentDescription.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+	colorAttachmentDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+	colorAttachmentDescription.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	colorAttachmentDescription.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+
+	VkAttachmentDescription depthAttachmentDescription = {};
+	depthAttachmentDescription.format = findDepthFormat();
+	depthAttachmentDescription.samples = VK_SAMPLE_COUNT_1_BIT;
+	depthAttachmentDescription.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+	depthAttachmentDescription.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+	depthAttachmentDescription.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+	depthAttachmentDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+	depthAttachmentDescription.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	depthAttachmentDescription.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
 	VkAttachmentReference colorAttachmentReference = {};
 	colorAttachmentReference.attachment = 0;
 	colorAttachmentReference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
+	VkAttachmentReference depthAttachmentReference = {};
+	depthAttachmentReference.attachment = 1;
+	depthAttachmentReference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
 	VkSubpassDescription subpassDescription = {};
 	subpassDescription.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
 	subpassDescription.colorAttachmentCount = 1;
 	subpassDescription.pColorAttachments = &colorAttachmentReference;
+	subpassDescription.pDepthStencilAttachment = &depthAttachmentReference;
 
 	VkSubpassDependency subpassDependency = {};
 	subpassDependency.srcSubpass = VK_SUBPASS_EXTERNAL;
@@ -588,10 +615,12 @@ void YasEngine::createRenderPass() {
 	subpassDependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 	subpassDependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 
+	std::array<VkAttachmentDescription, 2> attachments = {colorAttachmentDescription, depthAttachmentDescription};
+
 	VkRenderPassCreateInfo renderPassInfo = {};
 	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-	renderPassInfo.attachmentCount = 1;
-	renderPassInfo.pAttachments = &colorAttachment;
+	renderPassInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
+	renderPassInfo.pAttachments = attachments.data();
 	renderPassInfo.subpassCount = 1;
 	renderPassInfo.pSubpasses = &subpassDescription;
 	renderPassInfo.dependencyCount = 1;
@@ -678,6 +707,19 @@ void YasEngine::createGraphicsPipeline() {
 	multisampling.sampleShadingEnable = VK_FALSE;
 	multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
 
+//stencil state
+	VkPipelineDepthStencilStateCreateInfo pipelineDepthStencilStateCreateInfo = {};
+	pipelineDepthStencilStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+	pipelineDepthStencilStateCreateInfo.depthTestEnable = VK_TRUE;
+	pipelineDepthStencilStateCreateInfo.depthWriteEnable = VK_TRUE;
+	pipelineDepthStencilStateCreateInfo.depthCompareOp = VK_COMPARE_OP_LESS;
+	pipelineDepthStencilStateCreateInfo.depthBoundsTestEnable = VK_FALSE;
+	pipelineDepthStencilStateCreateInfo.minDepthBounds = 0.0F;
+	pipelineDepthStencilStateCreateInfo.maxDepthBounds = 1.0F;
+	pipelineDepthStencilStateCreateInfo.stencilTestEnable = VK_FALSE;
+	pipelineDepthStencilStateCreateInfo.front = {};
+	pipelineDepthStencilStateCreateInfo.back = {};
+
 	VkPipelineColorBlendAttachmentState colorBlendAttachment = {};
 	colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
 	colorBlendAttachment.blendEnable = VK_FALSE;
@@ -716,6 +758,7 @@ void YasEngine::createGraphicsPipeline() {
 	graphicsPiplineCreateInfo.renderPass = renderPass;
 	graphicsPiplineCreateInfo.subpass = 0;
 	graphicsPiplineCreateInfo.basePipelineHandle = VK_NULL_HANDLE;
+	graphicsPiplineCreateInfo.pDepthStencilState = &pipelineDepthStencilStateCreateInfo;
 
 	if(vkCreateGraphicsPipelines(vulkanDevice->logicalDevice, VK_NULL_HANDLE, 1, &graphicsPiplineCreateInfo, nullptr, &graphicsPipeline) != VK_SUCCESS) {
 		throw std::runtime_error("Failed to create graphics pipeline");
@@ -730,12 +773,15 @@ void YasEngine::createFramebuffers() {
 	swapchainFramebuffers.resize(vulkanSwapchain.swapchainImageViews.size());
 
 	for(size_t i=0; i<vulkanSwapchain.swapchainImageViews.size(); i++) {
-		VkImageView attachments[] = { vulkanSwapchain.swapchainImageViews[i] };
+
+		std::array<VkImageView, 2> attachments = {vulkanSwapchain.swapchainImageViews[i], depthImageView};
+
+		//VkImageView attachments[] = { vulkanSwapchain.swapchainImageViews[i] };
 		VkFramebufferCreateInfo framebufferCreateInfo = {};
 		framebufferCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
 		framebufferCreateInfo.renderPass = renderPass;
-		framebufferCreateInfo.attachmentCount = 1;
-		framebufferCreateInfo.pAttachments = attachments;
+		framebufferCreateInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
+		framebufferCreateInfo.pAttachments = attachments.data();
 		framebufferCreateInfo.width = vulkanSwapchain.swapchainExtent.width;
 		framebufferCreateInfo.height = vulkanSwapchain.swapchainExtent.height;
 		framebufferCreateInfo.layers = 1;
@@ -990,7 +1036,16 @@ void YasEngine::transitionImageLayout(VkImage image, VkFormat format, VkImageLay
 	imageMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 	imageMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 	imageMemoryBarrier.image = image;
-	imageMemoryBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+
+	if(newImageLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL) {
+		imageMemoryBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+		if(hasStencilComponent(format)) {
+			imageMemoryBarrier.subresourceRange.aspectMask = imageMemoryBarrier.subresourceRange.aspectMask | VK_IMAGE_ASPECT_STENCIL_BIT;
+		}
+	} else {
+		imageMemoryBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	}
+
 	imageMemoryBarrier.subresourceRange.baseMipLevel = 0;
 	imageMemoryBarrier.subresourceRange.levelCount = 1;
 	imageMemoryBarrier.subresourceRange.baseArrayLayer = 0;
@@ -1009,10 +1064,16 @@ void YasEngine::transitionImageLayout(VkImage image, VkFormat format, VkImageLay
 		imageMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
 		sourcePipelineStageFlag = VK_PIPELINE_STAGE_TRANSFER_BIT;
 		destinationPipelineStageFlags = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-	} else {
+	} else if(oldImageLayout == VK_IMAGE_LAYOUT_UNDEFINED && newImageLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL) {
+		imageMemoryBarrier.srcAccessMask = 0;
+		imageMemoryBarrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+		sourcePipelineStageFlag = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+		destinationPipelineStageFlags = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+	}
+	else {
 		throw std::invalid_argument("Unsuported layout transition.");
 	}
-
+//destinationPipelineStageFlags is being used without being initialized
 	vkCmdPipelineBarrier(commandBuffer, sourcePipelineStageFlag, destinationPipelineStageFlags, 0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier);
 	endSingleTimeCommands(commandBuffer);
 }
@@ -1039,7 +1100,7 @@ void YasEngine::copyBufferToImage(VkBuffer buffer,VkImage image,uint32_t imageWi
 
 void YasEngine::createTextureImageView()
 {
-	textureImageView = createImageView(textureImage, VK_FORMAT_R8G8B8A8_UNORM, vulkanDevice->logicalDevice);
+	textureImageView = createImageView(textureImage, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT, vulkanDevice->logicalDevice);
 }
 
 void YasEngine::createTextureSampler()
@@ -1062,6 +1123,39 @@ void YasEngine::createTextureSampler()
 	if(vkCreateSampler(vulkanDevice->logicalDevice, &samplerCreateInfo, nullptr, &textureSampler) != VK_SUCCESS) {
 		throw std::runtime_error("Failed to create texture sampler!");
 	}
+}
+
+void YasEngine::createDepthResources()
+{
+	VkFormat depthFormat = findDepthFormat();
+
+	createImage(vulkanSwapchain.swapchainExtent.width, vulkanSwapchain.swapchainExtent.height, depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, depthImage, depthImageMemory);
+	depthImageView = createImageView(depthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT, vulkanDevice->logicalDevice);
+	transitionImageLayout(depthImage, depthFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+}
+
+VkFormat YasEngine::findSupportedFormat(const std::vector<VkFormat>& candidates,VkImageTiling tiling,VkFormatFeatureFlags features)
+{
+	for(VkFormat format: candidates) {
+		VkFormatProperties formatProperties;
+		vkGetPhysicalDeviceFormatProperties(vulkanDevice->physicalDevice, format, &formatProperties);
+		if( tiling == VK_IMAGE_TILING_LINEAR && (formatProperties.linearTilingFeatures & features) == features) {
+			return format;
+		} else if( tiling == VK_IMAGE_TILING_OPTIMAL && (formatProperties.optimalTilingFeatures & features) == features) {
+			return format;
+		}
+	}
+	throw std::runtime_error("Failed to find supported format.");
+}
+
+VkFormat YasEngine::findDepthFormat()
+{
+	return findSupportedFormat({VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT}, VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
+}
+
+bool YasEngine::hasStencilComponent(VkFormat format)
+{
+	return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT;
 }
 
 //-----------------------------------------------------------------------------|---------------------------------------|
