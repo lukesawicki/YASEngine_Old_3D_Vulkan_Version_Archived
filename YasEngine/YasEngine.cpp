@@ -1,4 +1,5 @@
 #define STB_IMAGE_IMPLEMENTATION
+#define TINYOBJLOADER_IMPLEMENTATION
 #include"stdafx.hpp"
 #include"YasEngine.hpp"
 #include"VariousTools.hpp"
@@ -9,8 +10,11 @@ int YasEngine::windowPositionX				= 64;
 int YasEngine::windowPositionY				= 64;
 int YasEngine::windowWidth					= 800;
 int YasEngine::windowHeight					= 600;
+const std::string				YasEngine::MODEL_PATH="Models\\chalet.obj";
+const std::string				YasEngine::TEXTURE_PATH="Textures\\chalet.jpg";
 bool YasEngine::framebufferResized = false;
 const int MAX_FRAMES_IN_FLIGHT = 2;
+
 
 LRESULT CALLBACK windowProcedure(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
 	
@@ -171,6 +175,7 @@ void YasEngine::initializeVulkan() {
 	createTextureImage();
 	createTextureImageView();
 	createTextureSampler();
+	loadModel();
 	createVertexBuffer();
 	createIndexBuffer();
 	createUniformBuffers();
@@ -305,7 +310,7 @@ void YasEngine::createCommandBuffers() {
 		VkDeviceSize offsets[] = {0};
 
 		vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, vertexBuffers, offsets);
-		vkCmdBindIndexBuffer(commandBuffers[i], indexBuffer, 0, VK_INDEX_TYPE_UINT16);
+		vkCmdBindIndexBuffer(commandBuffers[i], indexBuffer, 0, VK_INDEX_TYPE_UINT32);
 
 		vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSets[i], 0, nullptr);
 		vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
@@ -926,7 +931,7 @@ void YasEngine::createTextureImage() {
 	int textureWidth;
 	int textureHeight;
 	int textureChannels;
-	stbi_uc* pixels = stbi_load("Textures\\texture.jpg", &textureWidth, &textureHeight, &textureChannels, STBI_rgb_alpha);
+	stbi_uc* pixels = stbi_load(TEXTURE_PATH.c_str(), &textureWidth, &textureHeight, &textureChannels, STBI_rgb_alpha);
 	VkDeviceSize imageSize = textureWidth * textureHeight * 4;
 
 	if(!pixels) {
@@ -1156,6 +1161,40 @@ VkFormat YasEngine::findDepthFormat()
 bool YasEngine::hasStencilComponent(VkFormat format)
 {
 	return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT;
+}
+
+void YasEngine::loadModel()
+{
+	tinyobj::attrib_t attrib;
+	std::vector<tinyobj::shape_t> shapes;
+	std::vector<tinyobj::material_t> materials;
+	std::string tinyobjLoadingError;
+	
+	if(!tinyobj::LoadObj(&attrib, &shapes, &materials, &tinyobjLoadingError, MODEL_PATH.c_str())) {
+		throw std::runtime_error(tinyobjLoadingError);
+	}
+	
+	for(const auto& shape: shapes) {
+		for(const auto& index: shape.mesh.indices) {
+			Vertex vertex = {};
+
+			vertex.pos = {
+				attrib.vertices[3 * index.vertex_index + 0],
+				attrib.vertices[3 * index.vertex_index + 1],
+				attrib.vertices[3 * index.vertex_index + 2]
+			};
+
+			vertex.texCoord = {
+				attrib.texcoords[2 * index.texcoord_index + 0],
+				attrib.texcoords[2 * index.texcoord_index + 1]
+			};
+
+			vertex.color = {1.0F, 1.0F, 1.0F};
+
+			vertices.push_back(vertex);
+			indices.push_back(indices.size());
+		}
+	}
 }
 
 //-----------------------------------------------------------------------------|---------------------------------------|

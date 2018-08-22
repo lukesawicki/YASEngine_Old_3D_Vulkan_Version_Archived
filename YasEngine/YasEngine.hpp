@@ -22,7 +22,9 @@ class YasEngine {
 		static int						windowPositionY;
 		static int						windowWidth;
 		static int						windowHeight;
-		
+
+		static const std::string				MODEL_PATH;//="Models\\chalet.obj";
+		static const std::string				TEXTURE_PATH;//="Textures\\chalet.jpg";
 
 		#ifdef NDEBUG
 			const bool					enableValidationLayers = false;
@@ -79,6 +81,8 @@ class YasEngine {
 		VkFormat						findSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
 		VkFormat						findDepthFormat();
 		bool							hasStencilComponent(VkFormat format);
+		void							loadModel();
+
 
 		HINSTANCE						application;
 		HWND							window;
@@ -115,27 +119,9 @@ class YasEngine {
 		VkImage							depthImage;
 		VkDeviceMemory					depthImageMemory;
 		VkImageView						depthImageView;
-
 		float zeroTime = 0;
-
-		const std::vector<Vertex> vertices = {
-			{{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
-			{{0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
-			{{0.5f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
-			{{-0.5f, 0.5f, 0.0f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}},
-
-			{{-0.5f, -0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
-			{{0.5f, -0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
-			{{0.5f, 0.5f, -0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
-			{{-0.5f, 0.5f, -0.5f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}}
-		};
-
-		//can use uint32_t
-		const std::vector<uint16_t> indices = {
-			0, 1, 2, 2, 3, 0,
-			4, 5, 6, 6, 7, 4
-		};
-
+		std::vector<Vertex> vertices;
+		std::vector<uint32_t> indices;
 	//private end
 };
 
