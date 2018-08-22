@@ -1168,6 +1168,7 @@ void YasEngine::loadModel()
 	tinyobj::attrib_t attrib;
 	std::vector<tinyobj::shape_t> shapes;
 	std::vector<tinyobj::material_t> materials;
+	std::unordered_map<Vertex, uint32_t> uniqueVertices = {};
 	std::string tinyobjLoadingError;
 	
 	if(!tinyobj::LoadObj(&attrib, &shapes, &materials, &tinyobjLoadingError, MODEL_PATH.c_str())) {
@@ -1186,13 +1187,16 @@ void YasEngine::loadModel()
 
 			vertex.texCoord = {
 				attrib.texcoords[2 * index.texcoord_index + 0],
-				attrib.texcoords[2 * index.texcoord_index + 1]
+				1.0F - attrib.texcoords[2 * index.texcoord_index + 1]
 			};
 
 			vertex.color = {1.0F, 1.0F, 1.0F};
 
-			vertices.push_back(vertex);
-			indices.push_back(indices.size());
+			if(uniqueVertices.count(vertex) == 0) {
+				uniqueVertices[vertex] = static_cast<uint32_t>(vertices.size());
+				vertices.push_back(vertex);
+			}
+			indices.push_back(uniqueVertices[vertex]);
 		}
 	}
 }

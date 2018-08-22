@@ -112,6 +112,8 @@ class TimePicker {
 		float z;
 	};
 */
+
+
 struct Vertex {
 
 	glm::vec3 pos;
@@ -119,7 +121,11 @@ struct Vertex {
 	glm::vec2 texCoord;
 	//YasMathLib::vec2 pos;
 	//YasMathLib::vec3 color;
-		
+
+	bool operator==(const Vertex& other) const {
+		return pos == other.pos && color == other.color && texCoord == other.texCoord;
+	}
+
 	static VkVertexInputBindingDescription getBindingDescription() {
 
 		VkVertexInputBindingDescription vertInBindingDescription = {};
@@ -149,6 +155,12 @@ struct Vertex {
         vertexInputAttributeDescription[2].offset = offsetof(Vertex, texCoord);
 
 		return vertexInputAttributeDescription;
+	}
+};
+
+template<> struct std::hash<Vertex> {
+	size_t operator()(Vertex const& vertex) const {
+		return ((std::hash<glm::vec3>()(vertex.pos) ^ (std::hash<glm::vec3>()(vertex.color) << 1)) >> 1) ^ (std::hash<glm::vec2>()(vertex.texCoord) << 1);
 	}
 };
 
