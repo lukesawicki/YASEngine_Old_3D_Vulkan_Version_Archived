@@ -16,17 +16,12 @@ bool VulkanDevice::isPhysicalDeviceSuitable(VkPhysicalDevice physDevice, VulkanI
 
 	if(physicalDeviceProperties.vendorID == 4130) {
 		std::cout << "Physical device vendor: AMD" << std::endl;
+	} else if(physicalDeviceProperties.vendorID == 4318) {
+				std::cout << "Physical device vendor: NVIDIA" << std::endl;
+	} else if(physicalDeviceProperties.vendorID == 8086) {
+			std::cout << "Physical device vendor: INTEL" << std::endl;
 	} else {
-		if(physicalDeviceProperties.vendorID == 4318) {
-			std::cout << "Physical device vendor: NVIDIA" << std::endl;
-		} else {
-			if(physicalDeviceProperties.vendorID == 8086) {
-				std::cout << "Physical device vendor: INTEL" << std::endl;
-			}
-			else {
-				std::cout << "Physical device vendor: Other vendor." << std::endl;
-			}
-		}
+		std::cout << "Physical device vendor: Other vendor." << std::endl;
 	}
 
 	bool extensionsSupported = vulkanInstance.layersAndExtensions->CheckIfAllRequestedPhysicalDeviceExtensionAreSupported(physDevice);
@@ -40,7 +35,7 @@ bool VulkanDevice::isPhysicalDeviceSuitable(VkPhysicalDevice physDevice, VulkanI
 	}
 
 	std::cout << "Before return in isPhysicalDeviceSuitable(VkPhysicalDevice device) " << std::endl;
-	return indices.isComplete() && extensionsSupported && swapchainSuitable && physicalDeviceSupportedFeatures.samplerAnisotropy;
+	return indices.isComplete() && extensionsSupported && swapchainSuitable && physicalDeviceSupportedFeatures.samplerAnisotropy; // && physicalDeviceProperties.vendorID == 4318;
 }
 
 VulkanDevice::VulkanDevice(VulkanInstance& vulkanInstance, VkSurfaceKHR& surface, VkQueue& graphicsQueue, VkQueue& presentationQueue, bool enableValidationLayers) {

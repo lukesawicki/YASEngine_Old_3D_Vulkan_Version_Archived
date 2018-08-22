@@ -160,6 +160,7 @@ void YasEngine::mainLoop() {
 
 void YasEngine::initializeVulkan() {
 
+	std::cout << "!!!!Attention!!!! hardcoded to choose NVIDIA graphics card" << std::endl;
 	createVulkanInstance();
 	setupDebugCallback();
 	createSurface();
