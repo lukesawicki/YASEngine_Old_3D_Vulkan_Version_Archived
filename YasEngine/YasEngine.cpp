@@ -295,7 +295,6 @@ void YasEngine::createCommandBuffers() {
 		renderPassBeginInfo.renderArea.offset = {0, 0};
 		renderPassBeginInfo.renderArea.extent = vulkanSwapchain.swapchainExtent;
 
-		//VkClearValue clearColor = {0.0F, 0.0F, 0.0F, 1.0F};
 		std::array<VkClearValue, 2> clearValues = {};
 		clearValues[0].color = {0.0F, 0.0F, 0.0F, 1.0F};
 		clearValues[1].depthStencil = {1.0F, 0};
@@ -712,7 +711,6 @@ void YasEngine::createGraphicsPipeline() {
 	multisampling.sampleShadingEnable = VK_FALSE;
 	multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
 
-//stencil state
 	VkPipelineDepthStencilStateCreateInfo pipelineDepthStencilStateCreateInfo = {};
 	pipelineDepthStencilStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
 	pipelineDepthStencilStateCreateInfo.depthTestEnable = VK_TRUE;
@@ -781,7 +779,6 @@ void YasEngine::createFramebuffers() {
 
 		std::array<VkImageView, 2> attachments = {vulkanSwapchain.swapchainImageViews[i], depthImageView};
 
-		//VkImageView attachments[] = { vulkanSwapchain.swapchainImageViews[i] };
 		VkFramebufferCreateInfo framebufferCreateInfo = {};
 		framebufferCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
 		framebufferCreateInfo.renderPass = renderPass;
@@ -955,7 +952,6 @@ void YasEngine::createTextureImage() {
 	createImage(textureWidth, textureHeight, mipLevels, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureImage, textureImageMemory);
 	transitionImageLayout(textureImage, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, mipLevels);
 	copyBufferToImage(stagingBuffer, textureImage, static_cast<uint32_t>(textureWidth), static_cast<uint32_t>(textureHeight));
-	//transitionImageLayout(textureImage, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, mipLevels);
 
     vkDestroyBuffer(vulkanDevice->logicalDevice, stagingBuffer, nullptr);
     vkFreeMemory(vulkanDevice->logicalDevice, stagingBufferMemory, nullptr);
@@ -1081,7 +1077,7 @@ void YasEngine::transitionImageLayout(VkImage image, VkFormat format, VkImageLay
 	else {
 		throw std::invalid_argument("Unsuported layout transition.");
 	}
-//destinationPipelineStageFlags is being used without being initialized
+
 	vkCmdPipelineBarrier(commandBuffer, sourcePipelineStageFlag, destinationPipelineStageFlags, 0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier);
 	endSingleTimeCommands(commandBuffer);
 }
@@ -1127,9 +1123,9 @@ void YasEngine::createTextureSampler()
 	samplerCreateInfo.compareEnable = VK_FALSE;
 	samplerCreateInfo.compareOp = VK_COMPARE_OP_ALWAYS;
 	samplerCreateInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-    samplerCreateInfo.minLod = 0; // Optional
+    samplerCreateInfo.minLod = 0;
     samplerCreateInfo.maxLod = static_cast<float>(mipLevels);
-    samplerCreateInfo.mipLodBias = 0; // Optional
+    samplerCreateInfo.mipLodBias = 0;
 	
 	if(vkCreateSampler(vulkanDevice->logicalDevice, &samplerCreateInfo, nullptr, &textureSampler) != VK_SUCCESS) {
 		throw std::runtime_error("Failed to create texture sampler!");
