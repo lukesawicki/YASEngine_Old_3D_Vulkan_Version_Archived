@@ -7,6 +7,7 @@
 #include"VulkanDevice.hpp"
 //-----------------------------------------------------------------------------|---------------------------------------|
 
+//#define NDEBUG
 
 VkResult createDebugReportCallbackEXT ( VkInstance& vulkanInstance, const VkDebugReportCallbackCreateInfoEXT* createInfo, const VkAllocationCallbacks* allocator, VkDebugReportCallbackEXT* callback);
 
@@ -70,10 +71,10 @@ class YasEngine {
 		void							createDescriptorPool();
 		void							createDescriptorSets();
 		void							createTextureImage();
-		void							createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling imageTiling, VkImageUsageFlags imageUsageFlags, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
+		void							createImage(uint32_t width, uint32_t height, uint32_t mipLevelsNumber, VkFormat format, VkImageTiling imageTiling, VkImageUsageFlags imageUsageFlags, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
 		VkCommandBuffer					beginSingleTimeCommands();
 		void							endSingleTimeCommands(VkCommandBuffer commandBuffer);
-		void							transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldImageLayout, VkImageLayout newImageLayout);
+		void							transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldImageLayout, VkImageLayout newImageLayout,  uint32_t mipLevelsNumber);
 		void							copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t imageWidth, uint32_t imageHeight);
 		void							createTextureImageView();
 		void							createTextureSampler();
@@ -82,7 +83,7 @@ class YasEngine {
 		VkFormat						findDepthFormat();
 		bool							hasStencilComponent(VkFormat format);
 		void							loadModel();
-
+		void							generateMipmaps(VkImage image, VkFormat imageFormat, int32_t textureWidth,int32_t textureHeight,uint32_t mipLevelsNumber);
 
 		HINSTANCE						application;
 		HWND							window;
@@ -113,6 +114,7 @@ class YasEngine {
 		VkDescriptorPool				descriptorPool;
 		std::vector<VkDescriptorSet>	descriptorSets;
 		VkImage							textureImage;
+		uint32_t						mipLevels;
 		VkDeviceMemory					textureImageMemory;
 		VkImageView						textureImageView;
 		VkSampler						textureSampler;

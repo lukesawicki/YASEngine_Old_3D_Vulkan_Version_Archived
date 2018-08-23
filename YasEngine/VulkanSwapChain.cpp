@@ -121,11 +121,11 @@ void VulkanSwapchain::createSwapchain(VkPhysicalDevice& physicalDevice, VkSurfac
 	swapchainExtent = extent;
 }
 
-void VulkanSwapchain::createImageViews(VkDevice& device) {
+void VulkanSwapchain::createImageViews(VkDevice& device, int32_t mipLevelsNumber) {
 
 	swapchainImageViews.resize(swapchainImages.size());
 	for(size_t i=0; i<swapchainImages.size(); i++) {
-		swapchainImageViews[i] = createImageView(swapchainImages[i], swapchainImageFormat, VK_IMAGE_ASPECT_COLOR_BIT, device);
+		swapchainImageViews[i] = createImageView(swapchainImages[i], swapchainImageFormat, VK_IMAGE_ASPECT_COLOR_BIT, device, 1);
 	}
 }
 

@@ -164,7 +164,7 @@ template<> struct std::hash<Vertex> {
 	}
 };
 
-static VkImageView createImageView(VkImage image, VkFormat format, VkImageAspectFlags imageAspectFlags, VkDevice& vulkanLogicDevice) {
+static VkImageView createImageView(VkImage image, VkFormat format, VkImageAspectFlags imageAspectFlags, VkDevice& vulkanLogicDevice, uint32_t mipLevelsNumber) {
 
 	VkImageViewCreateInfo imageViewCreateInfo = {};
 	imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -173,7 +173,7 @@ static VkImageView createImageView(VkImage image, VkFormat format, VkImageAspect
 	imageViewCreateInfo.format = format;
 	imageViewCreateInfo.subresourceRange.aspectMask = imageAspectFlags;
 	imageViewCreateInfo.subresourceRange.baseMipLevel = 0;
-	imageViewCreateInfo.subresourceRange.levelCount = 1;
+	imageViewCreateInfo.subresourceRange.levelCount = mipLevelsNumber;
 	imageViewCreateInfo.subresourceRange.baseArrayLayer = 0;
 	imageViewCreateInfo.subresourceRange.layerCount = 1;
 

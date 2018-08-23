@@ -14,7 +14,7 @@ class VulkanSwapchain {
 		void							createSwapchain(VkPhysicalDevice& physicalDevice, VkSurfaceKHR& surface, VkDevice& vulkanLogicalDevice, QueueFamilyIndices& queueIndices, HWND& window);
 		static SwapchainSupportDetails	querySwapchainSupport(VkPhysicalDevice device, VkSurfaceKHR surface);		
 		void							destroySwapchain(VkDevice vulkanLogicalDevice);
-		void							createImageViews(VkDevice& device);
+		void							createImageViews(VkDevice& device, int32_t mipLevelsNumber);
 
 		VkFormat						swapchainImageFormat;
 		VkExtent2D						swapchainExtent;
