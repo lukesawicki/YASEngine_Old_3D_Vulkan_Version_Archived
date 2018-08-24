@@ -3,7 +3,7 @@ YASEngine(Yet Another Simple Engine) will be simple game engine written in C++ w
 
 Over time I will be gaining more knowledge about Vulkan and game engine architecture to create first version of this engine which allow me to create game similar to Wolfenstein 3D.
 
-Thrue process of creating this engine I'm learning from various of sources.
+Through process of creating this engine I'm learning from various of sources.
 Few of them are:
 
 All resources from Khronos Group git hub -> https://github.com/KhronosGroup/Khronosdotorg/blob/master/api/vulkan/resources.md
@@ -18,4 +18,5 @@ Harrys Gould online book about Vulkan -> {
 }
 
 From Parminders Singh book "Learning Vulkan" -> https://www.amazon.com/Learning-Vulkan-Parminder-Singh-ebook/dp/B01FSO1D2Q/ref=asap_bc?ie=UTF8
+
 Everything which i found in google.
