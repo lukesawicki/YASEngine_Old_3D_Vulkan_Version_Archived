@@ -59,6 +59,7 @@ void VulkanDevice::selectPhysicalDevice(VulkanInstance& vulkanInstance, VkSurfac
 	for(const VkPhysicalDevice& device: physicalDevices) {
 		if(isPhysicalDeviceSuitable(device, vulkanInstance, surface)) {
 			physicalDevice = device;
+			msaaSamples = getMaxUsableSampleCount();
 			std::cout << "YasEngine chosen physical device." << std::endl;
 			break;
 		}
@@ -88,6 +89,8 @@ void VulkanDevice::createLogicalDevice(VulkanInstance& vulkanInstance, VkSurface
 	
 	VkPhysicalDeviceFeatures physicalDeviceFeatures = {};
 	physicalDeviceFeatures.samplerAnisotropy = VK_TRUE;
+//lukesawicki 2018-08-24 0825
+	physicalDeviceFeatures.sampleRateShading = VK_TRUE;
 
 	VkDeviceCreateInfo createInfo = {};
 	createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
@@ -110,4 +113,33 @@ void VulkanDevice::createLogicalDevice(VulkanInstance& vulkanInstance, VkSurface
 
 	vkGetDeviceQueue(logicalDevice, indices.graphicsFamily, 0, &graphicsQueue);
 	vkGetDeviceQueue(logicalDevice, indices.presentationFamily, 0, &presentationQueue);
+}
+
+VkSampleCountFlagBits VulkanDevice::getMaxUsableSampleCount() {
+
+	VkPhysicalDeviceProperties physicalDeviceProperties;
+	vkGetPhysicalDeviceProperties(physicalDevice, &physicalDeviceProperties);
+
+	VkSampleCountFlags counts = std::min(physicalDeviceProperties.limits.framebufferColorSampleCounts, physicalDeviceProperties.limits.framebufferDepthSampleCounts);
+
+	if(counts & VK_SAMPLE_COUNT_64_BIT) {
+		return VK_SAMPLE_COUNT_64_BIT;
+	}
+	if(counts & VK_SAMPLE_COUNT_32_BIT) {
+		return VK_SAMPLE_COUNT_32_BIT;
+	}
+	if(counts & VK_SAMPLE_COUNT_16_BIT) {
+		return VK_SAMPLE_COUNT_16_BIT;
+	}
+	if(counts & VK_SAMPLE_COUNT_8_BIT) {
+		return VK_SAMPLE_COUNT_8_BIT;
+	}
+	if(counts & VK_SAMPLE_COUNT_4_BIT) {
+		return VK_SAMPLE_COUNT_4_BIT;
+	}
+	if(counts & VK_SAMPLE_COUNT_2_BIT) {
+		return VK_SAMPLE_COUNT_2_BIT;
+	}
+
+	return VK_SAMPLE_COUNT_1_BIT;
 }

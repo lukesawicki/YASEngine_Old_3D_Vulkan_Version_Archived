@@ -71,7 +71,7 @@ class YasEngine {
 		void							createDescriptorPool();
 		void							createDescriptorSets();
 		void							createTextureImage();
-		void							createImage(uint32_t width, uint32_t height, uint32_t mipLevelsNumber, VkFormat format, VkImageTiling imageTiling, VkImageUsageFlags imageUsageFlags, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
+		void							createImage(uint32_t width, uint32_t height, uint32_t mipLevelsNumber, VkSampleCountFlagBits samplesNumber, VkFormat format, VkImageTiling imageTiling, VkImageUsageFlags imageUsageFlags, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
 		VkCommandBuffer					beginSingleTimeCommands();
 		void							endSingleTimeCommands(VkCommandBuffer commandBuffer);
 		void							transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldImageLayout, VkImageLayout newImageLayout,  uint32_t mipLevelsNumber);
@@ -84,6 +84,8 @@ class YasEngine {
 		bool							hasStencilComponent(VkFormat format);
 		void							loadModel();
 		void							generateMipmaps(VkImage image, VkFormat imageFormat, int32_t textureWidth,int32_t textureHeight,uint32_t mipLevelsNumber);
+		void							createColorResources();
+
 
 		HINSTANCE						application;
 		HWND							window;
@@ -121,9 +123,13 @@ class YasEngine {
 		VkImage							depthImage;
 		VkDeviceMemory					depthImageMemory;
 		VkImageView						depthImageView;
+		VkImage							colorImage;
+		VkDeviceMemory					colorImageMemory;
+		VkImageView						colorImageView;
 		float zeroTime = 0;
 		std::vector<Vertex> vertices;
 		std::vector<uint32_t> indices;
+		uint32_t mipLevelsNumber;
 	//private end
 };
 

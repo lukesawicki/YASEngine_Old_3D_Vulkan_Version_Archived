@@ -170,6 +170,7 @@ void YasEngine::initializeVulkan() {
 	createDescriptorSetLayout();
 	createGraphicsPipeline();
 	createCommandPool();
+	createColorResources();
 	createDepthResources();
 	createFramebuffers();
 	createTextureImage();
@@ -543,6 +544,7 @@ void YasEngine::recreateSwapchain() {
 	createImageViews();
 	createRenderPass();
 	createGraphicsPipeline();
+	createColorResources();
 	createDepthResources();
 	createFramebuffers();
 	createCommandBuffers();
@@ -554,6 +556,10 @@ void YasEngine::createImageViews() {
 }
 
 void YasEngine::cleanupSwapchain() {
+
+	vkDestroyImageView(vulkanDevice->logicalDevice, colorImageView, nullptr);
+	vkDestroyImage(vulkanDevice->logicalDevice, colorImage, nullptr);
+	vkFreeMemory(vulkanDevice->logicalDevice, colorImageMemory, nullptr);
 
     vkDestroyImageView(vulkanDevice->logicalDevice, depthImageView, nullptr);
     vkDestroyImage(vulkanDevice->logicalDevice, depthImage, nullptr);
@@ -579,23 +585,36 @@ void YasEngine::createRenderPass() {
 
 	VkAttachmentDescription colorAttachmentDescription = {};
 	colorAttachmentDescription.format = vulkanSwapchain.swapchainImageFormat;
-	colorAttachmentDescription.samples = VK_SAMPLE_COUNT_1_BIT;
+	colorAttachmentDescription.samples = vulkanDevice->msaaSamples;
 	colorAttachmentDescription.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 	colorAttachmentDescription.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 	colorAttachmentDescription.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 	colorAttachmentDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 	colorAttachmentDescription.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-	colorAttachmentDescription.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+//lukesawicki 24-08-2018 0752
+	colorAttachmentDescription.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;//VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
 	VkAttachmentDescription depthAttachmentDescription = {};
 	depthAttachmentDescription.format = findDepthFormat();
-	depthAttachmentDescription.samples = VK_SAMPLE_COUNT_1_BIT;
+	depthAttachmentDescription.samples = vulkanDevice->msaaSamples;
 	depthAttachmentDescription.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 	depthAttachmentDescription.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 	depthAttachmentDescription.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 	depthAttachmentDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 	depthAttachmentDescription.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 	depthAttachmentDescription.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+
+//lukesawicki 24-08-2018 0754
+	VkAttachmentDescription colorAttachmentResolveDescription = {};
+	colorAttachmentResolveDescription.format = vulkanSwapchain.swapchainImageFormat;;
+	colorAttachmentResolveDescription.samples = VK_SAMPLE_COUNT_1_BIT;
+	colorAttachmentResolveDescription.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+	colorAttachmentResolveDescription.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+	colorAttachmentResolveDescription.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+	colorAttachmentResolveDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+	colorAttachmentResolveDescription.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	colorAttachmentResolveDescription.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
 	VkAttachmentReference colorAttachmentReference = {};
 	colorAttachmentReference.attachment = 0;
@@ -605,11 +624,18 @@ void YasEngine::createRenderPass() {
 	depthAttachmentReference.attachment = 1;
 	depthAttachmentReference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
+//lukesawicki 24-08-2018 0755
+	VkAttachmentReference colorAttachmentResolveReference = {};
+	colorAttachmentResolveReference.attachment = 2;
+	colorAttachmentResolveReference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+
 	VkSubpassDescription subpassDescription = {};
 	subpassDescription.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
 	subpassDescription.colorAttachmentCount = 1;
 	subpassDescription.pColorAttachments = &colorAttachmentReference;
 	subpassDescription.pDepthStencilAttachment = &depthAttachmentReference;
+	subpassDescription.pResolveAttachments = &colorAttachmentResolveReference;//lukesawicki
 
 	VkSubpassDependency subpassDependency = {};
 	subpassDependency.srcSubpass = VK_SUBPASS_EXTERNAL;
@@ -619,7 +645,8 @@ void YasEngine::createRenderPass() {
 	subpassDependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 	subpassDependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 
-	std::array<VkAttachmentDescription, 2> attachments = {colorAttachmentDescription, depthAttachmentDescription};
+//lukesawicki
+	std::array<VkAttachmentDescription, 3> attachments = {colorAttachmentDescription, depthAttachmentDescription, colorAttachmentResolveDescription};
 
 	VkRenderPassCreateInfo renderPassInfo = {};
 	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
@@ -708,8 +735,11 @@ void YasEngine::createGraphicsPipeline() {
 
 	VkPipelineMultisampleStateCreateInfo multisampling = {};
 	multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
-	multisampling.sampleShadingEnable = VK_FALSE;
-	multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+	//lukesawicki 2018-08-24 0826 changed
+	multisampling.sampleShadingEnable = VK_TRUE;
+	////lukesawicki 2018-08-24 0826 added 
+	multisampling.minSampleShading = 0.2F;
+	multisampling.rasterizationSamples = vulkanDevice->msaaSamples;
 
 	VkPipelineDepthStencilStateCreateInfo pipelineDepthStencilStateCreateInfo = {};
 	pipelineDepthStencilStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
@@ -776,8 +806,8 @@ void YasEngine::createFramebuffers() {
 	swapchainFramebuffers.resize(vulkanSwapchain.swapchainImageViews.size());
 
 	for(size_t i=0; i<vulkanSwapchain.swapchainImageViews.size(); i++) {
-
-		std::array<VkImageView, 2> attachments = {vulkanSwapchain.swapchainImageViews[i], depthImageView};
+//lukesawicki dodalem color attachment i zmienilem kolejnosc
+		std::array<VkImageView, 3> attachments = {colorImageView, depthImageView, vulkanSwapchain.swapchainImageViews[i]};
 
 		VkFramebufferCreateInfo framebufferCreateInfo = {};
 		framebufferCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
@@ -948,8 +978,8 @@ void YasEngine::createTextureImage() {
 	vkUnmapMemory(vulkanDevice->logicalDevice, stagingBufferMemory);
 
 	stbi_image_free(pixels);
-
-	createImage(textureWidth, textureHeight, mipLevels, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureImage, textureImageMemory);
+//Lukesawicki 24-08-2018 0732
+	createImage(textureWidth, textureHeight, mipLevels, VK_SAMPLE_COUNT_1_BIT, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureImage, textureImageMemory);
 	transitionImageLayout(textureImage, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, mipLevels);
 	copyBufferToImage(stagingBuffer, textureImage, static_cast<uint32_t>(textureWidth), static_cast<uint32_t>(textureHeight));
 
@@ -958,7 +988,7 @@ void YasEngine::createTextureImage() {
 	generateMipmaps(textureImage, VK_FORMAT_R8G8B8A8_UNORM, textureWidth, textureHeight, mipLevels);
 }
 
-void YasEngine::createImage(uint32_t textureWidth, uint32_t textureHeight, uint32_t mipLevelsNumber, VkFormat format, VkImageTiling imageTiling, VkImageUsageFlags imageUsageFlags, VkMemoryPropertyFlags memoryProperties, VkImage& image, VkDeviceMemory& imageMemory)
+void YasEngine::createImage(uint32_t textureWidth, uint32_t textureHeight, uint32_t mipLevelsNumber, VkSampleCountFlagBits samplesNumber, VkFormat format, VkImageTiling imageTiling, VkImageUsageFlags imageUsageFlags, VkMemoryPropertyFlags memoryProperties, VkImage& image, VkDeviceMemory& imageMemory)
 {
 
 	VkImageCreateInfo imageCreateInfo = {};
@@ -975,7 +1005,7 @@ void YasEngine::createImage(uint32_t textureWidth, uint32_t textureHeight, uint3
 	imageCreateInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 	imageCreateInfo.usage = imageUsageFlags;
 	imageCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-	imageCreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+	imageCreateInfo.samples = samplesNumber;
 
 	if(vkCreateImage(vulkanDevice->logicalDevice, &imageCreateInfo, nullptr, &image) != VK_SUCCESS) {
 		throw std::runtime_error("Failed to create image.");
@@ -1073,8 +1103,12 @@ void YasEngine::transitionImageLayout(VkImage image, VkFormat format, VkImageLay
 		imageMemoryBarrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
 		sourcePipelineStageFlag = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
 		destinationPipelineStageFlags = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-	}
-	else {
+	} else if(oldImageLayout == VK_IMAGE_LAYOUT_UNDEFINED && newImageLayout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL) {
+		imageMemoryBarrier.srcAccessMask = 0;
+		imageMemoryBarrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+		sourcePipelineStageFlag = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+		destinationPipelineStageFlags = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	} else {
 		throw std::invalid_argument("Unsuported layout transition.");
 	}
 
@@ -1135,8 +1169,8 @@ void YasEngine::createTextureSampler()
 void YasEngine::createDepthResources()
 {
 	VkFormat depthFormat = findDepthFormat();
-
-	createImage(vulkanSwapchain.swapchainExtent.width, vulkanSwapchain.swapchainExtent.height, 1, depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, depthImage, depthImageMemory);
+//LUKESAWICKI 24-08-2018 0731  //LUKESAWICKI 24-08-2018 0747
+	createImage(vulkanSwapchain.swapchainExtent.width, vulkanSwapchain.swapchainExtent.height, 1, vulkanDevice->msaaSamples, depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, depthImage, depthImageMemory);
 	depthImageView = createImageView(depthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT, vulkanDevice->logicalDevice, 1);
 	transitionImageLayout(depthImage, depthFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, 1);
 }
@@ -1280,5 +1314,45 @@ void YasEngine::generateMipmaps(VkImage image, VkFormat imageFormat, int32_t tex
 
 		endSingleTimeCommands(commandBuffer);
 }
+
+void YasEngine::createColorResources()
+{
+	VkFormat colorFormat = vulkanSwapchain.swapchainImageFormat;
+
+	createImage(vulkanSwapchain.swapchainExtent.width, vulkanSwapchain.swapchainExtent.height, 1, vulkanDevice->msaaSamples, colorFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, colorImage, colorImageMemory);
+
+	colorImageView = createImageView(colorImage, colorFormat, VK_IMAGE_ASPECT_COLOR_BIT, vulkanDevice->logicalDevice, 1);
+
+	transitionImageLayout(colorImage, colorFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, 1);
+}
+
+//VkSampleCountFlagBits YasEngine::getMaxUsableSampleCount() {
+//
+//	VkPhysicalDeviceProperties physicalDeviceProperties;
+//	vkGetPhysicalDeviceProperties(vulkanDevice->physicalDevice, &physicalDeviceProperties);
+//
+//	VkSampleCountFlags counts = std::min(physicalDeviceProperties.limits.framebufferColorSampleCounts, physicalDeviceProperties.limits.framebufferDepthSampleCounts);
+//
+//	if(counts & VK_SAMPLE_COUNT_64_BIT) {
+//		return VK_SAMPLE_COUNT_64_BIT;
+//	}
+//	if(counts & VK_SAMPLE_COUNT_32_BIT) {
+//		return VK_SAMPLE_COUNT_32_BIT;
+//	}
+//	if(counts & VK_SAMPLE_COUNT_16_BIT) {
+//		return VK_SAMPLE_COUNT_16_BIT;
+//	}
+//	if(counts & VK_SAMPLE_COUNT_8_BIT) {
+//		return VK_SAMPLE_COUNT_8_BIT;
+//	}
+//	if(counts & VK_SAMPLE_COUNT_4_BIT) {
+//		return VK_SAMPLE_COUNT_4_BIT;
+//	}
+//	if(counts & VK_SAMPLE_COUNT_2_BIT) {
+//		return VK_SAMPLE_COUNT_2_BIT;
+//	}
+//
+//	return VK_SAMPLE_COUNT_1_BIT;
+//}
 
 //-----------------------------------------------------------------------------|---------------------------------------|
