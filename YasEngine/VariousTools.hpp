@@ -5,6 +5,8 @@
 
 //-----------------------------------------------------------------------------|---------------------------------------|
 
+//Various tools which i will move to classes or runctions.
+
 struct QueueFamilyIndices {
 
 	int graphicsFamily = -1;
