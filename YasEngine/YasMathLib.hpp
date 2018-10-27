@@ -1,27 +1,32 @@
 #ifndef YASMATHLIB_HPP
 #define YASMATHLIB_HPP
 
-namespace YasMathLib {
+namespace YasMathLib
+{
 
-	struct vec2 {
+	struct vec2
+	{
 		float x;
 		float y;
 	};
 
-	struct vec3 {
+	struct vec3
+	{
 		float x;
 		float y;
 		float z;
 	};
 	
-	struct vec4 {
+	struct vec4
+	{
 		float x;
 		float y;
 		float z;
 		float w;
 	};
 
-	struct mat4x4 {
+	struct mat4x4
+	{
 		float x0;
 		float y0;
 		float z0;
@@ -45,10 +50,12 @@ namespace YasMathLib {
 
 }
 
-struct UniformBufferObject {
+struct UniformBufferObject
+{
 	glm::mat4 model;
 	glm::mat4 view;
 	glm::mat4 proj;
 };
 
 #endif
+

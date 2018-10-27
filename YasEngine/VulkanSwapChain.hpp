@@ -2,6 +2,7 @@
 #define VULKANSWAPCHAIN_HPP
 #include"stdafx.hpp"
 #include"VariousTools.hpp"
+#include"VulkanDevice.hpp"
 #undef min
 #undef max
 
@@ -11,7 +12,7 @@ class VulkanSwapchain {
 
 	public:
 
-		void							createSwapchain(VkPhysicalDevice& physicalDevice, VkSurfaceKHR& surface, VkDevice& vulkanLogicalDevice, QueueFamilyIndices& queueIndices, HWND& window);
+		void							createSwapchain(VkPhysicalDevice& physicalDevice, VkSurfaceKHR& surface, VkDevice& vulkanLogicalDevice, VulkanDevice& vulkanDevice, HWND& window);
 		static SwapchainSupportDetails	querySwapchainSupport(VkPhysicalDevice device, VkSurfaceKHR surface);		
 		void							destroySwapchain(VkDevice vulkanLogicalDevice);
 		void							createImageViews(VkDevice& device, int32_t mipLevelsNumber);
@@ -30,3 +31,4 @@ class VulkanSwapchain {
 };
 
 #endif
+

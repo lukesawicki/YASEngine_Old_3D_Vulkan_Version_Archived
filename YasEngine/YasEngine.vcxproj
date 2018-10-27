@@ -25,6 +25,8 @@
     <ClInclude Include="VulkanDevice.hpp" />
     <ClInclude Include="VulkanInstance.hpp" />
     <ClInclude Include="VulkanLayersAndExtensions.hpp" />
+    <ClInclude Include="VulkanPipeline.hpp" />
+    <ClInclude Include="VulkanQueues.hpp" />
     <ClInclude Include="VulkanSwapchain.hpp" />
     <ClInclude Include="YasEngine.hpp" />
     <ClInclude Include="YasLog.hpp" />
@@ -36,6 +38,7 @@
     <ClCompile Include="VulkanDevice.cpp" />
     <ClCompile Include="VulkanInstance.cpp" />
     <ClCompile Include="VulkanLayersAndExtensions.cpp" />
+    <ClCompile Include="VulkanPipeline.cpp" />
     <ClCompile Include="VulkanSwapchain.cpp" />
     <ClCompile Include="YasEngine.cpp" />
   </ItemGroup>

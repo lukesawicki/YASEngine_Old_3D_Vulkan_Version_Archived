@@ -7,27 +7,31 @@
 
 //Various tools which i will move to classes or runctions.
 
-struct QueueFamilyIndices {
+//struct QueueFamilyIndices
+//{
+//
+//	int graphicsFamily = -1;
+//	int presentationFamily = -1;
+//	bool isComplete()
+//	{
+//		return graphicsFamily >= 0 && presentationFamily >= 0;
+//	}
+//};
 
-	int graphicsFamily = -1;
-	int presentationFamily = -1;
-	bool isComplete() {
-		return graphicsFamily >= 0 && presentationFamily >= 0;
-	}
-};
-
-struct SwapchainSupportDetails {
-
+struct SwapchainSupportDetails
+{
 	VkSurfaceCapabilitiesKHR capabilities;
 	std::vector<VkSurfaceFormatKHR> formats;
 	std::vector<VkPresentModeKHR> presentModes;
 };
 
-static std::vector<char> readFile(const std::string& fileName) {
+static std::vector<char> readFile(const std::string& fileName)
+{
 
 	std::ifstream file(fileName, std::ios::ate | std::ios::binary);
 
-	if(!file.is_open()) {
+	if(!file.is_open())
+	{
 		throw std::runtime_error("failed to open file!");
 	}
 
@@ -41,53 +45,61 @@ static std::vector<char> readFile(const std::string& fileName) {
 	return buffer;
 }
 
-static QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device, VkSurfaceKHR& surface) {
+//static QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device, VkSurfaceKHR& surface)
+//{
+//
+//	QueueFamilyIndices queueFamilyIndices;
+//	uint32_t queueFamilyCount = 0;
+//	
+//	vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
+//
+//	std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
+//	vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
+//
+//	int i = 0;
+//	for(const VkQueueFamilyProperties& queueFamily : queueFamilies)
+//	{
+//		if((queueFamily.queueCount > 0) && (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT))
+//		{
+//			queueFamilyIndices.graphicsFamily = i;
+//		}
+//
+//		VkBool32 presentationFamilySupport = false;
+//		vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface, &presentationFamilySupport);
+//
+//		if(queueFamily.queueCount > 0 && presentationFamilySupport)
+//		{
+//			queueFamilyIndices.presentationFamily = i;
+//		}
+//
+//		if(queueFamilyIndices.isComplete())
+//		{
+//			break;
+//		}
+//		i++;
+//	}
+//
+//	return queueFamilyIndices;
+//}
 
-	QueueFamilyIndices queueFamilyIndices;
-	uint32_t queueFamilyCount = 0;
-	
-	vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
-
-	std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
-	vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
-
-	int i = 0;
-	for(const VkQueueFamilyProperties& queueFamily : queueFamilies) {
-		if((queueFamily.queueCount > 0) && (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT)) {
-			queueFamilyIndices.graphicsFamily = i;
-		}
-
-		VkBool32 presentationFamilySupport = false;
-		vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface, &presentationFamilySupport);
-
-		if(queueFamily.queueCount > 0 && presentationFamilySupport) {
-			queueFamilyIndices.presentationFamily = i;
-		}
-
-		if(queueFamilyIndices.isComplete()) {
-			break;
-		}
-		i++;
-	}
-
-	return queueFamilyIndices;
-}
-
-class TimePicker {
-
+class TimePicker
+{
 	private:
 
 		LARGE_INTEGER frequency;
 		bool isFrequencyOfThePerformanceCounterPickedUp;
 
-		TimePicker() {
+		TimePicker()
+		{
 			isFrequencyOfThePerformanceCounterPickedUp = (QueryPerformanceFrequency(&frequency) != 0);
 		}
 
 	public:
 
-		float getSeconds() {
-			if(!isFrequencyOfThePerformanceCounterPickedUp) {
+		float getSeconds()
+		{
+			if(!isFrequencyOfThePerformanceCounterPickedUp)
+			{
 				return GetTickCount64() / 1000.0F;
 			} else {
 				LARGE_INTEGER ticks;
@@ -96,7 +108,8 @@ class TimePicker {
 			}
 		}
 
-		static TimePicker* getTimePicker() {
+		static TimePicker* getTimePicker()
+		{
 			return new TimePicker();
 		}
 };
@@ -116,7 +129,8 @@ class TimePicker {
 */
 
 
-struct Vertex {
+struct Vertex
+{
 
 	glm::vec3 pos;
 	glm::vec3 color;
@@ -124,11 +138,13 @@ struct Vertex {
 	//YasMathLib::vec2 pos;
 	//YasMathLib::vec3 color;
 
-	bool operator==(const Vertex& other) const {
+	bool operator==(const Vertex& other) const
+	{
 		return pos == other.pos && color == other.color && texCoord == other.texCoord;
 	}
 
-	static VkVertexInputBindingDescription getBindingDescription() {
+	static VkVertexInputBindingDescription getBindingDescription()
+	{
 
 		VkVertexInputBindingDescription vertInBindingDescription = {};
 		vertInBindingDescription.binding = 0;
@@ -138,8 +154,8 @@ struct Vertex {
 		return vertInBindingDescription;
 	}
 
-	static std::array<VkVertexInputAttributeDescription, 3> getAttributeDescriptions() {
-
+	static std::array<VkVertexInputAttributeDescription, 3> getAttributeDescriptions()
+	{
 		std::array<VkVertexInputAttributeDescription, 3> vertexInputAttributeDescription = {};
 		vertexInputAttributeDescription[0].binding = 0;
 		vertexInputAttributeDescription[0].location = 0;
@@ -160,14 +176,16 @@ struct Vertex {
 	}
 };
 
-template<> struct std::hash<Vertex> {
-	size_t operator()(Vertex const& vertex) const {
+template<> struct std::hash<Vertex>
+{
+	size_t operator()(Vertex const& vertex) const
+	{
 		return ((std::hash<glm::vec3>()(vertex.pos) ^ (std::hash<glm::vec3>()(vertex.color) << 1)) >> 1) ^ (std::hash<glm::vec2>()(vertex.texCoord) << 1);
 	}
 };
 
-static VkImageView createImageView(VkImage image, VkFormat format, VkImageAspectFlags imageAspectFlags, VkDevice& vulkanLogicDevice, uint32_t mipLevelsNumber) {
-
+static VkImageView createImageView(VkImage image, VkFormat format, VkImageAspectFlags imageAspectFlags, VkDevice& vulkanLogicDevice, uint32_t mipLevelsNumber)
+{
 	VkImageViewCreateInfo imageViewCreateInfo = {};
 	imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
 	imageViewCreateInfo.image = image;
@@ -181,10 +199,12 @@ static VkImageView createImageView(VkImage image, VkFormat format, VkImageAspect
 
 	VkImageView imageView;
 
-	if(vkCreateImageView(vulkanLogicDevice, &imageViewCreateInfo, nullptr, &imageView) != VK_SUCCESS) {
+	if(vkCreateImageView(vulkanLogicDevice, &imageViewCreateInfo, nullptr, &imageView) != VK_SUCCESS)
+	{
 		throw std::runtime_error("Failed to create image view");
 	}
 	return imageView;
 }
 
 #endif
+

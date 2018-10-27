@@ -5,10 +5,12 @@
 //-----------------------------------------------------------------------------|---------------------------------------|
 
 template<typename T>
-class YasLog {
+class YasLog
+{
 
 	public:
-		static void log(std::string prefix, std::string additionalText, T loggedVariable) {
+		static void log(std::string prefix, std::string additionalText, T loggedVariable)
+		{
 			std::cout << prefix << additionalText << loggedVariable << std::endl;
 		}
 
@@ -16,3 +18,4 @@ class YasLog {
 };
 
 #endif
+

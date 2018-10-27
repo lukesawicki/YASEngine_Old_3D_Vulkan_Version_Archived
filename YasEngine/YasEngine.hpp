@@ -5,17 +5,20 @@
 #include"VariousTools.hpp"
 #include"VulkanInstance.hpp"
 #include"VulkanDevice.hpp"
+#include"YasLog.hpp"
 //-----------------------------------------------------------------------------|---------------------------------------|
 
 //#define NDEBUG
 
 VkResult createDebugReportCallbackEXT ( VkInstance& vulkanInstance, const VkDebugReportCallbackCreateInfoEXT* createInfo, const VkAllocationCallbacks* allocator, VkDebugReportCallbackEXT* callback);
 
-class YasEngine {
+class YasEngine
+{
 
 	public:
 
 		YasEngine();
+		YasLog<int> logInt;
 		void							run(HINSTANCE hInstance);
 		static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback( VkDebugReportFlagsEXT debugReportFlags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t code, const char* layerPrefix, const char* msg, void* userData);
 
@@ -86,7 +89,6 @@ class YasEngine {
 		void							generateMipmaps(VkImage image, VkFormat imageFormat, int32_t textureWidth,int32_t textureHeight,uint32_t mipLevelsNumber);
 		void							createColorResources();
 
-
 		HINSTANCE						application;
 		HWND							window;
 		size_t							currentFrame = 0;
@@ -97,7 +99,7 @@ class YasEngine {
 		VkDebugReportCallbackEXT		callback;
 		VkSurfaceKHR					surface;
 		VulkanDevice*					vulkanDevice;
-		VkQueue							graphicsQueue;
+		VkQueue							graphicsQueue = nullptr;
 		VkQueue							presentationQueue;
 		VulkanSwapchain					vulkanSwapchain;
 		VkRenderPass					renderPass;
@@ -134,3 +136,4 @@ class YasEngine {
 };
 
 #endif
+

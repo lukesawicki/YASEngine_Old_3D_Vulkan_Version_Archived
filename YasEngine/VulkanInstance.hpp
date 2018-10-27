@@ -5,7 +5,8 @@
 
 //-----------------------------------------------------------------------------|---------------------------------------|
 
-class VulkanInstance {
+class VulkanInstance
+{
 
 	public:
 										VulkanInstance();
@@ -18,3 +19,4 @@ class VulkanInstance {
 };
 
 #endif
+
