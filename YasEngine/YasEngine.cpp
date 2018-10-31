@@ -1172,8 +1172,9 @@ void YasEngine::loadModel()
 	std::vector<tinyobj::material_t> materials;
 	std::unordered_map<Vertex, uint32_t> uniqueVertices = {};
 	std::string tinyobjLoadingError;
+	std::string tinyobjLoadingWarnings;
 	
-	if(!tinyobj::LoadObj(&attrib, &shapes, &materials, &tinyobjLoadingError, MODEL_PATH.c_str())) {
+	if(!tinyobj::LoadObj(&attrib, &shapes, &materials, &tinyobjLoadingWarnings, &tinyobjLoadingError, MODEL_PATH.c_str())) {
 		throw std::runtime_error(tinyobjLoadingError);
 	}
 	
