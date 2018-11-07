@@ -387,7 +387,7 @@ void YasEngine::drawFrame(float deltaTime)
 		throw std::runtime_error("Failed to submit draw command buffer."); //lukesawicki runtime tu sie wywala
 	} //Validation layer: Object: 0x2 (Type = 27) | vkQueuePresentKHR: Presenting image without calling vkGetPhysicalDeviceSurfaceSupportKHR
 	
-	VkPresentInfoKHR presentInfoKhr = {};
+	VkPresentInfoKHR presentInfoKhr = {};//
 	presentInfoKhr.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 	presentInfoKhr.waitSemaphoreCount = 1;
 	presentInfoKhr.pWaitSemaphores = signalSemaphores;
@@ -1280,8 +1280,9 @@ void YasEngine::loadModel()
 	std::vector<tinyobj::material_t> materials;
 	std::unordered_map<Vertex, uint32_t> uniqueVertices = {};
 	std::string tinyobjLoadingError;
+	std::string tinyobjLoadingWarning;
 	
-	if(!tinyobj::LoadObj(&attrib, &shapes, &materials, &tinyobjLoadingError, MODEL_PATH.c_str()))
+	if(!tinyobj::LoadObj(&attrib, &shapes, &materials, &tinyobjLoadingWarning, &tinyobjLoadingError, MODEL_PATH.c_str()))
 	{
 		throw std::runtime_error(tinyobjLoadingError);
 	}
