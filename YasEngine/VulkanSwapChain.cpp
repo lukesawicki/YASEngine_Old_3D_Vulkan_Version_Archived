@@ -105,10 +105,10 @@ void VulkanSwapchain::createSwapchain(VkPhysicalDevice& physicalDevice, VkSurfac
 	createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
 	//uint32_t queueFamilyIndices[] = {(uint32_t)queueIndices.graphicsFamily, (uint32_t)queueIndices.presentationFamily};
-	uint32_t queueFamilyIndices[] = {vulkanDevice.graphicsFamilyQueueIndex, vulkanDevice.graphicsFamilyQueueIndex};
+	uint32_t queueFamilyIndices[] = {vulkanDevice.graphicsFamilyQueueIndex, vulkanDevice.presentationFamilyQueueIndex};
 
 	//if(queueIndices.graphicsFamily != queueIndices.presentationFamily)
-	if(vulkanDevice.isGraphicsAndPresentationFamily())
+	if(!(vulkanDevice.isGraphicsAndPresentationFamily()))
 	{
 		createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
 		createInfo.queueFamilyIndexCount = 2;
@@ -117,15 +117,15 @@ void VulkanSwapchain::createSwapchain(VkPhysicalDevice& physicalDevice, VkSurfac
 	else
 	{
 		createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
-		createInfo.queueFamilyIndexCount = 0;
-		createInfo.pQueueFamilyIndices = nullptr;
+		//createInfo.queueFamilyIndexCount = 0;
+		//createInfo.pQueueFamilyIndices = nullptr;
 	}
 
 	createInfo.preTransform = swapchainSupport.capabilities.currentTransform;
 	createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
 	createInfo.presentMode = presentMode;
 	createInfo.clipped = VK_TRUE;
-	createInfo.oldSwapchain = VK_NULL_HANDLE;
+	//createInfo.oldSwapchain = VK_NULL_HANDLE;
 	
 	if(vkCreateSwapchainKHR(vulkanLogicalDevice, &createInfo, nullptr, &swapchain) != VK_SUCCESS)
 	{

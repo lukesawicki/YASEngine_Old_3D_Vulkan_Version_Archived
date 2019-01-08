@@ -10,8 +10,6 @@
 
 //#define NDEBUG
 
-VkResult createDebugReportCallbackEXT ( VkInstance& vulkanInstance, const VkDebugReportCallbackCreateInfoEXT* createInfo, const VkAllocationCallbacks* allocator, VkDebugReportCallbackEXT* callback);
-
 class YasEngine
 {
 
@@ -20,7 +18,8 @@ class YasEngine
 		YasEngine();
 		YasLog<int> logInt;
 		void							run(HINSTANCE hInstance);
-		static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback( VkDebugReportFlagsEXT debugReportFlags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t code, const char* layerPrefix, const char* msg, void* userData);
+
+		static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugReportFlagsEXT debugReportFlags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t code, const char* layerPrefix, const char* msg, void* userData);
 
 		static int						windowPositionX;
 		static int						windowPositionY;
@@ -96,7 +95,9 @@ class YasEngine
 		std::vector<VkSemaphore>		renderFinishedSemaphores;
 		std::vector<VkFence>			inFlightFences;
 		VulkanInstance					vulkanInstance;
+
 		VkDebugReportCallbackEXT		callback;
+
 		VkSurfaceKHR					surface;
 		VulkanDevice*					vulkanDevice;
 		VkQueue							graphicsQueue = nullptr;

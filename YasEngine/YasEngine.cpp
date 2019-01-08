@@ -30,32 +30,29 @@ LRESULT CALLBACK windowProcedure(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 	return DefWindowProc(hWnd, message, wParam, lParam);
 }
 
-VkResult createDebugReportCallbackEXT(VkInstance& vulkanInstance, const VkDebugReportCallbackCreateInfoEXT* createInfo, const VkAllocationCallbacks* allocator, VkDebugReportCallbackEXT* callback)
-{
+VkResult createDebugReportCallbackEXT(VkInstance& vulkanInstance, const VkDebugReportCallbackCreateInfoEXT* createInfo, const VkAllocationCallbacks* allocator, VkDebugReportCallbackEXT* callback) {
+
 	PFN_vkCreateDebugReportCallbackEXT debugReportCallbackFunction = (PFN_vkCreateDebugReportCallbackEXT)vkGetInstanceProcAddr(vulkanInstance, "vkCreateDebugReportCallbackEXT");
-	
-	if(debugReportCallbackFunction != nullptr)
-	{
+
+	if (debugReportCallbackFunction != nullptr) {
 		return debugReportCallbackFunction(vulkanInstance, createInfo, allocator, callback);
 	}
-	else
-	{
+	else {
 		return VK_ERROR_EXTENSION_NOT_PRESENT;
 	}
 }
 
-void destroyDebugReportCallbackEXT(VkInstance vulkanInstance, VkDebugReportCallbackEXT callback, const VkAllocationCallbacks* allocator)
-{
+void destroyDebugReportCallbackEXT(VkInstance vulkanInstance, VkDebugReportCallbackEXT callback, const VkAllocationCallbacks* allocator) {
+
 	PFN_vkDestroyDebugReportCallbackEXT destroyFunction = (PFN_vkDestroyDebugReportCallbackEXT)vkGetInstanceProcAddr(vulkanInstance, "vkDestroyDebugReportCallbackEXT");
-	
-	if(destroyFunction != nullptr)
-	{
+
+	if (destroyFunction != nullptr) {
 		destroyFunction(vulkanInstance, callback, allocator);
 	}
 }
 
-VKAPI_ATTR VkBool32 VKAPI_CALL YasEngine::debugCallback	(VkDebugReportFlagsEXT debugReportFlags, VkDebugReportObjectTypeEXT objectType,	uint64_t object, size_t location, int32_t code,	const char* layerPrefix, const char* msg, void* userData)
-{
+VKAPI_ATTR VkBool32 VKAPI_CALL YasEngine::debugCallback(VkDebugReportFlagsEXT debugReportFlags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t code, const char* layerPrefix, const char* msg, void* userData) {
+
 	std::cerr << "Validation layer: " << msg << std::endl;
 	//If return true, then call is aborted with the VK_ERROR_VALIDATION_FAILED_EXT
 	//because this is used to test the validation layers themeselves
@@ -73,20 +70,18 @@ YasEngine::YasEngine()
 	SetConsoleTitle("YasEngine logging");
 }
 
-void YasEngine::setupDebugCallback()
-{
-	if(!enableValidationLayers)
-	{
+void YasEngine::setupDebugCallback() {
+
+	if (!enableValidationLayers) {
 		return;
 	}
-	
+
 	VkDebugReportCallbackCreateInfoEXT createInfo = {};
 	createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT;
 	createInfo.flags = VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT;
 	createInfo.pfnCallback = debugCallback;
-	
-	if(createDebugReportCallbackEXT(vulkanInstance.instance, &createInfo, nullptr, &callback) != VK_SUCCESS)
-	{
+
+	if (createDebugReportCallbackEXT(vulkanInstance.instance, &createInfo, nullptr, &callback) != VK_SUCCESS) {
 		throw std::runtime_error("Failed to set up debug callback function");
 	}
 }
@@ -381,9 +376,15 @@ void YasEngine::drawFrame(float deltaTime)
 
 	vkResetFences(vulkanDevice->logicalDevice, 1, &inFlightFences[currentFrame]);
 	
+	if(graphicsQueue == nullptr)
+	{
+		std::cout << "graphic queue is nullptr" << std::endl;
+	}
+
 	if(vkQueueSubmit(graphicsQueue, 1, &submitInfo, inFlightFences[currentFrame]) != VK_SUCCESS)
 	{
 //isPresentationQueueFamily
+		std::cout << "vkQueueSubmit was not a sucess!!" << std::endl;
 		throw std::runtime_error("Failed to submit draw command buffer."); //lukesawicki runtime tu sie wywala
 	} //Validation layer: Object: 0x2 (Type = 27) | vkQueuePresentKHR: Presenting image without calling vkGetPhysicalDeviceSurfaceSupportKHR
 	
@@ -721,11 +722,13 @@ void YasEngine::createGraphicsPipeline()
 	VkPipelineShaderStageCreateInfo shaderStages[] = {vertShaderStageInfo, fragShaderStageInfo};
 
 	VkPipelineVertexInputStateCreateInfo vertexInputInfo = {};
+	vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+
 
 	auto bindingDescription = Vertex::getBindingDescription();
 	auto attributeDescriptions = Vertex::getAttributeDescriptions();
 
-	vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+	//does order matter?
 	vertexInputInfo.vertexBindingDescriptionCount = 1;
 	vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
 	vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
@@ -782,8 +785,8 @@ void YasEngine::createGraphicsPipeline()
 	pipelineDepthStencilStateCreateInfo.minDepthBounds = 0.0F;
 	pipelineDepthStencilStateCreateInfo.maxDepthBounds = 1.0F;
 	pipelineDepthStencilStateCreateInfo.stencilTestEnable = VK_FALSE;
-	pipelineDepthStencilStateCreateInfo.front = {};
-	pipelineDepthStencilStateCreateInfo.back = {};
+	//pipelineDepthStencilStateCreateInfo.front = {};
+	//pipelineDepthStencilStateCreateInfo.back = {};
 
 	VkPipelineColorBlendAttachmentState colorBlendAttachment = {};
 	colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
@@ -913,8 +916,7 @@ void YasEngine::cleanUp()
 	vkDestroyCommandPool(vulkanDevice->logicalDevice, commandPool, nullptr);
 	vkDestroyDevice(vulkanDevice->logicalDevice, nullptr);
 
-	if(enableValidationLayers)
-	{
+	if (enableValidationLayers) {
 		destroyDebugReportCallbackEXT(vulkanInstance.instance, callback, nullptr);
 	}
 

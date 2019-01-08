@@ -77,7 +77,7 @@ void VulkanDevice::createLogicalDevice(VulkanInstance& vulkanInstance, VkSurface
 	std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
 	//std::set<int> uniqueQueueFamilies = {indices.graphicsFamily, indices.presentationFamily};
 	std::set<uint32_t> uniqueQueueFamilies = {graphicsFamilyQueueIndex, presentationFamilyQueueIndex};
-	float queuePriority = 1.0f;
+	float queuePriority = 1.0F;
 
 	for(uint32_t queueFamily: uniqueQueueFamilies)
 	{
@@ -92,7 +92,7 @@ void VulkanDevice::createLogicalDevice(VulkanInstance& vulkanInstance, VkSurface
 	VkPhysicalDeviceFeatures physicalDeviceFeatures = {};
 	physicalDeviceFeatures.samplerAnisotropy = VK_TRUE;
 //lukesawicki 2018-09-06 0744
-	physicalDeviceFeatures.sampleRateShading = VK_FALSE;
+	//physicalDeviceFeatures.sampleRateShading = VK_FALSE;
 
 	VkDeviceCreateInfo createInfo = {};
 	createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
@@ -116,7 +116,7 @@ void VulkanDevice::createLogicalDevice(VulkanInstance& vulkanInstance, VkSurface
 	{
 		throw std::runtime_error("Failed to create logical device.");
 	}
-
+//tutaj to powinnno chyba inczaej wygladac bo gdzie niby trafia to w graphicQueue
 	vkGetDeviceQueue(logicalDevice, graphicsFamilyQueueIndex, 0, &graphicsQueue);
 	vkGetDeviceQueue(logicalDevice, presentationFamilyQueueIndex, 0, &presentationQueue);
 }
