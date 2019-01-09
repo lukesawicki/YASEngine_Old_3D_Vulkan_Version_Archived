@@ -16,9 +16,10 @@ bool YasEngine::framebufferResized = false;
 const int MAX_FRAMES_IN_FLIGHT = 2;
 
 
-LRESULT CALLBACK windowProcedure(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
-	
-	switch(message) {
+LRESULT CALLBACK windowProcedure(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+	switch(message)
+	{
 		case WM_DISPLAYCHANGE:
 			YasEngine::framebufferResized = true;
 			break;
@@ -29,28 +30,32 @@ LRESULT CALLBACK windowProcedure(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 	return DefWindowProc(hWnd, message, wParam, lParam);
 }
 
-VkResult createDebugReportCallbackEXT(VkInstance& vulkanInstance, const VkDebugReportCallbackCreateInfoEXT* createInfo, const VkAllocationCallbacks* allocator, VkDebugReportCallbackEXT* callback) {
-
+VkResult createDebugReportCallbackEXT(VkInstance& vulkanInstance, const VkDebugReportCallbackCreateInfoEXT* createInfo, const VkAllocationCallbacks* allocator, VkDebugReportCallbackEXT* callback)
+{
 	PFN_vkCreateDebugReportCallbackEXT debugReportCallbackFunction = (PFN_vkCreateDebugReportCallbackEXT)vkGetInstanceProcAddr(vulkanInstance, "vkCreateDebugReportCallbackEXT");
 	
-	if(debugReportCallbackFunction != nullptr) {
+	if(debugReportCallbackFunction != nullptr)
+	{
 		return debugReportCallbackFunction(vulkanInstance, createInfo, allocator, callback);
-	} else {
+	}
+	else
+	{
 		return VK_ERROR_EXTENSION_NOT_PRESENT;
 	}
 }
 
-void destroyDebugReportCallbackEXT(VkInstance vulkanInstance, VkDebugReportCallbackEXT callback, const VkAllocationCallbacks* allocator) {
-
+void destroyDebugReportCallbackEXT(VkInstance vulkanInstance, VkDebugReportCallbackEXT callback, const VkAllocationCallbacks* allocator)
+{
 	PFN_vkDestroyDebugReportCallbackEXT destroyFunction = (PFN_vkDestroyDebugReportCallbackEXT)vkGetInstanceProcAddr(vulkanInstance, "vkDestroyDebugReportCallbackEXT");
 	
-	if(destroyFunction != nullptr) {
+	if(destroyFunction != nullptr)
+	{
 		destroyFunction(vulkanInstance, callback, allocator);
 	}
 }
 
-VKAPI_ATTR VkBool32 VKAPI_CALL YasEngine::debugCallback	(VkDebugReportFlagsEXT debugReportFlags, VkDebugReportObjectTypeEXT objectType,	uint64_t object, size_t location, int32_t code,	const char* layerPrefix, const char* msg, void* userData) {
-
+VKAPI_ATTR VkBool32 VKAPI_CALL YasEngine::debugCallback	(VkDebugReportFlagsEXT debugReportFlags, VkDebugReportObjectTypeEXT objectType,	uint64_t object, size_t location, int32_t code,	const char* layerPrefix, const char* msg, void* userData)
+{
 	std::cerr << "Validation layer: " << msg << std::endl;
 	//If return true, then call is aborted with the VK_ERROR_VALIDATION_FAILED_EXT
 	//because this is used to test the validation layers themeselves
@@ -58,8 +63,8 @@ VKAPI_ATTR VkBool32 VKAPI_CALL YasEngine::debugCallback	(VkDebugReportFlagsEXT d
 	return VK_FALSE;
 }
 
-YasEngine::YasEngine() {
-
+YasEngine::YasEngine()
+{
 	AllocConsole();
 	AttachConsole(GetCurrentProcessId());
 	FILE* file;
@@ -68,9 +73,10 @@ YasEngine::YasEngine() {
 	SetConsoleTitle("YasEngine logging");
 }
 
-void YasEngine::setupDebugCallback() {
-
-	if(!enableValidationLayers)	{
+void YasEngine::setupDebugCallback()
+{
+	if(!enableValidationLayers)
+	{
 		return;
 	}
 	
@@ -79,13 +85,14 @@ void YasEngine::setupDebugCallback() {
 	createInfo.flags = VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT;
 	createInfo.pfnCallback = debugCallback;
 	
-	if(createDebugReportCallbackEXT(vulkanInstance.instance, &createInfo, nullptr, &callback) != VK_SUCCESS) {
+	if(createDebugReportCallbackEXT(vulkanInstance.instance, &createInfo, nullptr, &callback) != VK_SUCCESS)
+	{
 		throw std::runtime_error("Failed to set up debug callback function");
 	}
 }
 
-void YasEngine::run(HINSTANCE hInstance) {
-
+void YasEngine::run(HINSTANCE hInstance)
+{
 	createWindow(hInstance);
 	initializeVulkan();
 	mainLoop();
@@ -94,8 +101,8 @@ void YasEngine::run(HINSTANCE hInstance) {
 
 //Private Methods
 
-void YasEngine::createWindow(HINSTANCE hInstance) {
-
+void YasEngine::createWindow(HINSTANCE hInstance)
+{
 	WNDCLASSEX windowClassEx;
 
 	windowClassEx.cbSize				= sizeof(WNDCLASSEX);
@@ -121,8 +128,8 @@ void YasEngine::createWindow(HINSTANCE hInstance) {
 	SetFocus(window);
 }
 
-void YasEngine::mainLoop() {
-
+void YasEngine::mainLoop()
+{
 	float time;
 	float newTime;
 	float deltaTime;
@@ -136,12 +143,15 @@ void YasEngine::mainLoop() {
 	frames = 0;
 	message.message = WM_NULL;
 
-	while(message.message != WM_QUIT) {
-
-		if(PeekMessage(&message, 0, 0, 0, PM_REMOVE)) {
+	while(message.message != WM_QUIT)
+	{
+		if(PeekMessage(&message, 0, 0, 0, PM_REMOVE))
+		{
 			TranslateMessage(&message);
 			DispatchMessage(&message);
-		} else {
+		}
+		else
+		{
 			newTime = timePicker->getSeconds();
 			deltaTime = newTime - time;
 			time = newTime;
@@ -158,8 +168,8 @@ void YasEngine::mainLoop() {
 	}
 }
 
-void YasEngine::initializeVulkan() {
-
+void YasEngine::initializeVulkan()
+{
 	createVulkanInstance();
 	setupDebugCallback();
 	createSurface();
@@ -185,31 +195,32 @@ void YasEngine::initializeVulkan() {
 	createSyncObjects();
 }
 
-void YasEngine::createVulkanInstance() {
-
+void YasEngine::createVulkanInstance()
+{
 	vulkanInstance.createVulkanInstance(enableValidationLayers);
 }
 
-void YasEngine::selectPhysicalDevice() {
-
+void YasEngine::selectPhysicalDevice()
+{
 	vulkanDevice->selectPhysicalDevice(vulkanInstance, surface);
 }
 
-void YasEngine::createCommandPool() {
-
+void YasEngine::createCommandPool()
+{
 	QueueFamilyIndices queueFamilyIndices = findQueueFamilies(vulkanDevice->physicalDevice, surface);
 
 	VkCommandPoolCreateInfo commandPoolCreateInfo = {};
 	commandPoolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 	commandPoolCreateInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily;
 
-	if(vkCreateCommandPool(vulkanDevice->logicalDevice, &commandPoolCreateInfo, nullptr, &commandPool) != VK_SUCCESS) {
+	if(vkCreateCommandPool(vulkanDevice->logicalDevice, &commandPoolCreateInfo, nullptr, &commandPool) != VK_SUCCESS)
+	{
 		throw std::runtime_error("Failed to create command pool!");
 	}
 }
 
-void YasEngine::createVertexBuffer() {
-
+void YasEngine::createVertexBuffer()
+{
 	//VkDeviceSize is alias to uint64_t
 	VkDeviceSize vertexBufferSize = sizeof(vertices[0]) * vertices.size();
 	VkBuffer stagingBuffer;
@@ -230,8 +241,8 @@ void YasEngine::createVertexBuffer() {
 	vkFreeMemory(vulkanDevice->logicalDevice, stagingBufferMemory, nullptr);
 }
 
-void YasEngine::createIndexBuffer() {
-
+void YasEngine::createIndexBuffer()
+{
 	VkDeviceSize indexBufferSize = sizeof(indices[0]) * indices.size();
 	VkBuffer stagingBuffer;
 	VkDeviceMemory stagingBufferMemory;
@@ -251,22 +262,24 @@ void YasEngine::createIndexBuffer() {
 	vkFreeMemory(vulkanDevice->logicalDevice, stagingBufferMemory, nullptr);	
 }
 
-uint32_t YasEngine::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags memoryPropertiesFlags) {
-
+uint32_t YasEngine::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags memoryPropertiesFlags)
+{
 	VkPhysicalDeviceMemoryProperties physicalDeviceMemoryProperties;
 
 	vkGetPhysicalDeviceMemoryProperties(vulkanDevice->physicalDevice, &physicalDeviceMemoryProperties);
 	
-	for(uint32_t i=0; i<physicalDeviceMemoryProperties.memoryTypeCount; i++) {
-		if(typeFilter & (1 << i) && (physicalDeviceMemoryProperties.memoryTypes[i].propertyFlags & memoryPropertiesFlags) == memoryPropertiesFlags) {
+	for(uint32_t i=0; i<physicalDeviceMemoryProperties.memoryTypeCount; i++)
+	{
+		if(typeFilter & (1 << i) && (physicalDeviceMemoryProperties.memoryTypes[i].propertyFlags & memoryPropertiesFlags) == memoryPropertiesFlags)
+		{
 			return i;
 		}
 	}
 	throw std::runtime_error("Filed to find suitable memory type.");
 }
 
-void YasEngine::createCommandBuffers() {
-
+void YasEngine::createCommandBuffers()
+{
 	commandBuffers.resize(swapchainFramebuffers.size());
 
 	VkCommandBufferAllocateInfo commandBufferAllocateInfo = {};
@@ -275,16 +288,19 @@ void YasEngine::createCommandBuffers() {
 	commandBufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 	commandBufferAllocateInfo.commandBufferCount = (uint32_t)commandBuffers.size();
 
-	if(vkAllocateCommandBuffers(vulkanDevice->logicalDevice, &commandBufferAllocateInfo, commandBuffers.data()) != VK_SUCCESS) {
+	if(vkAllocateCommandBuffers(vulkanDevice->logicalDevice, &commandBufferAllocateInfo, commandBuffers.data()) != VK_SUCCESS)
+	{
 		throw std::runtime_error("Failed to allocatae command buffers.");
 	}
 
-	for(size_t i=0; i<commandBuffers.size(); i++) {
+	for(size_t i=0; i<commandBuffers.size(); i++)
+	{
 		VkCommandBufferBeginInfo commandBufferBeginInfo = {};
 		commandBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 		commandBufferBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
 
-		if(vkBeginCommandBuffer(commandBuffers[i], &commandBufferBeginInfo) != VK_SUCCESS) {
+		if(vkBeginCommandBuffer(commandBuffers[i], &commandBufferBeginInfo) != VK_SUCCESS)
+		{
 			throw std::runtime_error("Failed to begin recording command buffer.");
 		}
 
@@ -315,25 +331,28 @@ void YasEngine::createCommandBuffers() {
 		vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
 		vkCmdEndRenderPass(commandBuffers[i]);
 
-		if(vkEndCommandBuffer(commandBuffers[i]) != VK_SUCCESS) {
+		if(vkEndCommandBuffer(commandBuffers[i]) != VK_SUCCESS)
+		{
 			throw std::runtime_error("Failed to record command buffer");
 		}
-
 	}
 }
 
-void YasEngine::drawFrame(float deltaTime) {
-
+void YasEngine::drawFrame(float deltaTime)
+{
 	vkWaitForFences(vulkanDevice->logicalDevice, 1, &inFlightFences[currentFrame], VK_TRUE, std::numeric_limits<uint64_t>::max());
 	
 	uint32_t imageIndex;
 
 	VkResult result = vkAcquireNextImageKHR(vulkanDevice->logicalDevice, vulkanSwapchain.swapchain, std::numeric_limits<uint64_t>::max(), imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
 	
-	if(result == VK_ERROR_OUT_OF_DATE_KHR) {
+	if(result == VK_ERROR_OUT_OF_DATE_KHR)
+	{
 		recreateSwapchain();
 		return;
-	} else {
+	}
+	else
+	{
 		if(result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
 			throw std::runtime_error("Failed to acquire swap chain image!");
 		}
@@ -360,7 +379,8 @@ void YasEngine::drawFrame(float deltaTime) {
 
 	vkResetFences(vulkanDevice->logicalDevice, 1, &inFlightFences[currentFrame]);
 
-	if(vkQueueSubmit(graphicsQueue, 1, &submitInfo, inFlightFences[currentFrame]) != VK_SUCCESS) {
+	if(vkQueueSubmit(graphicsQueue, 1, &submitInfo, inFlightFences[currentFrame]) != VK_SUCCESS)
+	{
 		throw std::runtime_error("Failed to submit draw command buffer.");
 	}
 	
@@ -376,19 +396,23 @@ void YasEngine::drawFrame(float deltaTime) {
 	presentInfoKhr.pImageIndices = &imageIndex;
 	result = vkQueuePresentKHR(presentationQueue, &presentInfoKhr);
 
-	if(result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || YasEngine::framebufferResized) {
+	if(result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || YasEngine::framebufferResized)
+	{
 		YasEngine::framebufferResized = false;
 		recreateSwapchain();
-	} else {
-		if(result != VK_SUCCESS) {
+	}
+	else
+	{
+		if(result != VK_SUCCESS)
+		{
 			throw std::runtime_error("Failed to presesnt swap chain image.");
 		}
 	}
 	currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 }
 
-void YasEngine::createSyncObjects() {
-
+void YasEngine::createSyncObjects()
+{
 	imageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
 	renderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
 	inFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
@@ -401,25 +425,28 @@ void YasEngine::createSyncObjects() {
 	fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 	fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-	for(size_t i = 0; i< MAX_FRAMES_IN_FLIGHT; i++) {
+	for(size_t i = 0; i< MAX_FRAMES_IN_FLIGHT; i++)
+	{
 		if(vkCreateSemaphore(vulkanDevice->logicalDevice, &semaphoreCreateInfo, nullptr, &imageAvailableSemaphores[i]) != VK_SUCCESS ||
 			vkCreateSemaphore(vulkanDevice->logicalDevice, &semaphoreCreateInfo, nullptr, &renderFinishedSemaphores[i]) != VK_SUCCESS ||
 			vkCreateFence(vulkanDevice->logicalDevice, &fenceCreateInfo, nullptr, &inFlightFences[i]) != VK_SUCCESS
-		) {
+		)
+		{
 			throw std::runtime_error("Failed to create semaphores for a frame.");
 		}
 	}
 }
 
-void YasEngine::createBuffer(VkDeviceSize size,VkBufferUsageFlags usage,VkMemoryPropertyFlags properties,VkBuffer &buffer,VkDeviceMemory &bufferMemory) {
-
+void YasEngine::createBuffer(VkDeviceSize size,VkBufferUsageFlags usage,VkMemoryPropertyFlags properties,VkBuffer &buffer,VkDeviceMemory &bufferMemory)
+{
 	VkBufferCreateInfo bufferCreateInfo = {};
 	bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 	bufferCreateInfo.size = size;
 	bufferCreateInfo.usage = usage;
 	bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 	
-	if(vkCreateBuffer(vulkanDevice->logicalDevice, &bufferCreateInfo, nullptr, &buffer) != VK_SUCCESS) {
+	if(vkCreateBuffer(vulkanDevice->logicalDevice, &bufferCreateInfo, nullptr, &buffer) != VK_SUCCESS)
+	{
 		throw std::runtime_error("Failed to create vertex buffer.");
 	}
 
@@ -432,15 +459,16 @@ void YasEngine::createBuffer(VkDeviceSize size,VkBufferUsageFlags usage,VkMemory
 	memoryAllocateInfo.allocationSize = memoryRequirements.size;
 	memoryAllocateInfo.memoryTypeIndex = findMemoryType(memoryRequirements.memoryTypeBits, properties);
 
-	if(vkAllocateMemory(vulkanDevice->logicalDevice, &memoryAllocateInfo, nullptr, &bufferMemory) != VK_SUCCESS) {
+	if(vkAllocateMemory(vulkanDevice->logicalDevice, &memoryAllocateInfo, nullptr, &bufferMemory) != VK_SUCCESS)
+	{
 		throw std::runtime_error("Failed to allocate vertex buffer memory!");
 	}
 
 	vkBindBufferMemory(vulkanDevice->logicalDevice, buffer, bufferMemory, 0);
 }
 
-void YasEngine::copyBuffer(VkBuffer sourceBuffer,VkBuffer destinationBuffer,VkDeviceSize deviceSize) {
-
+void YasEngine::copyBuffer(VkBuffer sourceBuffer,VkBuffer destinationBuffer,VkDeviceSize deviceSize)
+{
 	VkCommandBuffer commandBuffer = beginSingleTimeCommands();
 
 	VkBufferCopy copyRegion = {};
@@ -450,8 +478,8 @@ void YasEngine::copyBuffer(VkBuffer sourceBuffer,VkBuffer destinationBuffer,VkDe
 	endSingleTimeCommands(commandBuffer);
 }
 
-void YasEngine::createDescriptorSetLayout() {
-
+void YasEngine::createDescriptorSetLayout()
+{
 	VkDescriptorSetLayoutBinding uniformBufferObjectLayoutBinding = {};
 	uniformBufferObjectLayoutBinding.binding = 0;
 	uniformBufferObjectLayoutBinding.descriptorCount = 1;
@@ -473,26 +501,28 @@ void YasEngine::createDescriptorSetLayout() {
 	descriptorSetLayoutCreateInfo.bindingCount = static_cast<uint32_t>(bindings.size());
 	descriptorSetLayoutCreateInfo.pBindings = bindings.data();
 
-	if(vkCreateDescriptorSetLayout(vulkanDevice->logicalDevice, &descriptorSetLayoutCreateInfo, nullptr, &descriptorSetLayout) != VK_SUCCESS) {
+	if(vkCreateDescriptorSetLayout(vulkanDevice->logicalDevice, &descriptorSetLayoutCreateInfo, nullptr, &descriptorSetLayout) != VK_SUCCESS)
+	{
 		throw std::runtime_error("Failed to create descriptor set layout");
 	}
 }
 
-void YasEngine::createUniformBuffers() {
-
+void YasEngine::createUniformBuffers()
+{
 	VkDeviceSize uniformBufferSize = sizeof(UniformBufferObject);
 	
 	uniformBuffers.resize(vulkanSwapchain.swapchainImages.size());
 	uniformBuffersMemory.resize(vulkanSwapchain.swapchainImages.size());
 	
-	for(size_t i = 0; i < vulkanSwapchain.swapchainImages.size(); i++) {
+	for(size_t i = 0; i < vulkanSwapchain.swapchainImages.size(); i++)
+	{
 		createBuffer(uniformBufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, uniformBuffers[i], uniformBuffersMemory[i]);
 	}
 
 }
 
-void YasEngine::updateUniformBuffer(uint32_t currentImage, float deltaTime) {
-
+void YasEngine::updateUniformBuffer(uint32_t currentImage, float deltaTime)
+{
 	float time = zeroTime += deltaTime;
 
 	UniformBufferObject uniformBufferObject = {};
@@ -508,13 +538,13 @@ void YasEngine::updateUniformBuffer(uint32_t currentImage, float deltaTime) {
 	vkUnmapMemory(vulkanDevice->logicalDevice, uniformBuffersMemory[currentImage]);
 }
 
-void YasEngine::createLogicalDevice() {
-
+void YasEngine::createLogicalDevice()
+{
 	vulkanDevice->createLogicalDevice(vulkanInstance, surface, graphicsQueue, presentationQueue, enableValidationLayers);
 }
 
-void YasEngine::createSurface() {
-
+void YasEngine::createSurface()
+{
 	VkWin32SurfaceCreateInfoKHR	surfaceCreateInfo;
 	surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
 	surfaceCreateInfo.pNext = NULL;
@@ -524,19 +554,20 @@ void YasEngine::createSurface() {
 
 	VkResult result = vkCreateWin32SurfaceKHR(vulkanInstance.instance, &surfaceCreateInfo, NULL, &surface);
 
-	if(!(result == VK_SUCCESS)) {
+	if(!(result == VK_SUCCESS))
+	{
 		throw std::runtime_error("Failed to create Vulkan surface!");
 	}
 }
 
-void YasEngine::createSwapchain() {
-
+void YasEngine::createSwapchain()
+{
 	QueueFamilyIndices queueIndices = findQueueFamilies(vulkanDevice->physicalDevice, surface);
 	vulkanSwapchain.createSwapchain(vulkanDevice->physicalDevice, surface, vulkanDevice->logicalDevice, queueIndices, window);
 }
 
-void YasEngine::recreateSwapchain() {
-
+void YasEngine::recreateSwapchain()
+{
 	vkDeviceWaitIdle(vulkanDevice->logicalDevice);
 	cleanupSwapchain();
 	createSwapchain();
@@ -548,18 +579,19 @@ void YasEngine::recreateSwapchain() {
 	createCommandBuffers();
 }
 
-void YasEngine::createImageViews() {
-
+void YasEngine::createImageViews()
+{
 	vulkanSwapchain.createImageViews(vulkanDevice->logicalDevice, mipLevels);
 }
 
-void YasEngine::cleanupSwapchain() {
-
+void YasEngine::cleanupSwapchain()
+{
     vkDestroyImageView(vulkanDevice->logicalDevice, depthImageView, nullptr);
     vkDestroyImage(vulkanDevice->logicalDevice, depthImage, nullptr);
     vkFreeMemory(vulkanDevice->logicalDevice, depthImageMemory, nullptr);
 
-	for(size_t i=0; i < swapchainFramebuffers.size(); i++) {
+	for(size_t i=0; i < swapchainFramebuffers.size(); i++)
+	{
 		vkDestroyFramebuffer(vulkanDevice->logicalDevice, swapchainFramebuffers[i], nullptr);
 	}
 
@@ -567,16 +599,16 @@ void YasEngine::cleanupSwapchain() {
 	vkDestroyPipeline(vulkanDevice->logicalDevice, graphicsPipeline, nullptr);
 	vkDestroyRenderPass(vulkanDevice->logicalDevice, renderPass, nullptr);
 
-	for(size_t i=0; i<vulkanSwapchain.swapchainImageViews.size(); i++) {
+	for(size_t i=0; i<vulkanSwapchain.swapchainImageViews.size(); i++)
+	{
 		vkDestroyImageView(vulkanDevice->logicalDevice, vulkanSwapchain.swapchainImageViews[i], nullptr);
 	}
 	
 	vkDestroySwapchainKHR(vulkanDevice->logicalDevice, vulkanSwapchain.swapchain, nullptr);
 }
 
-void YasEngine::createRenderPass() {
-
-
+void YasEngine::createRenderPass()
+{
 	VkAttachmentDescription colorAttachmentDescription = {};
 	colorAttachmentDescription.format = vulkanSwapchain.swapchainImageFormat;
 	colorAttachmentDescription.samples = VK_SAMPLE_COUNT_1_BIT;
@@ -630,13 +662,14 @@ void YasEngine::createRenderPass() {
 	renderPassInfo.dependencyCount = 1;
 	renderPassInfo.pDependencies = &subpassDependency;
 
-	if(vkCreateRenderPass(vulkanDevice->logicalDevice, &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS) {
+	if(vkCreateRenderPass(vulkanDevice->logicalDevice, &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS)
+	{
 		throw std::runtime_error("Failed to create renderpass.");
 	}
 }
 
-void YasEngine::createGraphicsPipeline() {
-
+void YasEngine::createGraphicsPipeline()
+{
 	std::vector<char> vertShaderCode = readFile("Shaders\\vert.spv");
 	std::vector<char> fragShaderCode = readFile("Shaders\\frag.spv");
 
@@ -743,7 +776,8 @@ void YasEngine::createGraphicsPipeline() {
 	pipelineLayoutInfo.setLayoutCount = 1;
 	pipelineLayoutInfo.pSetLayouts = &descriptorSetLayout;
 
-	if(vkCreatePipelineLayout(vulkanDevice->logicalDevice, &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
+	if(vkCreatePipelineLayout(vulkanDevice->logicalDevice, &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS)
+	{
 		throw std::runtime_error("Filed to create pipeline layout!");
 	}
 
@@ -763,7 +797,8 @@ void YasEngine::createGraphicsPipeline() {
 	graphicsPiplineCreateInfo.basePipelineHandle = VK_NULL_HANDLE;
 	graphicsPiplineCreateInfo.pDepthStencilState = &pipelineDepthStencilStateCreateInfo;
 
-	if(vkCreateGraphicsPipelines(vulkanDevice->logicalDevice, VK_NULL_HANDLE, 1, &graphicsPiplineCreateInfo, nullptr, &graphicsPipeline) != VK_SUCCESS) {
+	if(vkCreateGraphicsPipelines(vulkanDevice->logicalDevice, VK_NULL_HANDLE, 1, &graphicsPiplineCreateInfo, nullptr, &graphicsPipeline) != VK_SUCCESS)
+	{
 		throw std::runtime_error("Failed to create graphics pipeline");
 	}
 
@@ -771,12 +806,11 @@ void YasEngine::createGraphicsPipeline() {
 	vkDestroyShaderModule(vulkanDevice->logicalDevice, vertShaderModule, nullptr);
 }
 
-void YasEngine::createFramebuffers() {
-
+void YasEngine::createFramebuffers()
+{
 	swapchainFramebuffers.resize(vulkanSwapchain.swapchainImageViews.size());
-
-	for(size_t i=0; i<vulkanSwapchain.swapchainImageViews.size(); i++) {
-
+	for(size_t i=0; i<vulkanSwapchain.swapchainImageViews.size(); i++)
+	{
 		std::array<VkImageView, 2> attachments = {vulkanSwapchain.swapchainImageViews[i], depthImageView};
 
 		VkFramebufferCreateInfo framebufferCreateInfo = {};
@@ -788,14 +822,15 @@ void YasEngine::createFramebuffers() {
 		framebufferCreateInfo.height = vulkanSwapchain.swapchainExtent.height;
 		framebufferCreateInfo.layers = 1;
 
-		if(vkCreateFramebuffer(vulkanDevice->logicalDevice, &framebufferCreateInfo, nullptr, &swapchainFramebuffers[i]) != VK_SUCCESS) {
+		if(vkCreateFramebuffer(vulkanDevice->logicalDevice, &framebufferCreateInfo, nullptr, &swapchainFramebuffers[i]) != VK_SUCCESS)
+		{
 			throw std::runtime_error("Failed to create framebuffer.");
 		}
 	}
 }
 
-VkShaderModule YasEngine::createShaderModule(const std::vector<char>& code) {
-
+VkShaderModule YasEngine::createShaderModule(const std::vector<char>& code)
+{
 	VkShaderModuleCreateInfo createInfo = {};
 	createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
 	createInfo.codeSize = code.size();
@@ -803,19 +838,20 @@ VkShaderModule YasEngine::createShaderModule(const std::vector<char>& code) {
 
 	VkShaderModule shaderModule;
 
-	if(vkCreateShaderModule(vulkanDevice->logicalDevice, &createInfo, nullptr, &shaderModule) != VK_SUCCESS) {
+	if(vkCreateShaderModule(vulkanDevice->logicalDevice, &createInfo, nullptr, &shaderModule) != VK_SUCCESS)
+	{
 		throw std::runtime_error("Failed to create shader module");
 	}
 	return shaderModule;
 }
 
-void YasEngine::destroySwapchain() {
-
+void YasEngine::destroySwapchain()
+{
 	vulkanSwapchain.destroySwapchain(vulkanDevice->logicalDevice);
 }
 
-void YasEngine::cleanUp() {
-
+void YasEngine::cleanUp()
+{
 	cleanupSwapchain();
 	vkDestroySampler(vulkanDevice->logicalDevice, textureSampler, nullptr);
 	vkDestroyImageView(vulkanDevice->logicalDevice, textureImageView, nullptr);
@@ -824,7 +860,8 @@ void YasEngine::cleanUp() {
 	vkDestroyDescriptorPool(vulkanDevice->logicalDevice, descriptorPool, nullptr);
 	vkDestroyDescriptorSetLayout(vulkanDevice->logicalDevice, descriptorSetLayout, nullptr);
 
-	for(size_t i=0; i<vulkanSwapchain.swapchainImages.size(); i++) {
+	for(size_t i=0; i<vulkanSwapchain.swapchainImages.size(); i++)
+	{
 		vkDestroyBuffer(vulkanDevice->logicalDevice, uniformBuffers[i], nullptr);
 		vkFreeMemory(vulkanDevice->logicalDevice, uniformBuffersMemory[i], nullptr);
 	}
@@ -835,7 +872,8 @@ void YasEngine::cleanUp() {
 	vkDestroyBuffer(vulkanDevice->logicalDevice, vertexBuffer, nullptr);
 	vkFreeMemory(vulkanDevice->logicalDevice, vertexBufferMemory, nullptr);
 
-	for(size_t i = 0; i<MAX_FRAMES_IN_FLIGHT; i++) {
+	for(size_t i = 0; i<MAX_FRAMES_IN_FLIGHT; i++)
+	{
 		vkDestroySemaphore(vulkanDevice->logicalDevice, renderFinishedSemaphores[i], nullptr);
 		vkDestroySemaphore(vulkanDevice->logicalDevice, imageAvailableSemaphores[i], nullptr);
 		vkDestroyFence(vulkanDevice->logicalDevice, inFlightFences[i], nullptr);
@@ -844,7 +882,8 @@ void YasEngine::cleanUp() {
 	vkDestroyCommandPool(vulkanDevice->logicalDevice, commandPool, nullptr);
 	vkDestroyDevice(vulkanDevice->logicalDevice, nullptr);
 
-	if(enableValidationLayers) {
+	if(enableValidationLayers)
+	{
 		destroyDebugReportCallbackEXT(vulkanInstance.instance, callback, nullptr);
 	}
 
@@ -853,8 +892,8 @@ void YasEngine::cleanUp() {
 	DestroyWindow(window);
 }
 
-void YasEngine::createDescriptorPool() {
-
+void YasEngine::createDescriptorPool()
+{
 	std::array<VkDescriptorPoolSize, 2> poolSizes = {};
 
 	poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -868,7 +907,8 @@ void YasEngine::createDescriptorPool() {
 	descriptorPoolCreateInfo.pPoolSizes = poolSizes.data();
 	descriptorPoolCreateInfo.maxSets = static_cast<uint32_t>(vulkanSwapchain.swapchainImages.size());
 
-	if(vkCreateDescriptorPool(vulkanDevice->logicalDevice, &descriptorPoolCreateInfo, nullptr, &descriptorPool) != VK_SUCCESS) {
+	if(vkCreateDescriptorPool(vulkanDevice->logicalDevice, &descriptorPoolCreateInfo, nullptr, &descriptorPool) != VK_SUCCESS)
+	{
 		throw std::runtime_error("Failed to create descriptor pool.");
 	}
 
@@ -886,11 +926,13 @@ void YasEngine::createDescriptorSets()
 
 	descriptorSets.resize(vulkanSwapchain.swapchainImages.size());
 
-	if(vkAllocateDescriptorSets(vulkanDevice->logicalDevice, &descriptorSetAllocateInfo, &descriptorSets[0]) != VK_SUCCESS) {
+	if(vkAllocateDescriptorSets(vulkanDevice->logicalDevice, &descriptorSetAllocateInfo, &descriptorSets[0]) != VK_SUCCESS)
+	{
 		throw std::runtime_error("failed to allocate descriptor sets!");
 	}
 
-	for(size_t i=0; i<vulkanSwapchain.swapchainImages.size(); i++) {
+	for(size_t i=0; i<vulkanSwapchain.swapchainImages.size(); i++)
+	{
 
 		VkDescriptorBufferInfo descriptorBufferInfo = {};
 		descriptorBufferInfo.buffer = uniformBuffers[i];
@@ -924,7 +966,8 @@ void YasEngine::createDescriptorSets()
 	}
 }
 
-void YasEngine::createTextureImage() {
+void YasEngine::createTextureImage()
+{
 	int textureWidth;
 	int textureHeight;
 	int textureChannels;
@@ -932,7 +975,8 @@ void YasEngine::createTextureImage() {
 	VkDeviceSize imageSize = textureWidth * textureHeight * 4;
 	mipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(textureWidth, textureHeight)))) + 1;
 
-	if(!pixels) {
+	if(!pixels)
+	{
 		throw std::runtime_error("Failed to load texture image.");
 	}
 
@@ -960,7 +1004,6 @@ void YasEngine::createTextureImage() {
 
 void YasEngine::createImage(uint32_t textureWidth, uint32_t textureHeight, uint32_t mipLevelsNumber, VkFormat format, VkImageTiling imageTiling, VkImageUsageFlags imageUsageFlags, VkMemoryPropertyFlags memoryProperties, VkImage& image, VkDeviceMemory& imageMemory)
 {
-
 	VkImageCreateInfo imageCreateInfo = {};
 
 	imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -977,7 +1020,8 @@ void YasEngine::createImage(uint32_t textureWidth, uint32_t textureHeight, uint3
 	imageCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 	imageCreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
 
-	if(vkCreateImage(vulkanDevice->logicalDevice, &imageCreateInfo, nullptr, &image) != VK_SUCCESS) {
+	if(vkCreateImage(vulkanDevice->logicalDevice, &imageCreateInfo, nullptr, &image) != VK_SUCCESS)
+	{
 		throw std::runtime_error("Failed to create image.");
 	}
 
@@ -989,14 +1033,16 @@ void YasEngine::createImage(uint32_t textureWidth, uint32_t textureHeight, uint3
 	memoryAllocateInfo.allocationSize = memoryRequirements.size;
 	memoryAllocateInfo.memoryTypeIndex = findMemoryType(memoryRequirements.memoryTypeBits, memoryProperties);
 
-	if (vkAllocateMemory(vulkanDevice->logicalDevice, &memoryAllocateInfo, nullptr, &imageMemory) != VK_SUCCESS) {
+	if (vkAllocateMemory(vulkanDevice->logicalDevice, &memoryAllocateInfo, nullptr, &imageMemory) != VK_SUCCESS)
+	{
 		throw std::runtime_error("failed to allocate image memory!");
 	}
 
 	vkBindImageMemory(vulkanDevice->logicalDevice, image, imageMemory, 0);
 }
 
-VkCommandBuffer YasEngine::beginSingleTimeCommands() {
+VkCommandBuffer YasEngine::beginSingleTimeCommands()
+{
     VkCommandBufferAllocateInfo commandBufferAllocateInfo = {};
     commandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
     commandBufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
@@ -1015,7 +1061,8 @@ VkCommandBuffer YasEngine::beginSingleTimeCommands() {
     return commandBuffer;
 }
 
-void YasEngine::endSingleTimeCommands(VkCommandBuffer commandBuffer) {
+void YasEngine::endSingleTimeCommands(VkCommandBuffer commandBuffer)
+{
     vkEndCommandBuffer(commandBuffer);
 
     VkSubmitInfo submitInfo = {};
@@ -1031,7 +1078,6 @@ void YasEngine::endSingleTimeCommands(VkCommandBuffer commandBuffer) {
 
 void YasEngine::transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldImageLayout, VkImageLayout newImageLayout, uint32_t mipLevelsNumber)
 {
-
 	VkCommandBuffer commandBuffer = beginSingleTimeCommands();
 	VkImageMemoryBarrier imageMemoryBarrier = {};
 	imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -1041,12 +1087,16 @@ void YasEngine::transitionImageLayout(VkImage image, VkFormat format, VkImageLay
 	imageMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 	imageMemoryBarrier.image = image;
 
-	if(newImageLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL) {
+	if(newImageLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
+	{
 		imageMemoryBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
-		if(hasStencilComponent(format)) {
+		if(hasStencilComponent(format))
+		{
 			imageMemoryBarrier.subresourceRange.aspectMask = imageMemoryBarrier.subresourceRange.aspectMask | VK_IMAGE_ASPECT_STENCIL_BIT;
 		}
-	} else {
+	}
+	else
+	{
 		imageMemoryBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 	}
 
@@ -1058,26 +1108,37 @@ void YasEngine::transitionImageLayout(VkImage image, VkFormat format, VkImageLay
 	VkPipelineStageFlags sourcePipelineStageFlag;
 	VkPipelineStageFlags destinationPipelineStageFlags;
 
-	if(oldImageLayout == VK_IMAGE_LAYOUT_UNDEFINED && newImageLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
+	if(oldImageLayout == VK_IMAGE_LAYOUT_UNDEFINED && newImageLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
+	{
 		imageMemoryBarrier.srcAccessMask = 0;
 		imageMemoryBarrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 		sourcePipelineStageFlag = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
 		destinationPipelineStageFlags = VK_PIPELINE_STAGE_TRANSFER_BIT;
-	} else if(oldImageLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && newImageLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
-		imageMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-		imageMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-		sourcePipelineStageFlag = VK_PIPELINE_STAGE_TRANSFER_BIT;
-		destinationPipelineStageFlags = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-	} else if(oldImageLayout == VK_IMAGE_LAYOUT_UNDEFINED && newImageLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL) {
-		imageMemoryBarrier.srcAccessMask = 0;
-		imageMemoryBarrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-		sourcePipelineStageFlag = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-		destinationPipelineStageFlags = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
 	}
-	else {
-		throw std::invalid_argument("Unsuported layout transition.");
+	else
+	{
+		if(oldImageLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && newImageLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+		{
+			imageMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+			imageMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+			sourcePipelineStageFlag = VK_PIPELINE_STAGE_TRANSFER_BIT;
+			destinationPipelineStageFlags = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+		}
+		else
+		{
+			if(oldImageLayout == VK_IMAGE_LAYOUT_UNDEFINED && newImageLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
+			{
+				imageMemoryBarrier.srcAccessMask = 0;
+				imageMemoryBarrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+				sourcePipelineStageFlag = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+				destinationPipelineStageFlags = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+			}
+			else
+			{
+				throw std::invalid_argument("Unsuported layout transition.");
+			}
+		}
 	}
-
 	vkCmdPipelineBarrier(commandBuffer, sourcePipelineStageFlag, destinationPipelineStageFlags, 0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier);
 	endSingleTimeCommands(commandBuffer);
 }
@@ -1127,7 +1188,8 @@ void YasEngine::createTextureSampler()
     samplerCreateInfo.maxLod = static_cast<float>(mipLevels);
     samplerCreateInfo.mipLodBias = 0;
 	
-	if(vkCreateSampler(vulkanDevice->logicalDevice, &samplerCreateInfo, nullptr, &textureSampler) != VK_SUCCESS) {
+	if(vkCreateSampler(vulkanDevice->logicalDevice, &samplerCreateInfo, nullptr, &textureSampler) != VK_SUCCESS)
+	{
 		throw std::runtime_error("Failed to create texture sampler!");
 	}
 }
@@ -1146,10 +1208,16 @@ VkFormat YasEngine::findSupportedFormat(const std::vector<VkFormat>& candidates,
 	for(VkFormat format: candidates) {
 		VkFormatProperties formatProperties;
 		vkGetPhysicalDeviceFormatProperties(vulkanDevice->physicalDevice, format, &formatProperties);
-		if( tiling == VK_IMAGE_TILING_LINEAR && (formatProperties.linearTilingFeatures & features) == features) {
+		if( tiling == VK_IMAGE_TILING_LINEAR && (formatProperties.linearTilingFeatures & features) == features)
+		{
 			return format;
-		} else if( tiling == VK_IMAGE_TILING_OPTIMAL && (formatProperties.optimalTilingFeatures & features) == features) {
-			return format;
+		}
+		else
+		{
+			if( tiling == VK_IMAGE_TILING_OPTIMAL && (formatProperties.optimalTilingFeatures & features) == features)
+			{
+				return format;
+			}
 		}
 	}
 	throw std::runtime_error("Failed to find supported format.");
@@ -1174,28 +1242,34 @@ void YasEngine::loadModel()
 	std::string tinyobjLoadingError;
 	std::string tinyobjLoadingWarnings;
 	
-	if(!tinyobj::LoadObj(&attrib, &shapes, &materials, &tinyobjLoadingWarnings, &tinyobjLoadingError, MODEL_PATH.c_str())) {
+	if(!tinyobj::LoadObj(&attrib, &shapes, &materials, &tinyobjLoadingWarnings, &tinyobjLoadingError, MODEL_PATH.c_str()))
+	{
 		throw std::runtime_error(tinyobjLoadingError);
 	}
 	
-	for(const auto& shape: shapes) {
-		for(const auto& index: shape.mesh.indices) {
+	for(const auto& shape: shapes)
+	{
+		for(const auto& index: shape.mesh.indices)
+		{
 			Vertex vertex = {};
 
-			vertex.pos = {
+			vertex.pos =
+			{
 				attrib.vertices[3 * index.vertex_index + 0],
 				attrib.vertices[3 * index.vertex_index + 1],
 				attrib.vertices[3 * index.vertex_index + 2]
 			};
 
-			vertex.texCoord = {
+			vertex.texCoord =
+			{
 				attrib.texcoords[2 * index.texcoord_index + 0],
 				1.0F - attrib.texcoords[2 * index.texcoord_index + 1]
 			};
 
 			vertex.color = {1.0F, 1.0F, 1.0F};
 
-			if(uniqueVertices.count(vertex) == 0) {
+			if(uniqueVertices.count(vertex) == 0)
+			{
 				uniqueVertices[vertex] = static_cast<uint32_t>(vertices.size());
 				vertices.push_back(vertex);
 			}
@@ -1206,11 +1280,11 @@ void YasEngine::loadModel()
 
 void YasEngine::generateMipmaps(VkImage image, VkFormat imageFormat, int32_t textureWidth,int32_t textureHeight,uint32_t mipLevelsNumber)
 {
-
 	VkFormatProperties formatProperties;
 	vkGetPhysicalDeviceFormatProperties(vulkanDevice->physicalDevice, imageFormat, &formatProperties);
 
-	if ( !(formatProperties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT) ) {
+	if ( !(formatProperties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT) )
+	{
 		throw std::runtime_error("texture image format does not support linear blitting!");
 	}
 
@@ -1230,7 +1304,8 @@ void YasEngine::generateMipmaps(VkImage image, VkFormat imageFormat, int32_t tex
 	int32_t mipHeight = textureHeight;
 
 	//From 1 !!!! Attention
-	for (uint32_t i = 1; i < mipLevelsNumber; i++) {
+	for (uint32_t i = 1; i < mipLevelsNumber; i++)
+	{
 		imageMemoryBarrier.subresourceRange.baseMipLevel = i - 1;
 		imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
 		imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
@@ -1264,22 +1339,25 @@ void YasEngine::generateMipmaps(VkImage image, VkFormat imageFormat, int32_t tex
 
 		vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier);
 
-		if (mipWidth > 1) {
+		if (mipWidth > 1)
+		{
 			mipWidth /= 2;
 		}
-		if (mipHeight > 1) {
+		
+		if (mipHeight > 1)
+		{
 			mipHeight /= 2;
 		}
 	}
-		imageMemoryBarrier.subresourceRange.baseMipLevel = mipLevelsNumber - 1;
-		imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-		imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-		imageMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-		imageMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+	imageMemoryBarrier.subresourceRange.baseMipLevel = mipLevelsNumber - 1;
+	imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+	imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	imageMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+	imageMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
 
-		vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier);
+	vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier);
 
-		endSingleTimeCommands(commandBuffer);
+	endSingleTimeCommands(commandBuffer);
 }
 
 //-----------------------------------------------------------------------------|---------------------------------------|

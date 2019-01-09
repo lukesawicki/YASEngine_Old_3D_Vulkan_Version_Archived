@@ -6,8 +6,8 @@
 
 //-----------------------------------------------------------------------------|---------------------------------------|
 
-class VulkanDevice {
-
+class VulkanDevice
+{
 	public:
 
 		VkDevice						logicalDevice;

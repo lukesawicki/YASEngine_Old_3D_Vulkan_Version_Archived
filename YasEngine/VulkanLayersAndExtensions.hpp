@@ -4,8 +4,8 @@
 
 //-----------------------------------------------------------------------------|---------------------------------------|
 
-class VulkanLayersAndExtensions {
-
+class VulkanLayersAndExtensions
+{
 	public:
 
 		VulkanLayersAndExtensions();

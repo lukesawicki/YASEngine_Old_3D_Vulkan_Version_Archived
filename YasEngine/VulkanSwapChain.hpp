@@ -7,8 +7,8 @@
 
 //-----------------------------------------------------------------------------|---------------------------------------|
 
-class VulkanSwapchain {
-
+class VulkanSwapchain
+{
 	public:
 
 		void							createSwapchain(VkPhysicalDevice& physicalDevice, VkSurfaceKHR& surface, VkDevice& vulkanLogicalDevice, QueueFamilyIndices& queueIndices, HWND& window);

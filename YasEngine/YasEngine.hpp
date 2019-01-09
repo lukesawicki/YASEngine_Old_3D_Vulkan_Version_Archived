@@ -11,8 +11,8 @@
 
 VkResult createDebugReportCallbackEXT ( VkInstance& vulkanInstance, const VkDebugReportCallbackCreateInfoEXT* createInfo, const VkAllocationCallbacks* allocator, VkDebugReportCallbackEXT* callback);
 
-class YasEngine {
-
+class YasEngine
+{
 	public:
 
 		YasEngine();
