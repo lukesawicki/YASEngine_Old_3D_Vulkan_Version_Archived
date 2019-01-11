@@ -95,13 +95,13 @@ class TimePicker
 		}
 
 	public:
-//////////// FORMATING TO CORRECT
+
 		float getSeconds()
 		{
 			if(!isFrequencyOfThePerformanceCounterPickedUp)
 			{
 				return GetTickCount64() / 1000.0F;
-			} else{
+			} else {
 				LARGE_INTEGER ticks;
 				QueryPerformanceCounter(&ticks);
 				return (float)(ticks.QuadPart / (double)frequency.QuadPart);
@@ -145,6 +145,7 @@ struct Vertex
 
 	static VkVertexInputBindingDescription getBindingDescription()
 	{
+
 		VkVertexInputBindingDescription vertInBindingDescription = {};
 		vertInBindingDescription.binding = 0;
 		vertInBindingDescription.stride = sizeof(Vertex);
@@ -206,3 +207,4 @@ static VkImageView createImageView(VkImage image, VkFormat format, VkImageAspect
 }
 
 #endif
+

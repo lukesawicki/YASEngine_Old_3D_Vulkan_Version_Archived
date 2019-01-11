@@ -117,8 +117,8 @@ void VulkanSwapchain::createSwapchain(VkPhysicalDevice& physicalDevice, VkSurfac
 	else
 	{
 		createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
-		createInfo.queueFamilyIndexCount = 0; //// 20190109
-		createInfo.pQueueFamilyIndices = nullptr; //// 20190109
+		//createInfo.queueFamilyIndexCount = 0;
+		//createInfo.pQueueFamilyIndices = nullptr;
 	}
 
 	createInfo.preTransform = swapchainSupport.capabilities.currentTransform;
