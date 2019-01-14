@@ -1,6 +1,9 @@
 # YASEngine
 YASEngine(Yet Another Simple Engine) will be simple game engine written in C++ with Vulkan API and other APIs in the future.
 
+In the beginning during creating engine and simultanously learning Vulkan, code which you find here is modified code from Vulkan tutorial -> https://vulkan-tutorial.com/Introduction 
+During my learning process this code will be changing.
+
 Over time I will be gaining more knowledge about Vulkan and game engine architecture to create first version of this engine which allow me to create game similar to Wolfenstein 3D.
 
 Through process of creating this engine I'm learning from various of sources.
