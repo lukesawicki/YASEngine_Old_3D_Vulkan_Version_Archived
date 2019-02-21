@@ -207,7 +207,7 @@ void YasEngine::createCommandPool()
 
 	VkCommandPoolCreateInfo commandPoolCreateInfo = {};
 	commandPoolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-	commandPoolCreateInfo.queueFamilyIndex = vulkanDevice->graphicsFamilyQueueIndex;//vulkanDequeueFamilyIndices.graphicsFamily;
+	commandPoolCreateInfo.queueFamilyIndex = vulkanDevice->getGraphicQueue(vulkanDevice->physicalDevice);//vulkanDevice->graphicsFamilyQueueIndex;//vulkanDequeueFamilyIndices.graphicsFamily;
 
 	if(vkCreateCommandPool(vulkanDevice->logicalDevice, &commandPoolCreateInfo, nullptr, &commandPool) != VK_SUCCESS)
 	{
@@ -385,8 +385,8 @@ void YasEngine::drawFrame(float deltaTime)
 	{
 //isPresentationQueueFamily
 		std::cout << "vkQueueSubmit was not a sucess!!" << std::endl;
-		throw std::runtime_error("Failed to submit draw command buffer."); //lukesawicki runtime tu sie wywala
-	} //Validation layer: Object: 0x2 (Type = 27) | vkQueuePresentKHR: Presenting image without calling vkGetPhysicalDeviceSurfaceSupportKHR
+		throw std::runtime_error("Failed to submit draw command buffer."); //lukesawicki runtime tu sie wywala//vkGetPhysicalDeviceSurfaceSupportKHR
+	} //Validation layer: Object: 0x2 (Type = 27) | vkQueuePresentKHR: Presenting image without calling         vkGetPhysicalDeviceSurfaceSupportKHR
 	
 	VkPresentInfoKHR presentInfoKhr = {};//
 	presentInfoKhr.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;

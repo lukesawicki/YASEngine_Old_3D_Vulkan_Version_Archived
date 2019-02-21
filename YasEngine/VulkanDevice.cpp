@@ -6,18 +6,14 @@
 //-----------------------------------------------------------------------------|---------------------------------------|
 
 //static method
-bool VulkanDevice::isPhysicalDeviceSuitable(VkPhysicalDevice physDevice, VulkanInstance& vulkanInstance, VkSurfaceKHR& surface)
+bool VulkanDevice::isPhysicalDeviceSuitable(VkPhysicalDevice& physDevice, VulkanInstance& vulkanInstance, VkSurfaceKHR& surface)
 {
+	uint32_t graphicQueue = -1; 
+	graphicQueue = getGraphicQueue(physDevice);
+	uint32_t presentationFamilyQueueIndex = -1;
+	presentationFamilyQueueIndex = getPresentationQueue(physDevice, surface);
 	//QueueFamilyIndices indices = findQueueFamilies(physDevice, surface);
-	//VkQueueFlags &queueFlag
-	retrieveQueueFamilies(physDevice);
-	retrieveGrahicsQueue();
-	retrievePresentationQueue(physDevice, surface);
 
-//graphicsAndPresentationFamilyQueueIndex
-	
-	retrieveTransferQueue();
-	
 	VkPhysicalDeviceProperties physicalDeviceProperties;
 	vkGetPhysicalDeviceProperties(physDevice, &physicalDeviceProperties);
 	VkPhysicalDeviceFeatures physicalDeviceSupportedFeatures;
@@ -25,14 +21,14 @@ bool VulkanDevice::isPhysicalDeviceSuitable(VkPhysicalDevice physDevice, VulkanI
 
 	bool extensionsSupported = vulkanInstance.layersAndExtensions->CheckIfAllRequestedPhysicalDeviceExtensionAreSupported(physDevice);
 	bool swapchainSuitable = false;
-	
+
 	if(extensionsSupported)
 	{
 		SwapchainSupportDetails swapchainSupport = VulkanSwapchain::querySwapchainSupport(physDevice, surface);
 		swapchainSuitable = !swapchainSupport.formats.empty() && !swapchainSupport.presentModes.empty();
 	}
 
-	return deviceSupportsAllrequiredQueuesFamily() && extensionsSupported && swapchainSuitable && physicalDeviceSupportedFeatures.samplerAnisotropy;
+	return (graphicQueue>=0) && (presentationFamilyQueueIndex>=0) && extensionsSupported && swapchainSuitable && physicalDeviceSupportedFeatures.samplerAnisotropy;
 }
 
 VulkanDevice::VulkanDevice(VulkanInstance& vulkanInstance, VkSurfaceKHR& surface, VkQueue& graphicsQueue, VkQueue& presentationQueue, bool enableValidationLayers)
@@ -55,7 +51,7 @@ void VulkanDevice::selectPhysicalDevice(VulkanInstance& vulkanInstance, VkSurfac
 	std::vector<VkPhysicalDevice> physicalDevices(deviceCount);
 	vkEnumeratePhysicalDevices(vulkanInstance.instance, &deviceCount, physicalDevices.data());
 
-	for(const VkPhysicalDevice& device: physicalDevices)
+	for(VkPhysicalDevice device: physicalDevices)
 	{
 		if(isPhysicalDeviceSuitable(device, vulkanInstance, surface))
 		{
@@ -76,7 +72,7 @@ void VulkanDevice::createLogicalDevice(VulkanInstance& vulkanInstance, VkSurface
 	//QueueFamilyIndices indices = findQueueFamilies(physicalDevice, surface);
 	std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
 	//std::set<int> uniqueQueueFamilies = {indices.graphicsFamily, indices.presentationFamily};
-	std::set<uint32_t> uniqueQueueFamilies = {graphicsFamilyQueueIndex, presentationFamilyQueueIndex};
+	std::set<uint32_t> uniqueQueueFamilies = {getGraphicQueue(physicalDevice), getPresentationQueue(physicalDevice, surface)};//Here using physicalDevice because it was created in createPhysicalDevice
 	float queuePriority = 1.0F;
 
 	for(uint32_t queueFamily: uniqueQueueFamilies)
@@ -167,60 +163,100 @@ void VulkanDevice::inforAboutDeviceAndDrivers()
 	std::cout << "Vendor" << vendors.at(physicalDeviceProperties.vendorID) << std::endl;
 }
 
-void VulkanDevice::retrieveGrahicsQueue()
+//void VulkanDevice::retrieveGrahicsQueue()
+//{
+//	bool found = false;
+//	for (unsigned int i = 0; i < queueFamilyCount; i++){
+//		if (isGraphicsQueueFamily(queueFamilyProperties[i].queueFlags)){
+//			found = true;
+//			graphicsFamilyQueueIndex = i;
+//			break;
+//		}
+//	}
+//	if(!found)
+//	{
+//		throw std::runtime_error("Failed to found graphic family queue.");
+//	}
+//}
+
+uint32_t VulkanDevice::getGraphicQueue(VkPhysicalDevice& physDevice)
 {
-	bool found = false;
-	for (unsigned int i = 0; i < queueFamilyCount; i++){
-		if (isGraphicsQueueFamily(queueFamilyProperties[i].queueFlags)){
-			found = true;
-			graphicsFamilyQueueIndex = i;
-			break;
+	uint32_t* queueFamiliesPropertiesCount = nullptr;// = 0;
+
+	vkGetPhysicalDeviceQueueFamilyProperties(physDevice, queueFamiliesPropertiesCount, nullptr);
+	std::vector<VkQueueFamilyProperties> queueFamiliesProperties(*queueFamiliesPropertiesCount);// = new std::vector<VkQueueFamilyProperties>();
+	vkGetPhysicalDeviceQueueFamilyProperties(physDevice, queueFamiliesPropertiesCount, queueFamiliesProperties.data());
+
+	int result = -1;
+	for (unsigned int i = 0; i < *queueFamiliesPropertiesCount; i++) {
+		if (isGraphicsQueueFamily(queueFamiliesProperties[i].queueFlags)) { // && isPresentationQueueFamily(physicalDevice, i, surface)) {
+			return i;
 		}
 	}
-	if(!found)
-	{
-		throw std::runtime_error("Failed to found graphic family queue.");
-	}
+	return result;
 }
 
-void VulkanDevice::retrievePresentationQueue(VkPhysicalDevice physDevice, VkSurfaceKHR& surface)
+uint32_t VulkanDevice::getPresentationQueue(VkPhysicalDevice&  physDevice, VkSurfaceKHR& surface)
 {
-	bool found = false;
-	for(unsigned int i=0; i<queueFamilyCount; i++)
+	uint32_t queueFamiliesPropertiesCount = 0;
+
+	vkGetPhysicalDeviceQueueFamilyProperties(physDevice, &queueFamiliesPropertiesCount, nullptr);
+	std::vector<VkQueueFamilyProperties> queueFamiliesProperties(queueFamiliesPropertiesCount);
+	vkGetPhysicalDeviceQueueFamilyProperties(physDevice, &queueFamiliesPropertiesCount, queueFamiliesProperties.data());
+
+	VkBool32 presentationFamilySupport = false;
+	int result = -1;
+	for (unsigned int i = 0; i < queueFamiliesPropertiesCount; i++)
 	{
-		if(isPresentationQueueFamily(physDevice, i, surface))
+		presentationFamilySupport = false;
+		vkGetPhysicalDeviceSurfaceSupportKHR(physDevice, i, surface, &presentationFamilySupport);
+		if (presentationFamilySupport)
 		{
-			found = true;
-			presentationFamilyQueueIndex = 1;
-			break;
+			return i;
 		}
 	}
-	if(!found)
-	{
-		throw std::runtime_error("Failed to found presentation family queue.");
-	}
+	return result = -1;
 }
 
-void VulkanDevice::retrieveTransferQueue()
-{
-	bool found = false;
-	for (unsigned int i = 0; i < queueFamilyCount; i++){
-		if (isTransferQueueFamily(queueFamilyProperties[i].queueFlags)){
-			found = true;
-			transferFamilyQueueIndex = i;
-			break;
-		}
-	}
-	if(!found)
-	{
-		throw std::runtime_error("Failed to found transfer queue family.");
-	}
-}
 
-bool VulkanDevice::deviceSupportsAllrequiredQueuesFamily()
-{
-	return ( (graphicsFamilyQueueIndex != UINT32_MAX && presentationFamilyQueueIndex != UINT32_MAX && transferFamilyQueueIndex != UINT32_MAX) || graphicsAndPresentationFamilyQueueIndex!=UINT32_MAX );
-}
+//void VulkanDevice::retrievePresentationQueue(VkPhysicalDevice physDevice, VkSurfaceKHR& surface)
+//{
+//	bool found = false;
+//	for(unsigned int i=0; i<queueFamilyCount; i++)
+//	{
+//		if(isPresentationQueueFamily(physDevice, i, surface))
+//		{
+//			found = true;
+//			presentationFamilyQueueIndex = 1;
+//			break;
+//		}
+//	}
+//	if(!found)
+//	{
+//		throw std::runtime_error("Failed to found presentation family queue.");
+//	}
+//}
+
+//void VulkanDevice::retrieveTransferQueue()
+//{
+//	bool found = false;
+//	for (unsigned int i = 0; i < queueFamilyCount; i++){
+//		if (isTransferQueueFamily(queueFamilyProperties[i].queueFlags)){
+//			found = true;
+//			transferFamilyQueueIndex = i;
+//			break;
+//		}
+//	}
+//	if(!found)
+//	{
+//		throw std::runtime_error("Failed to found transfer queue family.");
+//	}
+//}
+
+//bool VulkanDevice::deviceSupportsAllrequiredQueuesFamily()
+//{
+//	return ( (graphicsFamilyQueueIndex != UINT32_MAX && presentationFamilyQueueIndex != UINT32_MAX && transferFamilyQueueIndex != UINT32_MAX) || graphicsAndPresentationFamilyQueueIndex!=UINT32_MAX );
+//}
 
 //void VulkanDevice::retrievePresentationQueue(VkSurfaceKHR& surface)
 //{
@@ -233,13 +269,13 @@ bool VulkanDevice::deviceSupportsAllrequiredQueuesFamily()
 //	}
 //}
 
-void VulkanDevice::retrieveQueueFamilies(VkPhysicalDevice physDevice)
-{
-//lukesawicki
-	vkGetPhysicalDeviceQueueFamilyProperties(physDevice, &queueFamilyCount, NULL);
-	queueFamilyProperties.resize(queueFamilyCount);
-	vkGetPhysicalDeviceQueueFamilyProperties(physDevice, &queueFamilyCount, queueFamilyProperties.data());
-}
+//void VulkanDevice::retrieveQueueFamilies(VkPhysicalDevice physDevice)
+//{
+////lukesawicki
+//	vkGetPhysicalDeviceQueueFamilyProperties(physDevice, &queueFamilyCount, NULL);
+//	queueFamilyProperties.resize(queueFamilyCount);
+//	vkGetPhysicalDeviceQueueFamilyProperties(physDevice, &queueFamilyCount, queueFamilyProperties.data());
+//}
 
 bool VulkanDevice::isPresentationQueueFamily(VkPhysicalDevice physDevice, uint32_t queueFamilyIndex, VkSurfaceKHR& surface)
 {
@@ -261,7 +297,7 @@ bool VulkanDevice::isGraphicsAndTransferAndPresentationFamily()
 
 bool VulkanDevice::isGraphicsQueueFamily(VkQueueFlags &queueFlag)
 {
-		return queueFlag & VK_QUEUE_GRAPHICS_BIT;
+	return queueFlag & VK_QUEUE_GRAPHICS_BIT;
 }
 
 bool VulkanDevice::isGraphicsAndPresentationFamily()

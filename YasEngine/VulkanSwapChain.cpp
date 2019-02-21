@@ -105,10 +105,11 @@ void VulkanSwapchain::createSwapchain(VkPhysicalDevice& physicalDevice, VkSurfac
 	createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
 	//uint32_t queueFamilyIndices[] = {(uint32_t)queueIndices.graphicsFamily, (uint32_t)queueIndices.presentationFamily};
-	uint32_t queueFamilyIndices[] = {vulkanDevice.graphicsFamilyQueueIndex, vulkanDevice.presentationFamilyQueueIndex};
+	//uint32_t queueFamilyIndices[] = {vulkanDevice.graphicsFamilyQueueIndex, vulkanDevice.presentationFamilyQueueIndex};
+	uint32_t queueFamilyIndices[] = { vulkanDevice.getGraphicQueue(physicalDevice), vulkanDevice.getPresentationQueue(physicalDevice, surface) };
 
 	//if(queueIndices.graphicsFamily != queueIndices.presentationFamily)
-	if(!(vulkanDevice.isGraphicsAndPresentationFamily()))
+	if(queueFamilyIndices[0] != queueFamilyIndices[1])
 	{
 		createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
 		createInfo.queueFamilyIndexCount = 2;
