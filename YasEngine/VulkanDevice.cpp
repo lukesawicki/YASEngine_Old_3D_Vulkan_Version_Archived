@@ -71,11 +71,13 @@ void VulkanDevice::createLogicalDevice(VulkanInstance& vulkanInstance, VkSurface
 {
 	//QueueFamilyIndices indices = findQueueFamilies(physicalDevice, surface);
 	std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
-	//std::set<int> uniqueQueueFamilies = {indices.graphicsFamily, indices.presentationFamily};
-	std::set<uint32_t> uniqueQueueFamilies = {getGraphicQueue(physicalDevice), getPresentationQueue(physicalDevice, surface)};//Here using physicalDevice because it was created in createPhysicalDevice
+
+	std::vector<uint32_t> queueFamilies;
+	queueFamilies.push_back(getGraphicQueue(physicalDevice));
+	queueFamilies.push_back(getPresentationQueue(physicalDevice, surface));//Here using physicalDevice because it was created in createPhysicalDevice
 	float queuePriority = 1.0F;
 
-	for(uint32_t queueFamily: uniqueQueueFamilies)
+	for(uint32_t queueFamily: queueFamilies)
 	{
 		VkDeviceQueueCreateInfo queueCreateInfo = {};
 		queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
@@ -113,8 +115,8 @@ void VulkanDevice::createLogicalDevice(VulkanInstance& vulkanInstance, VkSurface
 		throw std::runtime_error("Failed to create logical device.");
 	}
 //tutaj to powinnno chyba inczaej wygladac bo gdzie niby trafia to w graphicQueue
-	vkGetDeviceQueue(logicalDevice, graphicsFamilyQueueIndex, 0, &graphicsQueue);
-	vkGetDeviceQueue(logicalDevice, presentationFamilyQueueIndex, 0, &presentationQueue);
+	vkGetDeviceQueue(logicalDevice, queueFamilies[0], 0, &graphicsQueue);
+	vkGetDeviceQueue(logicalDevice, queueFamilies[1], 0, &presentationQueue);
 }
 
 ////VkSampleCountFlagBits VulkanDevice::getMaxUsableSampleCount()
@@ -181,14 +183,14 @@ void VulkanDevice::inforAboutDeviceAndDrivers()
 
 uint32_t VulkanDevice::getGraphicQueue(VkPhysicalDevice& physDevice)
 {
-	uint32_t* queueFamiliesPropertiesCount = nullptr;// = 0;
+	uint32_t queueFamiliesPropertiesCount;// = 0;
 
-	vkGetPhysicalDeviceQueueFamilyProperties(physDevice, queueFamiliesPropertiesCount, nullptr);
-	std::vector<VkQueueFamilyProperties> queueFamiliesProperties(*queueFamiliesPropertiesCount);// = new std::vector<VkQueueFamilyProperties>();
-	vkGetPhysicalDeviceQueueFamilyProperties(physDevice, queueFamiliesPropertiesCount, queueFamiliesProperties.data());
+	vkGetPhysicalDeviceQueueFamilyProperties(physDevice, &queueFamiliesPropertiesCount, nullptr);
+	std::vector<VkQueueFamilyProperties> queueFamiliesProperties(queueFamiliesPropertiesCount);// = new std::vector<VkQueueFamilyProperties>();
+	vkGetPhysicalDeviceQueueFamilyProperties(physDevice, &queueFamiliesPropertiesCount, queueFamiliesProperties.data());
 
 	int result = -1;
-	for (unsigned int i = 0; i < *queueFamiliesPropertiesCount; i++) {
+	for (unsigned int i = 0; i < queueFamiliesPropertiesCount; i++) {
 		if (isGraphicsQueueFamily(queueFamiliesProperties[i].queueFlags)) { // && isPresentationQueueFamily(physicalDevice, i, surface)) {
 			return i;
 		}
@@ -285,22 +287,22 @@ bool VulkanDevice::isPresentationQueueFamily(VkPhysicalDevice physDevice, uint32
 		return presentationFamilySupport;
 }
 
-bool VulkanDevice::isTransferQueueFamily(VkQueueFlags & queueFlag)
+bool VulkanDevice::isTransferQueueFamily(const VkQueueFlags& queueFlag)
 {
 	return queueFlag & VK_QUEUE_TRANSFER_BIT;
 }
 
-bool VulkanDevice::isGraphicsAndTransferAndPresentationFamily()
-{
-	return graphicsFamilyQueueIndex == transferFamilyQueueIndex && graphicsFamilyQueueIndex == presentationFamilyQueueIndex;
-}
+//bool VulkanDevice::isGraphicsAndTransferAndPresentationFamily()
+//{
+//	return graphicsFamilyQueueIndex == transferFamilyQueueIndex && graphicsFamilyQueueIndex == presentationFamilyQueueIndex;
+//}
 
-bool VulkanDevice::isGraphicsQueueFamily(VkQueueFlags &queueFlag)
+bool VulkanDevice::isGraphicsQueueFamily(const VkQueueFlags& queueFlag)
 {
 	return queueFlag & VK_QUEUE_GRAPHICS_BIT;
 }
 
-bool VulkanDevice::isGraphicsAndPresentationFamily()
-{
-	return graphicsFamilyQueueIndex == presentationFamilyQueueIndex;
-}
+//bool VulkanDevice::isGraphicsAndPresentationFamily()
+//{
+//	return graphicsFamilyQueueIndex == presentationFamilyQueueIndex;
+//}

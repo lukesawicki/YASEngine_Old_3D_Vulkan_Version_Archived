@@ -102,7 +102,7 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback( VkDebugReportFlagsEXT debug
 		VkSurfaceKHR					surface;
 		VulkanDevice*					vulkanDevice;
 		VkQueue							graphicsQueue = nullptr;
-		VkQueue							presentationQueue;
+		VkQueue							presentationQueue = nullptr;
 		VulkanSwapchain					vulkanSwapchain;
 		VkRenderPass					renderPass;
 		VkDescriptorSetLayout			descriptorSetLayout;

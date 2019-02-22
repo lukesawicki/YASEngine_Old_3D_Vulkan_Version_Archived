@@ -12,7 +12,7 @@ class VulkanSwapchain {
 
 	public:
 
-		void							createSwapchain(VkPhysicalDevice& physicalDevice, VkSurfaceKHR& surface, VkDevice& vulkanLogicalDevice, VulkanDevice& vulkanDevice, HWND& window);
+		void							createSwapchain(VkSurfaceKHR& surface, VulkanDevice& vulkanDevice, HWND& window);
 		static SwapchainSupportDetails	querySwapchainSupport(VkPhysicalDevice device, VkSurfaceKHR surface);		
 		void							destroySwapchain(VkDevice vulkanLogicalDevice);
 		void							createImageViews(VkDevice& device, int32_t mipLevelsNumber);

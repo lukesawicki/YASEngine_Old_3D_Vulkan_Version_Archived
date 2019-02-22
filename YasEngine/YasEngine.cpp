@@ -542,10 +542,10 @@ void YasEngine::updateUniformBuffer(uint32_t currentImage, float deltaTime)
 	vkUnmapMemory(vulkanDevice->logicalDevice, uniformBuffersMemory[currentImage]);
 }
 
-void YasEngine::createLogicalDevice()
-{
-	vulkanDevice->createLogicalDevice(vulkanInstance, surface, graphicsQueue, presentationQueue, enableValidationLayers);
-}
+//void YasEngine::createLogicalDevice()
+//{
+//	vulkanDevice->createLogicalDevice(vulkanInstance, surface, graphicsQueue, presentationQueue, enableValidationLayers);
+//}
 
 void YasEngine::createSurface()
 {
@@ -567,7 +567,7 @@ void YasEngine::createSurface()
 void YasEngine::createSwapchain()
 {
 	//QueueFamilyIndices queueIndices = findQueueFamilies(vulkanDevice->physicalDevice, surface);
-	vulkanSwapchain.createSwapchain(vulkanDevice->physicalDevice, surface, vulkanDevice->logicalDevice, *vulkanDevice, window);
+	vulkanSwapchain.createSwapchain(surface, *vulkanDevice, window);
 }
 
 void YasEngine::recreateSwapchain()

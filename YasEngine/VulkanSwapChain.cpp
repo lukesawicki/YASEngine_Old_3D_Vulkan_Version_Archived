@@ -82,9 +82,9 @@ VkExtent2D	VulkanSwapchain::chooseSwapExtent(const VkSurfaceCapabilitiesKHR surf
 	}
 }
 
-void VulkanSwapchain::createSwapchain(VkPhysicalDevice& physicalDevice, VkSurfaceKHR& surface, VkDevice& vulkanLogicalDevice, VulkanDevice& vulkanDevice, HWND& window)
+void VulkanSwapchain::createSwapchain(VkSurfaceKHR& surface, VulkanDevice& vulkanDevice, HWND& window)
 {
-	SwapchainSupportDetails swapchainSupport = querySwapchainSupport(physicalDevice, surface);
+	SwapchainSupportDetails swapchainSupport = querySwapchainSupport(vulkanDevice.physicalDevice, surface);
 	VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(swapchainSupport.formats);
 	VkPresentModeKHR presentMode = chooseSwapPresentMode(swapchainSupport.presentModes);
 	VkExtent2D extent = chooseSwapExtent(swapchainSupport.capabilities, window);
@@ -106,7 +106,7 @@ void VulkanSwapchain::createSwapchain(VkPhysicalDevice& physicalDevice, VkSurfac
 
 	//uint32_t queueFamilyIndices[] = {(uint32_t)queueIndices.graphicsFamily, (uint32_t)queueIndices.presentationFamily};
 	//uint32_t queueFamilyIndices[] = {vulkanDevice.graphicsFamilyQueueIndex, vulkanDevice.presentationFamilyQueueIndex};
-	uint32_t queueFamilyIndices[] = { vulkanDevice.getGraphicQueue(physicalDevice), vulkanDevice.getPresentationQueue(physicalDevice, surface) };
+	uint32_t queueFamilyIndices[] = { vulkanDevice.getGraphicQueue(vulkanDevice.physicalDevice), vulkanDevice.getPresentationQueue(vulkanDevice.physicalDevice, surface) };
 
 	//if(queueIndices.graphicsFamily != queueIndices.presentationFamily)
 	if(queueFamilyIndices[0] != queueFamilyIndices[1])
@@ -128,13 +128,13 @@ void VulkanSwapchain::createSwapchain(VkPhysicalDevice& physicalDevice, VkSurfac
 	createInfo.clipped = VK_TRUE;
 	//createInfo.oldSwapchain = VK_NULL_HANDLE;
 	
-	if(vkCreateSwapchainKHR(vulkanLogicalDevice, &createInfo, nullptr, &swapchain) != VK_SUCCESS)
+	if(vkCreateSwapchainKHR(vulkanDevice.logicalDevice, &createInfo, nullptr, &swapchain) != VK_SUCCESS)
 	{
 		throw std::runtime_error("Failed to create swap chain!");
 	}
-	vkGetSwapchainImagesKHR(vulkanLogicalDevice, swapchain, &imageCount, nullptr);
+	vkGetSwapchainImagesKHR(vulkanDevice.logicalDevice, swapchain, &imageCount, nullptr);
 	swapchainImages.resize(imageCount);
-	vkGetSwapchainImagesKHR(vulkanLogicalDevice, swapchain, &imageCount, swapchainImages.data());
+	vkGetSwapchainImagesKHR(vulkanDevice.logicalDevice, swapchain, &imageCount, swapchainImages.data());
 	swapchainImageFormat = surfaceFormat.format;
 	swapchainExtent = extent;
 }

@@ -21,11 +21,11 @@ class VulkanDevice {
 		void							retrievePresentationQueue(VkPhysicalDevice physDevice, VkSurfaceKHR& surface);
 		//void							retrieveTransferQueue();
 		//bool							deviceSupportsAllrequiredQueuesFamily();
-		bool							isGraphicsAndTransferAndPresentationFamily();
-		bool							isGraphicsAndPresentationFamily();
-		bool							isGraphicsQueueFamily(VkQueueFlags &queueFlag);
+		//bool							isGraphicsAndTransferAndPresentationFamily();
+		//bool							isGraphicsAndPresentationFamily();
+		bool							isGraphicsQueueFamily(const VkQueueFlags& queueFlag);
 		bool							isPresentationQueueFamily(VkPhysicalDevice physDevice, uint32_t queueFamilyIndex, VkSurfaceKHR& surface);
-		bool							isTransferQueueFamily(VkQueueFlags &queueFlag);
+		bool							isTransferQueueFamily(const VkQueueFlags& queueFlag);
 
 //lukesawicki 10-02-2019
 		uint32_t						getGraphicQueue(VkPhysicalDevice&  physDevice);
@@ -45,8 +45,8 @@ class VulkanDevice {
 
 	VkQueue									queue;
 //	std::vector<VkQueueFamilyProperties>	queueFamilyProperties;
-	uint32_t								graphicsFamilyQueueIndex=UINT32_MAX;
-	uint32_t								presentationFamilyQueueIndex=UINT32_MAX;
+	//uint32_t								graphicsFamilyQueueIndex=UINT32_MAX;
+	//uint32_t								presentationFamilyQueueIndex=UINT32_MAX;
 	uint32_t								transferFamilyQueueIndex=UINT32_MAX;
 	uint32_t								graphicsAndPresentationFamilyQueueIndex=UINT32_MAX;
 	uint32_t								queueFamilyCount;
