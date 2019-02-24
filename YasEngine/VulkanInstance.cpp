@@ -16,7 +16,7 @@ void VulkanInstance::createVulkanInstance(bool areValidationLayersEnabled)
 	}	
 
 	std::cout << "Creating Vulkan Instance..." << std::endl;
-	VkApplicationInfo applicationInfo = {};
+	VkApplicationInfo applicationInfo = {}; 
 	applicationInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
 	applicationInfo.pApplicationName = "YasEngine Demo";
 	applicationInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);

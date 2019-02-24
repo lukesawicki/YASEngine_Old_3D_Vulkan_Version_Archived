@@ -846,7 +846,7 @@ void YasEngine::createFramebuffers()
 	for(size_t i=0; i<vulkanSwapchain.swapchainImageViews.size(); i++)
 	{
 //lukesawicki dodalem color attachment i zmienilem kolejnosc
-		std::array<VkImageView, 3> attachments = {vulkanSwapchain.swapchainImageViews[i], depthImageView};
+		std::array<VkImageView, 2> attachments = {vulkanSwapchain.swapchainImageViews[i], depthImageView};
 
 		VkFramebufferCreateInfo framebufferCreateInfo = {};
 		framebufferCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
