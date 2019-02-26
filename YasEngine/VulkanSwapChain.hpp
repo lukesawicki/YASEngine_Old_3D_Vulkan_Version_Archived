@@ -11,9 +11,12 @@
 class VulkanSwapchain {
 
 	public:
+		//static SwapchainSupportDetails	querySwapchainSupport(VkPhysicalDevice device, VkSurfaceKHR surface);
+		void										createSwapchain(VkSurfaceKHR& surface, VulkanDevice& vulkanDevice, HWND& window);
+		static VkSurfaceCapabilitiesKHR				getSwapchainCapabilities(VkPhysicalDevice device, VkSurfaceKHR surface);
+		static std::vector<VkSurfaceFormatKHR>		getSwapchainSurfaceFormats(VkPhysicalDevice device, VkSurfaceKHR surface);
+		static std::vector<VkPresentModeKHR>		getSwapchainPresentModes(VkPhysicalDevice device, VkSurfaceKHR surface);
 
-		void							createSwapchain(VkSurfaceKHR& surface, VulkanDevice& vulkanDevice, HWND& window);
-		static SwapchainSupportDetails	querySwapchainSupport(VkPhysicalDevice device, VkSurfaceKHR surface);		
 		void							destroySwapchain(VkDevice vulkanLogicalDevice);
 		void							createImageViews(VkDevice& device, int32_t mipLevelsNumber);
 

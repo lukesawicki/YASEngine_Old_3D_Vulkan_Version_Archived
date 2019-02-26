@@ -54,9 +54,6 @@ void destroyDebugReportCallbackEXT(VkInstance vulkanInstance, VkDebugReportCallb
 VKAPI_ATTR VkBool32 VKAPI_CALL YasEngine::debugCallback(VkDebugReportFlagsEXT debugReportFlags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t code, const char* layerPrefix, const char* msg, void* userData) {
 
 	std::cerr << "Validation layer: " << msg << std::endl;
-	//If return true, then call is aborted with the VK_ERROR_VALIDATION_FAILED_EXT
-	//because this is used to test the validation layers themeselves
-	//then for now always return false
 	return VK_FALSE;
 }
 
@@ -93,8 +90,6 @@ void YasEngine::run(HINSTANCE hInstance)
 	mainLoop();
 	cleanUp();
 }
-
-//Private Methods
 
 void YasEngine::createWindow(HINSTANCE hInstance)
 {
@@ -175,7 +170,6 @@ void YasEngine::initializeVulkan()
 	createDescriptorSetLayout();
 	createGraphicsPipeline();
 	createCommandPool();
-////	createColorResources();
 	createDepthResources();
 	createFramebuffers();
 	createTextureImage();
@@ -203,12 +197,9 @@ void YasEngine::selectPhysicalDevice()
 
 void YasEngine::createCommandPool()
 {
-	//QueueFamilyIndices queueFamilyIndices = findQueueFamilies(vulkanDevice->physicalDevice, surface);
-
 	VkCommandPoolCreateInfo commandPoolCreateInfo = {};
 	commandPoolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-	commandPoolCreateInfo.queueFamilyIndex = vulkanDevice->getGraphicQueue(vulkanDevice->physicalDevice);//vulkanDevice->graphicsFamilyQueueIndex;//vulkanDequeueFamilyIndices.graphicsFamily;
-
+	commandPoolCreateInfo.queueFamilyIndex = vulkanDevice->getGraphicQueue(vulkanDevice->physicalDevice);
 	if(vkCreateCommandPool(vulkanDevice->logicalDevice, &commandPoolCreateInfo, nullptr, &commandPool) != VK_SUCCESS)
 	{
 		throw std::runtime_error("Failed to create command pool!");
@@ -217,7 +208,6 @@ void YasEngine::createCommandPool()
 
 void YasEngine::createVertexBuffer()
 {
-	//VkDeviceSize is alias to uint64_t
 	VkDeviceSize vertexBufferSize = sizeof(vertices[0]) * vertices.size();
 	VkBuffer stagingBuffer;
 	VkDeviceMemory stagingBufferMemory;
@@ -383,11 +373,9 @@ void YasEngine::drawFrame(float deltaTime)
 
 	if(vkQueueSubmit(graphicsQueue, 1, &submitInfo, inFlightFences[currentFrame]) != VK_SUCCESS)
 	{
-//isPresentationQueueFamily
 		std::cout << "vkQueueSubmit was not a sucess!!" << std::endl;
-		throw std::runtime_error("Failed to submit draw command buffer."); //lukesawicki runtime tu sie wywala//vkGetPhysicalDeviceSurfaceSupportKHR
-	} //Validation layer: Object: 0x2 (Type = 27) | vkQueuePresentKHR: Presenting image without calling         vkGetPhysicalDeviceSurfaceSupportKHR
-	
+		throw std::runtime_error("Failed to submit draw command buffer.");
+	}
 	VkPresentInfoKHR presentInfoKhr = {};//
 	presentInfoKhr.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 	presentInfoKhr.waitSemaphoreCount = 1;
@@ -542,11 +530,6 @@ void YasEngine::updateUniformBuffer(uint32_t currentImage, float deltaTime)
 	vkUnmapMemory(vulkanDevice->logicalDevice, uniformBuffersMemory[currentImage]);
 }
 
-//void YasEngine::createLogicalDevice()
-//{
-//	vulkanDevice->createLogicalDevice(vulkanInstance, surface, graphicsQueue, presentationQueue, enableValidationLayers);
-//}
-
 void YasEngine::createSurface()
 {
 	VkWin32SurfaceCreateInfoKHR	surfaceCreateInfo;
@@ -566,7 +549,6 @@ void YasEngine::createSurface()
 
 void YasEngine::createSwapchain()
 {
-	//QueueFamilyIndices queueIndices = findQueueFamilies(vulkanDevice->physicalDevice, surface);
 	vulkanSwapchain.createSwapchain(surface, *vulkanDevice, window);
 }
 
@@ -578,7 +560,6 @@ void YasEngine::recreateSwapchain()
 	createImageViews();
 	createRenderPass();
 	createGraphicsPipeline();
-////	createColorResources();
 	createDepthResources();
 	createFramebuffers();
 	createCommandBuffers();
@@ -591,10 +572,6 @@ void YasEngine::createImageViews()
 
 void YasEngine::cleanupSwapchain()
 {
-////	vkDestroyImageView(vulkanDevice->logicalDevice, colorImageView, nullptr);
-////	vkDestroyImage(vulkanDevice->logicalDevice, colorImage, nullptr);
-////	vkFreeMemory(vulkanDevice->logicalDevice, colorImageMemory, nullptr);
-
     vkDestroyImageView(vulkanDevice->logicalDevice, depthImageView, nullptr);
     vkDestroyImage(vulkanDevice->logicalDevice, depthImage, nullptr);
     vkFreeMemory(vulkanDevice->logicalDevice, depthImageMemory, nullptr);
@@ -626,8 +603,8 @@ void YasEngine::createRenderPass()
 	colorAttachmentDescription.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 	colorAttachmentDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 	colorAttachmentDescription.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-//lukesawicki 24-08-2018 0752
-	colorAttachmentDescription.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR; ////VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;//VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+
+	colorAttachmentDescription.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
 	VkAttachmentDescription depthAttachmentDescription = {};
 	depthAttachmentDescription.format = findDepthFormat();
@@ -639,17 +616,6 @@ void YasEngine::createRenderPass()
 	depthAttachmentDescription.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 	depthAttachmentDescription.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
-//lukesawicki 24-08-2018 0754
-////	VkAttachmentDescription colorAttachmentResolveDescription = {};
-////	colorAttachmentResolveDescription.format = vulkanSwapchain.swapchainImageFormat;;
-////	colorAttachmentResolveDescription.samples = VK_SAMPLE_COUNT_1_BIT;
-////	colorAttachmentResolveDescription.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-////	colorAttachmentResolveDescription.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-////	colorAttachmentResolveDescription.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-////	colorAttachmentResolveDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-////	colorAttachmentResolveDescription.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-////	colorAttachmentResolveDescription.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-
 	VkAttachmentReference colorAttachmentReference = {};
 	colorAttachmentReference.attachment = 0;
 	colorAttachmentReference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
@@ -658,17 +624,11 @@ void YasEngine::createRenderPass()
 	depthAttachmentReference.attachment = 1;
 	depthAttachmentReference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
-//lukesawicki 24-08-2018 0755
-////	VkAttachmentReference colorAttachmentResolveReference = {};
-////	colorAttachmentResolveReference.attachment = 2;
-////	colorAttachmentResolveReference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
 	VkSubpassDescription subpassDescription = {};
 	subpassDescription.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
 	subpassDescription.colorAttachmentCount = 1;
 	subpassDescription.pColorAttachments = &colorAttachmentReference;
 	subpassDescription.pDepthStencilAttachment = &depthAttachmentReference;
-////	subpassDescription.pResolveAttachments = &colorAttachmentResolveReference;//lukesawicki
 
 	VkSubpassDependency subpassDependency = {};
 	subpassDependency.srcSubpass = VK_SUBPASS_EXTERNAL;
@@ -678,8 +638,6 @@ void YasEngine::createRenderPass()
 	subpassDependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 	subpassDependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 
-//lukesawicki
-////	std::array<VkAttachmentDescription, 3> attachments = {colorAttachmentDescription, depthAttachmentDescription, colorAttachmentResolveDescription};
 std::array<VkAttachmentDescription, 2> attachments = {colorAttachmentDescription, depthAttachmentDescription};
 	VkRenderPassCreateInfo renderPassInfo = {};
 	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
@@ -720,16 +678,13 @@ void YasEngine::createGraphicsPipeline()
 	fragShaderStageInfo.pName = "main";
 
 	VkPipelineShaderStageCreateInfo shaderStages[] = {vertShaderStageInfo, fragShaderStageInfo};
-
 	VkPipelineVertexInputStateCreateInfo vertexInputInfo = {};
 	
-
-
 	auto bindingDescription = Vertex::getBindingDescription();
 	auto attributeDescriptions = Vertex::getAttributeDescriptions();
 
 	//does order matter?
-vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+	vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 	vertexInputInfo.vertexBindingDescriptionCount = 1;
 	vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
 	vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
@@ -771,11 +726,8 @@ vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INF
 
 	VkPipelineMultisampleStateCreateInfo multisampling = {};
 	multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
-	//lukesawicki 2018-09-06 0745 changed
 	multisampling.sampleShadingEnable = VK_FALSE;
-	//lukesawicki 2018-09-06 0746 added 
-	//multisampling.minSampleShading = 0.2F;
-	multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;////vulkanDevice->msaaSamples;
+	multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
 
 	VkPipelineDepthStencilStateCreateInfo pipelineDepthStencilStateCreateInfo = {};
 	pipelineDepthStencilStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
@@ -786,8 +738,6 @@ vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INF
 	pipelineDepthStencilStateCreateInfo.minDepthBounds = 0.0F;
 	pipelineDepthStencilStateCreateInfo.maxDepthBounds = 1.0F;
 	pipelineDepthStencilStateCreateInfo.stencilTestEnable = VK_FALSE;
-	//pipelineDepthStencilStateCreateInfo.front = {};
-	//pipelineDepthStencilStateCreateInfo.back = {};
 
 	VkPipelineColorBlendAttachmentState colorBlendAttachment = {};
 	colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
@@ -845,9 +795,7 @@ void YasEngine::createFramebuffers()
 
 	for(size_t i=0; i<vulkanSwapchain.swapchainImageViews.size(); i++)
 	{
-//lukesawicki dodalem color attachment i zmienilem kolejnosc
 		std::array<VkImageView, 2> attachments = {vulkanSwapchain.swapchainImageViews[i], depthImageView};
-
 		VkFramebufferCreateInfo framebufferCreateInfo = {};
 		framebufferCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
 		framebufferCreateInfo.renderPass = renderPass;
@@ -1025,7 +973,6 @@ void YasEngine::createTextureImage()
 	vkUnmapMemory(vulkanDevice->logicalDevice, stagingBufferMemory);
 
 	stbi_image_free(pixels);
-//Lukesawicki 24-08-2018 0732
 	createImage(textureWidth, textureHeight, mipLevels, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureImage, textureImageMemory);
 	transitionImageLayout(textureImage, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, mipLevels);
 	copyBufferToImage(stagingBuffer, textureImage, static_cast<uint32_t>(textureWidth), static_cast<uint32_t>(textureHeight));
@@ -1035,7 +982,6 @@ void YasEngine::createTextureImage()
 	generateMipmaps(textureImage, VK_FORMAT_R8G8B8A8_UNORM, textureWidth, textureHeight, mipLevels);
 }
 
-////void YasEngine::createImage(uint32_t textureWidth, uint32_t textureHeight, uint32_t mipLevelsNumber, VkSampleCountFlagBits samplesNumber, VkFormat format, VkImageTiling imageTiling, VkImageUsageFlags imageUsageFlags, VkMemoryPropertyFlags memoryProperties, VkImage& image, VkDeviceMemory& imageMemory)
 void YasEngine::createImage(uint32_t textureWidth, uint32_t textureHeight, uint32_t mipLevelsNumber, VkFormat format, VkImageTiling imageTiling, VkImageUsageFlags imageUsageFlags, VkMemoryPropertyFlags memoryProperties, VkImage& image, VkDeviceMemory& imageMemory)
 {
 	VkImageCreateInfo imageCreateInfo = {};
@@ -1168,17 +1114,7 @@ void YasEngine::transitionImageLayout(VkImage image, VkFormat format, VkImageLay
 			}
 			else
 			{
-////				if(oldImageLayout == VK_IMAGE_LAYOUT_UNDEFINED && newImageLayout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
-////				{
-////					imageMemoryBarrier.srcAccessMask = 0;
-////					imageMemoryBarrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-////					sourcePipelineStageFlag = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-////					destinationPipelineStageFlags = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-////				}
-////				else
-////				{
-					throw std::invalid_argument("Unsuported layout transition.");
-////				}
+				throw std::invalid_argument("Unsuported layout transition.");
 			}
 		}
 	}

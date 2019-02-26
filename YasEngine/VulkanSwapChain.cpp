@@ -4,29 +4,45 @@
 
 //-----------------------------------------------------------------------------|---------------------------------------|
 
-SwapchainSupportDetails	VulkanSwapchain::querySwapchainSupport(VkPhysicalDevice device, VkSurfaceKHR surface)
+//SwapchainSupportDetails	VulkanSwapchain::querySwapchainSupport(VkPhysicalDevice device, VkSurfaceKHR surface)
+//{
+	//SwapchainSupportDetails swapchainDetails;
+VkSurfaceCapabilitiesKHR VulkanSwapchain::getSwapchainCapabilities(VkPhysicalDevice device, VkSurfaceKHR surface)
 {
-	SwapchainSupportDetails swapchainDetails;
-	vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, surface, &swapchainDetails.capabilities);
+	VkSurfaceCapabilitiesKHR capabilities;
+	vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, surface, &capabilities);
+	return capabilities;
+}
+
+std::vector<VkSurfaceFormatKHR> VulkanSwapchain::getSwapchainSurfaceFormats(VkPhysicalDevice device, VkSurfaceKHR surface)
+{
+	std::vector<VkSurfaceFormatKHR> formats;
 	uint32_t formatCount;
 	vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &formatCount, nullptr);
 	
 	if(formatCount != 0)
 	{
-		swapchainDetails.formats.resize(formatCount);
-		vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &formatCount, swapchainDetails.formats.data());
+		formats.resize(formatCount);
+		vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &formatCount, formats.data());
 	}
+	return formats;
+}
 
+std::vector<VkPresentModeKHR> VulkanSwapchain::getSwapchainPresentModes(VkPhysicalDevice device, VkSurfaceKHR surface)
+{
+	std::vector<VkPresentModeKHR> presentModes;
 	uint32_t presentModesCount;
 	vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &presentModesCount, nullptr);
 
 	if(presentModesCount != 0)
 	{
-		swapchainDetails.presentModes.resize(presentModesCount);
-		vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &presentModesCount, swapchainDetails.presentModes.data());
+		presentModes.resize(presentModesCount);
+		vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &presentModesCount, presentModes.data());
 	}
-	return swapchainDetails;
+	return presentModes;
 }
+	//return swapchainDetails;
+//}
 
 
 VkSurfaceFormatKHR VulkanSwapchain::chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &availableFormats)
@@ -84,14 +100,21 @@ VkExtent2D	VulkanSwapchain::chooseSwapExtent(const VkSurfaceCapabilitiesKHR surf
 
 void VulkanSwapchain::createSwapchain(VkSurfaceKHR& surface, VulkanDevice& vulkanDevice, HWND& window)
 {
-	SwapchainSupportDetails swapchainSupport = querySwapchainSupport(vulkanDevice.physicalDevice, surface);
-	VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(swapchainSupport.formats);
-	VkPresentModeKHR presentMode = chooseSwapPresentMode(swapchainSupport.presentModes);
-	VkExtent2D extent = chooseSwapExtent(swapchainSupport.capabilities, window);
-	uint32_t imageCount = swapchainSupport.capabilities.minImageCount + 1;
-	if(swapchainSupport.capabilities.maxImageCount > 0 && imageCount > swapchainSupport.capabilities.maxImageCount)
+	//SwapchainSupportDetails swapchainSupport = querySwapchainSupport(vulkanDevice.physicalDevice, surface);
+	//lukesawicki
+	VkSurfaceCapabilitiesKHR vkSurfaceCapabilitiesKhr = VulkanSwapchain::getSwapchainCapabilities(vulkanDevice.physicalDevice, surface);
+	std::vector<VkSurfaceFormatKHR> vkSurfaceFormatsKhr = VulkanSwapchain::getSwapchainSurfaceFormats(vulkanDevice.physicalDevice, surface);
+	std::vector<VkPresentModeKHR> vkPresentModesKhr = VulkanSwapchain::getSwapchainPresentModes(vulkanDevice.physicalDevice, surface);
+
+
+
+	VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(vkSurfaceFormatsKhr);
+	VkPresentModeKHR presentMode = chooseSwapPresentMode(vkPresentModesKhr);
+	VkExtent2D extent = chooseSwapExtent(vkSurfaceCapabilitiesKhr, window);
+	uint32_t imageCount = vkSurfaceCapabilitiesKhr.minImageCount + 1;
+	if(vkSurfaceCapabilitiesKhr.maxImageCount > 0 && imageCount > vkSurfaceCapabilitiesKhr.maxImageCount)
 	{
-		imageCount = swapchainSupport.capabilities.maxImageCount;
+		imageCount = vkSurfaceCapabilitiesKhr.maxImageCount;
 	}
 
 	VkSwapchainCreateInfoKHR createInfo = {};
@@ -122,7 +145,7 @@ void VulkanSwapchain::createSwapchain(VkSurfaceKHR& surface, VulkanDevice& vulka
 		createInfo.pQueueFamilyIndices = nullptr; //// 20190109
 	}
 
-	createInfo.preTransform = swapchainSupport.capabilities.currentTransform;
+	createInfo.preTransform = vkSurfaceCapabilitiesKhr.currentTransform;
 	createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
 	createInfo.presentMode = presentMode;
 	createInfo.clipped = VK_TRUE;
