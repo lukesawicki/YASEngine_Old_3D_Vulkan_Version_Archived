@@ -16,7 +16,8 @@ bool VulkanLayersAndExtensions::CheckIfAllRequestedInstanceExtensionAreSupported
 {
 	bool allEnabletExtensionsAreAvailable = false;
 	uint32_t numberOfAvailableExtensions = 0;
-	vkEnumerateInstanceExtensionProperties(nullptr, &numberOfAvailableExtensions, nullptr);
+	vkEnumerateInstanceExtensionProperties(nullptr, &numberOfAvailableExtensions, nullptr); //lukesawicki error stil here
+	//lukesawicki https://github.com/KhronosGroup/Vulkan-LoaderAndValidationLayers/issues/302
 	std::vector<VkExtensionProperties> availableExtensions(numberOfAvailableExtensions);
 	vkEnumerateInstanceExtensionProperties(nullptr, &numberOfAvailableExtensions, availableExtensions.data());
 	int extensionsCounter = 0;

@@ -109,7 +109,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\development\libraries\stb;C:\VulkanSDK\1.1.97.0\Include;C:\development\libraries\glm;C:\development\libraries\tinyobjloader</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\development\libraries\stb;C:\VulkanSDK\1.1.101.0\Include;C:\development\libraries\glm;C:\development\libraries\tinyobjloader</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>VK_USE_PLATFORM_WIN32_KHR;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <CompileAs>CompileAsCpp</CompileAs>
       <PrecompiledHeader>Create</PrecompiledHeader>
@@ -117,7 +117,7 @@
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>C:\VulkanSDK\1.1.97.0\Bin;C:\VulkanSDK\1.1.97.0\Lib;</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\VulkanSDK\1.1.101.0\Bin;C:\VulkanSDK\1.1.101.0\Lib;</AdditionalLibraryDirectories>
       <AdditionalDependencies>vulkan-1.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -144,7 +144,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\development\libraries\stb;C:\VulkanSDK\1.1.97.0\Include;C:\development\libraries\glm;C:\development\libraries\tinyobjloader</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\development\libraries\stb;C:\VulkanSDK\1.1.101.0\Include;C:\development\libraries\glm;C:\development\libraries\tinyobjloader</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>VK_USE_PLATFORM_WIN32_KHR;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <CompileAs>CompileAsCpp</CompileAs>
       <PrecompiledHeader>Create</PrecompiledHeader>
@@ -154,7 +154,7 @@
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>C:\VulkanSDK\1.1.97.0\Bin;C:\VulkanSDK\1.1.97.0\Lib;</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\VulkanSDK\1.1.101.0\Bin;C:\VulkanSDK\1.1.101.0\Lib;</AdditionalLibraryDirectories>
       <AdditionalDependencies>vulkan-1.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>

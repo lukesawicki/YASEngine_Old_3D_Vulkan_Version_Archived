@@ -6,7 +6,7 @@
 //-----------------------------------------------------------------------------|---------------------------------------|
 
 //static method
-bool VulkanDevice::isPhysicalDeviceSuitable(VkPhysicalDevice& physDevice, VulkanInstance& vulkanInstance, VkSurfaceKHR& surface)
+bool VulkanDevice::isPhysicalDeviceSuitable(VkPhysicalDevice physDevice, VulkanInstance& vulkanInstance, VkSurfaceKHR surface)
 {
 	uint32_t graphicQueue = -1; 
 	graphicQueue = getGraphicQueue(physDevice);
@@ -30,14 +30,14 @@ bool VulkanDevice::isPhysicalDeviceSuitable(VkPhysicalDevice& physDevice, Vulkan
 	return (graphicQueue>=0) && (presentationFamilyQueueIndex>=0) && extensionsSupported && swapchainSuitable && physicalDeviceSupportedFeatures.samplerAnisotropy;
 }
 
-VulkanDevice::VulkanDevice(VulkanInstance& vulkanInstance, VkSurfaceKHR& surface, VkQueue& graphicsQueue, VkQueue& presentationQueue, bool enableValidationLayers)
+VulkanDevice::VulkanDevice(VulkanInstance& vulkanInstance, VkSurfaceKHR surface, VkQueue& graphicsQueue, VkQueue& presentationQueue, bool enableValidationLayers)
 {
 	selectPhysicalDevice(vulkanInstance, surface);
 	createLogicalDevice(vulkanInstance, surface, graphicsQueue, presentationQueue, enableValidationLayers);
 	inforAboutDeviceAndDrivers();
 }
 
-void VulkanDevice::selectPhysicalDevice(VulkanInstance& vulkanInstance, VkSurfaceKHR& surface)
+void VulkanDevice::selectPhysicalDevice(VulkanInstance& vulkanInstance, VkSurfaceKHR surface)
 {
 	uint32_t deviceCount = 0;
 	vkEnumeratePhysicalDevices(vulkanInstance.instance, &deviceCount, nullptr);
@@ -65,7 +65,7 @@ void VulkanDevice::selectPhysicalDevice(VulkanInstance& vulkanInstance, VkSurfac
 	}
 }
 
-void VulkanDevice::createLogicalDevice(VulkanInstance& vulkanInstance, VkSurfaceKHR& surface, VkQueue& graphicsQueue, VkQueue& presentationQueue, bool enableValidationLayers)
+void VulkanDevice::createLogicalDevice(VulkanInstance& vulkanInstance, VkSurfaceKHR surface, VkQueue& graphicsQueue, VkQueue& presentationQueue, bool enableValidationLayers)
 {
 	std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
 	std::vector<uint32_t> queueFamilies;
@@ -125,7 +125,7 @@ void VulkanDevice::inforAboutDeviceAndDrivers()
 	std::cout << "Vendor" << vendors.at(physicalDeviceProperties.vendorID) << std::endl;
 }
 
-uint32_t VulkanDevice::getGraphicQueue(VkPhysicalDevice& physDevice)
+uint32_t VulkanDevice::getGraphicQueue(VkPhysicalDevice physDevice)
 {
 	uint32_t queueFamiliesPropertiesCount;// = 0;
 
@@ -142,7 +142,7 @@ uint32_t VulkanDevice::getGraphicQueue(VkPhysicalDevice& physDevice)
 	return result;
 }
 
-uint32_t VulkanDevice::getPresentationQueue(VkPhysicalDevice&  physDevice, VkSurfaceKHR& surface)
+uint32_t VulkanDevice::getPresentationQueue(VkPhysicalDevice  physDevice, VkSurfaceKHR surface)
 {
 	uint32_t queueFamiliesPropertiesCount = 0;
 

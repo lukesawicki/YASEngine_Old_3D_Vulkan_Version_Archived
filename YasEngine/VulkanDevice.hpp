@@ -10,14 +10,14 @@ class VulkanDevice {
 
 	public:
 
-										VulkanDevice(VulkanInstance& vulkanInstance, VkSurfaceKHR& surface, VkQueue& graphicsQueue, VkQueue& presentationQueue, bool enableValidationLayers);
-		bool							isPhysicalDeviceSuitable(VkPhysicalDevice& physDevice, VulkanInstance& vulkanInstance, VkSurfaceKHR& surface);
-		void							selectPhysicalDevice(VulkanInstance& vulkanInstance, VkSurfaceKHR& surface);
-		void							createLogicalDevice(VulkanInstance& vulkanInstance, VkSurfaceKHR& surface, VkQueue& graphicsQueue, VkQueue& presentationQueue, bool enableValidationLayers);
+										VulkanDevice(VulkanInstance& vulkanInstance, VkSurfaceKHR surface, VkQueue& graphicsQueue, VkQueue& presentationQueue, bool enableValidationLayers);
+		bool							isPhysicalDeviceSuitable(VkPhysicalDevice physDevice, VulkanInstance& vulkanInstance, VkSurfaceKHR surface);
+		void							selectPhysicalDevice(VulkanInstance& vulkanInstance, VkSurfaceKHR surface);
+		void							createLogicalDevice(VulkanInstance& vulkanInstance, VkSurfaceKHR surface, VkQueue& graphicsQueue, VkQueue& presentationQueue, bool enableValidationLayers);
 		void							inforAboutDeviceAndDrivers();
 		bool							isGraphicsQueueFamily(const VkQueueFlags& queueFlag);
-		uint32_t						getGraphicQueue(VkPhysicalDevice&  physDevice);
-		uint32_t						getPresentationQueue(VkPhysicalDevice&  physDevice, VkSurfaceKHR& surface);
+		uint32_t						getGraphicQueue(VkPhysicalDevice  physDevice);
+		uint32_t						getPresentationQueue(VkPhysicalDevice  physDevice, VkSurfaceKHR surface);
 
 		VkDevice						logicalDevice;
 		VkPhysicalDevice				physicalDevice = VK_NULL_HANDLE;

@@ -100,8 +100,6 @@ VkExtent2D	VulkanSwapchain::chooseSwapExtent(const VkSurfaceCapabilitiesKHR surf
 
 void VulkanSwapchain::createSwapchain(VkSurfaceKHR& surface, VulkanDevice& vulkanDevice, HWND& window)
 {
-	//SwapchainSupportDetails swapchainSupport = querySwapchainSupport(vulkanDevice.physicalDevice, surface);
-	//lukesawicki
 	VkSurfaceCapabilitiesKHR vkSurfaceCapabilitiesKhr = VulkanSwapchain::getSwapchainCapabilities(vulkanDevice.physicalDevice, surface);
 	std::vector<VkSurfaceFormatKHR> vkSurfaceFormatsKhr = VulkanSwapchain::getSwapchainSurfaceFormats(vulkanDevice.physicalDevice, surface);
 	std::vector<VkPresentModeKHR> vkPresentModesKhr = VulkanSwapchain::getSwapchainPresentModes(vulkanDevice.physicalDevice, surface);
