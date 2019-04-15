@@ -112,13 +112,13 @@ void VulkanDevice::createLogicalDevice(VulkanInstance& vulkanInstance, VkSurface
 	createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
 	createInfo.pQueueCreateInfos = queueCreateInfos.data();
 	createInfo.pEnabledFeatures = &physicalDeviceFeatures;
-	createInfo.enabledExtensionCount = static_cast<uint32_t>(vulkanInstance.layersAndExtensions->deviceExtensions.size());
-	createInfo.ppEnabledExtensionNames = vulkanInstance.layersAndExtensions->deviceExtensions.data();
+	createInfo.enabledExtensionCount = static_cast<uint32_t>(vulkanInstance.layersAndExtensions->requestedDeviceExtensions.size());
+	createInfo.ppEnabledExtensionNames = vulkanInstance.layersAndExtensions->requestedDeviceExtensions.data();
 	
 	if(enableValidationLayers)
 	{
-		createInfo.enabledLayerCount = static_cast<uint32_t>(vulkanInstance.layersAndExtensions->validationLayers.size());
-		createInfo.ppEnabledLayerNames = vulkanInstance.layersAndExtensions->validationLayers.data();
+		createInfo.enabledLayerCount = static_cast<uint32_t>(vulkanInstance.layersAndExtensions->requestedValidationLayers.size());
+		createInfo.ppEnabledLayerNames = vulkanInstance.layersAndExtensions->requestedValidationLayers.data();
 	}
 	else
 	{

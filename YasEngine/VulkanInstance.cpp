@@ -15,33 +15,34 @@ void VulkanInstance::createVulkanInstance(bool areValidationLayersEnabled)
 		throw std::runtime_error("Requested validation layers are not available");
 	}	
 
-	std::cout << "Creating Vulkan Instance..." << std::endl;
+    // Structure required by VkInstance. It contains information about this application
 	VkApplicationInfo applicationInfo = {};
 	applicationInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
 	applicationInfo.pApplicationName = "YasEngine Demo";
-	applicationInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
+	applicationInfo.applicationVersion = VK_MAKE_VERSION(1, 1, 0);
 	applicationInfo.pEngineName = "Yas Engine";
 	applicationInfo.engineVersion = VK_MAKE_VERSION(0, 1, 0);
 	applicationInfo.apiVersion = VK_API_VERSION_1_1;
 
+
+    // Structure which contains VkApplicationInfo and other information required for creating VkInstance
+    // and used among others to enable instance-specific layers
 	VkInstanceCreateInfo createInfo = {};
 	createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
 	createInfo.pApplicationInfo = &applicationInfo;
 
-	bool allExtensionsAvailable = layersAndExtensions->CheckIfAllRequestedInstanceExtensionAreSupported();
-
-	if(!allExtensionsAvailable)
+	if(!layersAndExtensions->CheckIfAllRequestedInstanceExtensionAreSupported())
 	{
 		throw std::runtime_error("Not all required extensions available! Can't create Vulkan Instance");
 	}
 
-	createInfo.enabledExtensionCount = static_cast<uint32_t>(layersAndExtensions->instanceExtensions.size());
-	createInfo.ppEnabledExtensionNames = layersAndExtensions->instanceExtensions.data();
+	createInfo.enabledExtensionCount = static_cast<uint32_t>(layersAndExtensions->requestedInstanceExtensions.size());
+	createInfo.ppEnabledExtensionNames = layersAndExtensions->requestedInstanceExtensions.data();
 
 	if(areValidationLayersEnabled)
 	{
-		createInfo.enabledLayerCount = static_cast<uint32_t>(layersAndExtensions->validationLayers.size());
-		createInfo.ppEnabledLayerNames = layersAndExtensions->validationLayers.data();
+		createInfo.enabledLayerCount = static_cast<uint32_t>(layersAndExtensions->requestedValidationLayers.size());
+		createInfo.ppEnabledLayerNames = layersAndExtensions->requestedValidationLayers.data();
 	}
 	else
 	{

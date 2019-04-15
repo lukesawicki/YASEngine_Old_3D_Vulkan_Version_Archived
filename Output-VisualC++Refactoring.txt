@@ -1,0 +1,63 @@
+﻿
+Renamed 'validationLayers' to 'requiredValidationLayers':
+---------------------------------------------------------
+C:\development\workspace\YASEngine\YasEngine\VulkanDevice.cpp(120, 92)
+C:\development\workspace\YASEngine\YasEngine\VulkanDevice.cpp(121, 72)
+C:\development\workspace\YASEngine\YasEngine\VulkanInstance.cpp(43, 77)
+C:\development\workspace\YASEngine\YasEngine\VulkanInstance.cpp(44, 57)
+C:\development\workspace\YASEngine\YasEngine\VulkanLayersAndExtensions.cpp(8, 2)
+C:\development\workspace\YASEngine\YasEngine\VulkanLayersAndExtensions.cpp(80, 29)
+
+Renamed 'validationLayers' to 'requiredValidationLayers':
+---------------------------------------------------------
+C:\development\workspace\YASEngine\YasEngine\VulkanLayersAndExtensions.hpp(16, 29)
+
+Renamed 'instanceExtensions' to 'requiredInstanceExtensions':
+-------------------------------------------------------------
+C:\development\workspace\YASEngine\YasEngine\VulkanInstance.cpp(38, 80)
+C:\development\workspace\YASEngine\YasEngine\VulkanInstance.cpp(39, 60)
+C:\development\workspace\YASEngine\YasEngine\VulkanLayersAndExtensions.cpp(10, 2)
+C:\development\workspace\YASEngine\YasEngine\VulkanLayersAndExtensions.cpp(11, 2)
+C:\development\workspace\YASEngine\YasEngine\VulkanLayersAndExtensions.cpp(12, 2)
+C:\development\workspace\YASEngine\YasEngine\VulkanLayersAndExtensions.cpp(24, 20)
+C:\development\workspace\YASEngine\YasEngine\VulkanLayersAndExtensions.cpp(28, 14)
+C:\development\workspace\YASEngine\YasEngine\VulkanLayersAndExtensions.cpp(32, 28)
+C:\development\workspace\YASEngine\YasEngine\VulkanLayersAndExtensions.hpp(17, 29)
+
+Renamed 'deviceExtensions' to 'reruiredDeviceExtensions':
+---------------------------------------------------------
+C:\development\workspace\YASEngine\YasEngine\VulkanDevice.cpp(115, 95)
+C:\development\workspace\YASEngine\YasEngine\VulkanDevice.cpp(116, 75)
+C:\development\workspace\YASEngine\YasEngine\VulkanLayersAndExtensions.cpp(9, 2)
+C:\development\workspace\YASEngine\YasEngine\VulkanLayersAndExtensions.cpp(49, 39)
+C:\development\workspace\YASEngine\YasEngine\VulkanLayersAndExtensions.hpp(18, 29)
+
+Renamed 'requiredValidationLayers' to 'requestedValidationLayers':
+------------------------------------------------------------------
+C:\development\workspace\YASEngine\YasEngine\VulkanDevice.cpp(120, 92)
+C:\development\workspace\YASEngine\YasEngine\VulkanDevice.cpp(121, 72)
+C:\development\workspace\YASEngine\YasEngine\VulkanInstance.cpp(44, 77)
+C:\development\workspace\YASEngine\YasEngine\VulkanInstance.cpp(45, 57)
+C:\development\workspace\YASEngine\YasEngine\VulkanLayersAndExtensions.cpp(8, 2)
+C:\development\workspace\YASEngine\YasEngine\VulkanLayersAndExtensions.cpp(88, 29)
+C:\development\workspace\YASEngine\YasEngine\VulkanLayersAndExtensions.hpp(17, 29)
+
+Renamed 'requiredInstanceExtensions' to 'requestedInstanceExtensions':
+----------------------------------------------------------------------
+C:\development\workspace\YASEngine\YasEngine\VulkanInstance.cpp(39, 80)
+C:\development\workspace\YASEngine\YasEngine\VulkanInstance.cpp(40, 60)
+C:\development\workspace\YASEngine\YasEngine\VulkanLayersAndExtensions.cpp(12, 2)
+C:\development\workspace\YASEngine\YasEngine\VulkanLayersAndExtensions.cpp(13, 2)
+C:\development\workspace\YASEngine\YasEngine\VulkanLayersAndExtensions.cpp(14, 2)
+C:\development\workspace\YASEngine\YasEngine\VulkanLayersAndExtensions.cpp(26, 20)
+C:\development\workspace\YASEngine\YasEngine\VulkanLayersAndExtensions.cpp(30, 14)
+C:\development\workspace\YASEngine\YasEngine\VulkanLayersAndExtensions.cpp(34, 28)
+C:\development\workspace\YASEngine\YasEngine\VulkanLayersAndExtensions.hpp(20, 29)
+
+Renamed 'reruiredDeviceExtensions' to 'requestedDeviceExtensions':
+------------------------------------------------------------------
+C:\development\workspace\YASEngine\YasEngine\VulkanDevice.cpp(115, 95)
+C:\development\workspace\YASEngine\YasEngine\VulkanDevice.cpp(116, 75)
+C:\development\workspace\YASEngine\YasEngine\VulkanLayersAndExtensions.cpp(10, 2)
+C:\development\workspace\YASEngine\YasEngine\VulkanLayersAndExtensions.cpp(56, 39)
+C:\development\workspace\YASEngine\YasEngine\VulkanLayersAndExtensions.hpp(23, 29)

@@ -13,9 +13,14 @@ class VulkanLayersAndExtensions
 		bool							CheckIfAllRequestedInstanceExtensionAreSupported();
 		bool							CheckIfAllRequestedPhysicalDeviceExtensionAreSupported(VkPhysicalDevice device);
 
-		std::vector<const char*>		validationLayers;
-		std::vector<const char*>		instanceExtensions;
-		std::vector<const char*>		deviceExtensions;
+        // Set by programmer. Which validation wanted to use.
+		std::vector<const char*>		requestedValidationLayers;
+
+        // Set by programmer. Which instance extensions wanted to use.
+		std::vector<const char*>		requestedInstanceExtensions;
+
+        // Set by programmer. Which device extensions wanted to use.
+		std::vector<const char*>		requestedDeviceExtensions;
 
 	private:		
 };

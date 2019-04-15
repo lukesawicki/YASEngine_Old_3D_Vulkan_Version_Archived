@@ -4,7 +4,7 @@
 #include"YasEngine.hpp"
 #include"VariousTools.hpp"
 
-//-----------------------------------------------------------------------------|---------------------------------------|
+//-----------------------------------------------------------------------------|---------------------------------------|---------|---------|---------|---------|---------|---------|---------|---------|
 
 int YasEngine::windowPositionX				= 64;
 int YasEngine::windowPositionY				= 64;
@@ -65,12 +65,18 @@ VKAPI_ATTR VkBool32 VKAPI_CALL YasEngine::debugCallback	(VkDebugReportFlagsEXT d
 
 YasEngine::YasEngine()
 {
-	AllocConsole();
+    // Allocates a new console for the calling process.
+    AllocConsole();
+    // Attaches the calling process to the console of the specified process.
 	AttachConsole(GetCurrentProcessId());
+
+    // Stream object
 	FILE* file;
+    // fropen_s open existing file with another name
 	freopen_s(&file, "CON", "w", stdout);
 	freopen_s(&file, "CON", "w", stderr);
 	SetConsoleTitle("YasEngine logging");
+    std::cout.clear();
 }
 
 void YasEngine::setupDebugCallback()
@@ -105,26 +111,57 @@ void YasEngine::createWindow(HINSTANCE hInstance)
 {
 	WNDCLASSEX windowClassEx;
 
+    // Size of WNDCLASSEX
 	windowClassEx.cbSize				= sizeof(WNDCLASSEX);
+    
+    // Window style. Look and behavior
 	windowClassEx.style					= CS_VREDRAW | CS_HREDRAW;
+    
+    // Pointer to window procedure
 	windowClassEx.lpfnWndProc			= windowProcedure;
+    
+    // Size of extra memory for the application
 	windowClassEx.cbClsExtra			= 0;
+    
+    // Size of extra memory for window created using this window class
 	windowClassEx.cbWndExtra			= 0;
+    
+    // handle to application
 	windowClassEx.hInstance				= hInstance;
-	windowClassEx.hIcon					= LoadIcon(0, IDI_APPLICATION);
+	
+    // Appliction icon in the alt + tab dialog
+    windowClassEx.hIcon					= LoadIcon(0, IDI_APPLICATION);
+
+    // Handle to cursor displayed when cursor is over the window
 	windowClassEx.hCursor				= LoadCursor(0, IDC_CROSS);
+
+    // Handle to brush for redrawing window
 	windowClassEx.hbrBackground			= (HBRUSH)GetStockObject(WHITE_BRUSH);
+    
+    // Handle to menu which will be attached to this window
 	windowClassEx.lpszMenuName			= 0;
-	windowClassEx.lpszClassName			= "YASEngine window class";
+	
+    // Name of window
+    windowClassEx.lpszClassName			= "YASEngine window class";
+
+    // Handle to icon whitch will be show on windows bar.
 	windowClassEx.hIconSm				= LoadIcon(0, IDI_APPLICATION);
 
+    // Function whtch create, set values and register window class in the system.
 	RegisterClassEx(&windowClassEx);
 
 	application = hInstance;
+
+    // Function tho create window with specyfied properties.
 	window =  CreateWindowEx(NULL, "YASEngine window class", "YASEngine", WS_OVERLAPPEDWINDOW, windowPositionX, windowPositionY, windowWidth, windowHeight, NULL, NULL, application, NULL);
 
+    // Set window's show state
 	ShowWindow(window, SW_NORMAL);
+
+    // Brings thread that created this window into the foreground and activates the window.
 	SetForegroundWindow(window);
+
+    // Set focus to specified window.
 	SetFocus(window);
 }
 
