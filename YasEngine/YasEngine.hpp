@@ -44,7 +44,6 @@ class YasEngine
 		void							createVulkanInstance();
 		void							initializeVulkan();
 		void							setupDebugCallback();
-		void							selectPhysicalDevice();
 		void							createLogicalDevice();
 		void							createSurface();
 		void							createSwapchain();

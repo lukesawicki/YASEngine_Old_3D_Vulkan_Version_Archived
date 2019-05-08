@@ -46,9 +46,12 @@ static QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device, VkSurfaceKH
 	QueueFamilyIndices queueFamilyIndices;
 	uint32_t queueFamilyCount = 0;
 	
+    // Function to retrieve list of queue families
+    // In this call function retrieve only number of queueFamilyCount
 	vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
 
 	std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
+    // In this call function retrieve queue family properties
 	vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
 
 	int i = 0;

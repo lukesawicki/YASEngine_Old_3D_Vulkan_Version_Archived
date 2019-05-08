@@ -30,6 +30,14 @@ LRESULT CALLBACK windowProcedure(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 	return DefWindowProc(hWnd, message, wParam, lParam);
 }
 
+// Two functions below createDebugReportCallbackEXT, destroyDebugReportCallbackEXT are part of extensions not core Vulkan API
+
+// PFN_vkCreateDebugReportCallbackEXT - is not a part of VULKAN API
+// vkGetInstanceProcAddr - is not a part of VULKAN API (but is always provided if I understand correctly)
+// and is function to obtain core Vulkan API and Extensions functions pointers.
+// This function(createDebugReportCallbackEXT) is creation of implementations the creation of the debug report.
+// VkDebugReportCallbackCreateInfoEXT - structur which containst data about creating VkDebugReportCallbackEXT - 
+// data like behavior of debugging, what debug information should include: errors, warnings, information, performance wranings
 VkResult createDebugReportCallbackEXT(VkInstance& vulkanInstance, const VkDebugReportCallbackCreateInfoEXT* createInfo, const VkAllocationCallbacks* allocator, VkDebugReportCallbackEXT* callback)
 {
 	PFN_vkCreateDebugReportCallbackEXT debugReportCallbackFunction = (PFN_vkCreateDebugReportCallbackEXT)vkGetInstanceProcAddr(vulkanInstance, "vkCreateDebugReportCallbackEXT");
@@ -44,6 +52,7 @@ VkResult createDebugReportCallbackEXT(VkInstance& vulkanInstance, const VkDebugR
 	}
 }
 
+// Function which destroy debug report callback function
 void destroyDebugReportCallbackEXT(VkInstance vulkanInstance, VkDebugReportCallbackEXT callback, const VkAllocationCallbacks* allocator)
 {
 	PFN_vkDestroyDebugReportCallbackEXT destroyFunction = (PFN_vkDestroyDebugReportCallbackEXT)vkGetInstanceProcAddr(vulkanInstance, "vkDestroyDebugReportCallbackEXT");
@@ -86,11 +95,15 @@ void YasEngine::setupDebugCallback()
 		return;
 	}
 	
+    // Data structure which contains information about behaviour of the debugging
+    // what debug information should be included: errors, general warning, information,
+    // preformance relation informations and should include reference to user-defined debug function
 	VkDebugReportCallbackCreateInfoEXT createInfo = {};
 	createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT;
 	createInfo.flags = VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT;
 	createInfo.pfnCallback = debugCallback;
 	
+    // createDebugReportCallbackEXT - is this API/Engine function
 	if(createDebugReportCallbackEXT(vulkanInstance.instance, &createInfo, nullptr, &callback) != VK_SUCCESS)
 	{
 		throw std::runtime_error("Failed to set up debug callback function");
@@ -105,7 +118,7 @@ void YasEngine::run(HINSTANCE hInstance)
 	cleanUp();
 }
 
-//Private Methods
+//Private functions
 
 void YasEngine::createWindow(HINSTANCE hInstance)
 {
@@ -235,11 +248,6 @@ void YasEngine::initializeVulkan()
 void YasEngine::createVulkanInstance()
 {
 	vulkanInstance.createVulkanInstance(enableValidationLayers);
-}
-
-void YasEngine::selectPhysicalDevice()
-{
-	vulkanDevice->selectPhysicalDevice(vulkanInstance, surface);
 }
 
 void YasEngine::createCommandPool()
@@ -582,6 +590,10 @@ void YasEngine::createLogicalDevice()
 
 void YasEngine::createSurface()
 {
+    // Both below: structure VkWin32SurfaceCreateInfoKHR and function vkCreateWin32SurfaceKHR
+    // are part of extension not Core Vulkan Api(in this case these extensions for Microsoft Windows Windows systems)
+
+    // Structure with data required to create Window surface (in this case Microsoft Windows systems)
 	VkWin32SurfaceCreateInfoKHR	surfaceCreateInfo;
 	surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
 	surfaceCreateInfo.pNext = NULL;
@@ -589,6 +601,7 @@ void YasEngine::createSurface()
 	surfaceCreateInfo.hinstance = application;
 	surfaceCreateInfo.hwnd = window;
 
+    // vkCreateWin32SurfaceKHR - function which create Window surface( in this case Microsoft Windows systems)
 	VkResult result = vkCreateWin32SurfaceKHR(vulkanInstance.instance, &surfaceCreateInfo, NULL, &surface);
 
 	if(!(result == VK_SUCCESS))

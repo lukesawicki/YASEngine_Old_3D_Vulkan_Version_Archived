@@ -19,7 +19,7 @@ class VulkanLayersAndExtensions
         // Set by programmer. Which instance extensions wanted to use.
 		std::vector<const char*>		requestedInstanceExtensions;
 
-        // Set by programmer. Which device extensions wanted to use.
+        // Set by programmer. Which device extensions wanted to use. Device extensions are deprecated.
 		std::vector<const char*>		requestedDeviceExtensions;
 
 	private:		

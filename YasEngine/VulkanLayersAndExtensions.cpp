@@ -16,11 +16,15 @@ VulkanLayersAndExtensions::VulkanLayersAndExtensions()
 
 bool VulkanLayersAndExtensions::CheckIfAllRequestedInstanceExtensionAreSupported()
 {
-	bool allEnabletExtensionsAreAvailable = false;
+	bool allEnabledExtensionsAreAvailable = false;
 	uint32_t numberOfAvailableExtensions = 0;
+    // Retrieve Instance Extensions Porperties(number of them)
+    // Extensions may be new data types, and new behaviour of the Vulkan API
+    // First call retrieve number of extensions properties
 	vkEnumerateInstanceExtensionProperties(nullptr, &numberOfAvailableExtensions, nullptr);
 	std::vector<VkExtensionProperties> availableExtensions(numberOfAvailableExtensions);
-	vkEnumerateInstanceExtensionProperties(nullptr, &numberOfAvailableExtensions, availableExtensions.data());
+	// Second call retrieve extensions properties
+    vkEnumerateInstanceExtensionProperties(nullptr, &numberOfAvailableExtensions, availableExtensions.data());
 	int extensionsCounter = 0;
 
 	for(size_t i=0; i<requestedInstanceExtensions.size(); i++)
@@ -77,7 +81,7 @@ bool VulkanLayersAndExtensions::CheckIfAllRequestedLayersAreSupported()
 {
 	uint32_t instanceLayersCount;
     // It plugguble components that can be dynamically pulled in by the Vulkan loader at runtime.
-    // mostly used for debugging and validation
+    // mostly used for debugging and validation.. Layers have vary number of extensions each.
 	vkEnumerateInstanceLayerProperties(&instanceLayersCount, nullptr);
 	
     std::vector<VkLayerProperties> availableLayers(instanceLayersCount);
