@@ -5,7 +5,7 @@
 #include"VulkanSwapchain.hpp"
 //-----------------------------------------------------------------------------|---------------------------------------|
 
-//static method
+//static function
 bool VulkanDevice::isPhysicalDeviceSuitable(VkPhysicalDevice physDevice, VulkanInstance& vulkanInstance, VkSurfaceKHR surface)
 {
 	uint32_t graphicQueue = -1; 
@@ -40,6 +40,7 @@ VulkanDevice::VulkanDevice(VulkanInstance& vulkanInstance, VkSurfaceKHR surface,
 void VulkanDevice::selectPhysicalDevice(VulkanInstance& vulkanInstance, VkSurfaceKHR surface)
 {
 	uint32_t deviceCount = 0;
+    // This function in this call retrieve number of available Physical Devices (graphics cards)
 	vkEnumeratePhysicalDevices(vulkanInstance.instance, &deviceCount, nullptr);
 
 	if(deviceCount == 0)
@@ -48,6 +49,7 @@ void VulkanDevice::selectPhysicalDevice(VulkanInstance& vulkanInstance, VkSurfac
 	}
 
 	std::vector<VkPhysicalDevice> physicalDevices(deviceCount);
+    // This function in this call retrieve available Physical Devices (graphics cards)
 	vkEnumeratePhysicalDevices(vulkanInstance.instance, &deviceCount, physicalDevices.data());
 
 	for(VkPhysicalDevice device: physicalDevices)

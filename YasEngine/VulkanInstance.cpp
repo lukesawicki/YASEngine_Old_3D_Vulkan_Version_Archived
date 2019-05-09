@@ -15,7 +15,7 @@ void VulkanInstance::createVulkanInstance(bool areValidationLayersEnabled)
 		throw std::runtime_error("Requested validation layers are not available");
 	}	
 
-	std::cout << "Creating Vulkan Instance..." << std::endl;
+    // Structure required by VkInstance. It contains information about this application
 	VkApplicationInfo applicationInfo = {}; 
 	applicationInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
 	applicationInfo.pApplicationName = "YasEngine Demo";
@@ -24,6 +24,8 @@ void VulkanInstance::createVulkanInstance(bool areValidationLayersEnabled)
 	applicationInfo.engineVersion = VK_MAKE_VERSION(0, 1, 0);
 	applicationInfo.apiVersion = VK_API_VERSION_1_1; //?
 
+    // Structure which contains VkApplicationInfo and other information required for creating VkInstance
+    // and used among others to enable instance-specific layers
 	VkInstanceCreateInfo createInfo = {};
 	createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
 	createInfo.pApplicationInfo = &applicationInfo;
