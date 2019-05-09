@@ -31,7 +31,9 @@ void VulkanInstance::createVulkanInstance(bool areValidationLayersEnabled)
 	createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
 	createInfo.pApplicationInfo = &applicationInfo;
 
-	if(!layersAndExtensions->CheckIfAllRequestedInstanceExtensionAreSupported())
+	bool allExtensionsAvailable = layersAndExtensions->CheckIfAllRequestedInstanceExtensionAreSupported();
+
+	if(!allExtensionsAvailable)
 	{
 		throw std::runtime_error("Not all required extensions available! Can't create Vulkan Instance");
 	}

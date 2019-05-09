@@ -10,8 +10,6 @@
 
 //#define NDEBUG
 
-VkResult createDebugReportCallbackEXT ( VkInstance& vulkanInstance, const VkDebugReportCallbackCreateInfoEXT* createInfo, const VkAllocationCallbacks* allocator, VkDebugReportCallbackEXT* callback);
-
 class YasEngine
 {
 
@@ -19,8 +17,8 @@ class YasEngine
 
 		YasEngine();
 		void							run(HINSTANCE hInstance);
-		////static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugReportFlagsEXT debugReportFlags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t code, const char* layerPrefix, const char* msg, void* userData);
-static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback( VkDebugReportFlagsEXT debugReportFlags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t code, const char* layerPrefix, const char* msg, void* userData);
+		static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugReportFlagsEXT debugReportFlags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t code, const char* layerPrefix, const char* msg, void* userData);
+
 		static int						windowPositionX;
 		static int						windowPositionY;
 		static int						windowWidth;
@@ -46,6 +44,7 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback( VkDebugReportFlagsEXT debug
 		void							createVulkanInstance();
 		void							initializeVulkan();
 		void							setupDebugCallback();
+		void							selectPhysicalDevice();
 		void							createLogicalDevice();
 		void							createSurface();
 		void							createSwapchain();
@@ -72,8 +71,7 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback( VkDebugReportFlagsEXT debug
 		void							createDescriptorPool();
 		void							createDescriptorSets();
 		void							createTextureImage();
-//		void							createImage(uint32_t width, uint32_t height, uint32_t mipLevelsNumber, VkSampleCountFlagBits samplesNumber, VkFormat format, VkImageTiling imageTiling, VkImageUsageFlags imageUsageFlags, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
-		void							createImage(uint32_t width, uint32_t height, uint32_t mipLevelsNumber, VkFormat format, VkImageTiling imageTiling, VkImageUsageFlags imageUsageFlags, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
+		void							createImage(uint32_t width, uint32_t height, uint32_t mipLevelsNumber, VkSampleCountFlagBits samplesNumber, VkFormat format, VkImageTiling imageTiling, VkImageUsageFlags imageUsageFlags, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
 		VkCommandBuffer					beginSingleTimeCommands();
 		void							endSingleTimeCommands(VkCommandBuffer commandBuffer);
 		void							transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldImageLayout, VkImageLayout newImageLayout,  uint32_t mipLevelsNumber);
@@ -101,7 +99,7 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback( VkDebugReportFlagsEXT debug
 		VkSurfaceKHR					surface;
 		VulkanDevice*					vulkanDevice;
 		VkQueue							graphicsQueue = nullptr;
-		VkQueue							presentationQueue = nullptr;
+		VkQueue							presentationQueue;
 		VulkanSwapchain					vulkanSwapchain;
 		VkRenderPass					renderPass;
 		VkDescriptorSetLayout			descriptorSetLayout;

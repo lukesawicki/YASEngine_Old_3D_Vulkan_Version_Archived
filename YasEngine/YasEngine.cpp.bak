@@ -4,7 +4,7 @@
 #include"YasEngine.hpp"
 #include"VariousTools.hpp"
 
-//-----------------------------------------------------------------------------|---------------------------------------|---------|---------|---------|---------|---------|---------|---------|---------|
+//-----------------------------------------------------------------------------|---------------------------------------|
 
 int YasEngine::windowPositionX				= 64;
 int YasEngine::windowPositionY				= 64;
@@ -30,89 +30,58 @@ LRESULT CALLBACK windowProcedure(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 	return DefWindowProc(hWnd, message, wParam, lParam);
 }
 
-// Two functions below createDebugReportCallbackEXT, destroyDebugReportCallbackEXT are part of extensions not core Vulkan API
-
-// PFN_vkCreateDebugReportCallbackEXT - is not a part of VULKAN API
-// vkGetInstanceProcAddr - is not a part of VULKAN API (but is always provided if I understand correctly)
-// and is function to obtain core Vulkan API and Extensions functions pointers.
-// This function(createDebugReportCallbackEXT) is creation of implementations the creation of the debug report.
-// VkDebugReportCallbackCreateInfoEXT - structur which containst data about creating VkDebugReportCallbackEXT - 
-// data like behavior of debugging, what debug information should include: errors, warnings, information, performance wranings
 VkResult createDebugReportCallbackEXT(VkInstance& vulkanInstance, const VkDebugReportCallbackCreateInfoEXT* createInfo, const VkAllocationCallbacks* allocator, VkDebugReportCallbackEXT* callback) {
 
-// PFN_vkCreateDebugReportCallbackEXT - is not a part of VULKAN API
-// vkGetInstanceProcAddr - is not a part of VULKAN API (but is always provided if I understand correctly)
-// and is function to obtain core Vulkan API and Extensions functions pointers.
-// This function(createDebugReportCallbackEXT) is creation of implementations the creation of the debug report.
-// VkDebugReportCallbackCreateInfoEXT - structur which containst data about creating VkDebugReportCallbackEXT - 
-// data like behavior of debugging, what debug information should include: errors, warnings, information, performance wranings
-VkResult createDebugReportCallbackEXT(VkInstance& vulkanInstance, const VkDebugReportCallbackCreateInfoEXT* createInfo, const VkAllocationCallbacks* allocator, VkDebugReportCallbackEXT* callback)
-{
 	PFN_vkCreateDebugReportCallbackEXT debugReportCallbackFunction = (PFN_vkCreateDebugReportCallbackEXT)vkGetInstanceProcAddr(vulkanInstance, "vkCreateDebugReportCallbackEXT");
-	
-	if(debugReportCallbackFunction != nullptr)
-	{
+
+	if (debugReportCallbackFunction != nullptr){
 		return debugReportCallbackFunction(vulkanInstance, createInfo, allocator, callback);
 	}
-	else
-	{
+	else {
 		return VK_ERROR_EXTENSION_NOT_PRESENT;
 	}
 }
 
-// Function which destroy debug report callback function
-void destroyDebugReportCallbackEXT(VkInstance vulkanInstance, VkDebugReportCallbackEXT callback, const VkAllocationCallbacks* allocator)
-{
+void destroyDebugReportCallbackEXT(VkInstance vulkanInstance, VkDebugReportCallbackEXT callback, const VkAllocationCallbacks* allocator) {
+
 	PFN_vkDestroyDebugReportCallbackEXT destroyFunction = (PFN_vkDestroyDebugReportCallbackEXT)vkGetInstanceProcAddr(vulkanInstance, "vkDestroyDebugReportCallbackEXT");
-	
-	if(destroyFunction != nullptr)
-	{
+
+	if (destroyFunction != nullptr) {
 		destroyFunction(vulkanInstance, callback, allocator);
 	}
 }
 
-VKAPI_ATTR VkBool32 VKAPI_CALL YasEngine::debugCallback	(VkDebugReportFlagsEXT debugReportFlags, VkDebugReportObjectTypeEXT objectType,	uint64_t object, size_t location, int32_t code,	const char* layerPrefix, const char* msg, void* userData)
-{
+VKAPI_ATTR VkBool32 VKAPI_CALL YasEngine::debugCallback(VkDebugReportFlagsEXT debugReportFlags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t code, const char* layerPrefix, const char* msg, void* userData) {
+
 	std::cerr << "Validation layer: " << msg << std::endl;
-    // If return true, then call is aborted with the VK_ERROR_VALIDATION_FAILED_EXT
-	// because this is used to test the validation layers themeselves
-	// then for now always return false
+	//If return true, then call is aborted with the VK_ERROR_VALIDATION_FAILED_EXT
+	//because this is used to test the validation layers themeselves
+	//then for now always return false
 	return VK_FALSE;
 }
 
 YasEngine::YasEngine()
 {
-    // Allocates a new console for the calling process.
 	AllocConsole();
-    // Attaches the calling process to the console of the specified process.
 	AttachConsole(GetCurrentProcessId());
-    // Stream object
 	FILE* file;
-    // fropen_s open existing file with another name
 	freopen_s(&file, "CON", "w", stdout);
 	freopen_s(&file, "CON", "w", stderr);
 	SetConsoleTitle("YasEngine logging");
-    std::cout.clear();
 }
 
-void YasEngine::setupDebugCallback()
-{
-	if(!enableValidationLayers)
-	{
+void YasEngine::setupDebugCallback() {
+
+	if (!enableValidationLayers) {
 		return;
 	}
-	
-    // Data structure which contains information about behaviour of the debugging
-    // what debug information should be included: errors, general warning, information,
-    // preformance relation informations and should include reference to user-defined debug function
+
 	VkDebugReportCallbackCreateInfoEXT createInfo = {};
 	createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT;
 	createInfo.flags = VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT;
 	createInfo.pfnCallback = debugCallback;
-	
-    // createDebugReportCallbackEXT - is this API/Engine function
-	if(createDebugReportCallbackEXT(vulkanInstance.instance, &createInfo, nullptr, &callback) != VK_SUCCESS)
-	{
+
+	if (createDebugReportCallbackEXT(vulkanInstance.instance, &createInfo, nullptr, &callback) != VK_SUCCESS) {
 		throw std::runtime_error("Failed to set up debug callback function");
 	}
 }
@@ -125,63 +94,32 @@ void YasEngine::run(HINSTANCE hInstance)
 	cleanUp();
 }
 
-//Private functions
+//Private Methods
 
 void YasEngine::createWindow(HINSTANCE hInstance)
 {
 	WNDCLASSEX windowClassEx;
 
-    // Size of WNDCLASSEX
 	windowClassEx.cbSize				= sizeof(WNDCLASSEX);
-
-    // Window style. Look and behavior
 	windowClassEx.style					= CS_VREDRAW | CS_HREDRAW;
-
-    // Pointer to window procedure
 	windowClassEx.lpfnWndProc			= windowProcedure;
-
-    // Size of extra memory for the application
 	windowClassEx.cbClsExtra			= 0;
-
-    // Size of extra memory for window created using this window class
 	windowClassEx.cbWndExtra			= 0;
-
-    // handle to application
 	windowClassEx.hInstance				= hInstance;
-
-    // Appliction icon in the alt + tab dialog
 	windowClassEx.hIcon					= LoadIcon(0, IDI_APPLICATION);
-
-    // Handle to cursor displayed when cursor is over the window
 	windowClassEx.hCursor				= LoadCursor(0, IDC_CROSS);
-
-    // Handle to brush for redrawing window
 	windowClassEx.hbrBackground			= (HBRUSH)GetStockObject(WHITE_BRUSH);
-
-    // Handle to menu which will be attached to this window
 	windowClassEx.lpszMenuName			= 0;
-
-    // Name of window
 	windowClassEx.lpszClassName			= "YASEngine window class";
-
-    // Handle to icon whitch will be show on windows bar.
 	windowClassEx.hIconSm				= LoadIcon(0, IDI_APPLICATION);
 
-    // Function whtch create, set values and register window class in the system.
 	RegisterClassEx(&windowClassEx);
 
 	application = hInstance;
-
-    // Function tho create window with specyfied properties.
 	window =  CreateWindowEx(NULL, "YASEngine window class", "YASEngine", WS_OVERLAPPEDWINDOW, windowPositionX, windowPositionY, windowWidth, windowHeight, NULL, NULL, application, NULL);
 
-    // Set window's show state
 	ShowWindow(window, SW_NORMAL);
-
-    // Brings thread that created this window into the foreground and activates the window.
 	SetForegroundWindow(window);
-
-    // Set focus to specified window.
 	SetFocus(window);
 }
 
@@ -237,6 +175,7 @@ void YasEngine::initializeVulkan()
 	createDescriptorSetLayout();
 	createGraphicsPipeline();
 	createCommandPool();
+////	createColorResources();
 	createDepthResources();
 	createFramebuffers();
 	createTextureImage();
@@ -264,9 +203,12 @@ void YasEngine::selectPhysicalDevice()
 
 void YasEngine::createCommandPool()
 {
+	//QueueFamilyIndices queueFamilyIndices = findQueueFamilies(vulkanDevice->physicalDevice, surface);
+
 	VkCommandPoolCreateInfo commandPoolCreateInfo = {};
 	commandPoolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-	commandPoolCreateInfo.queueFamilyIndex = vulkanDevice->getGraphicQueue(vulkanDevice->physicalDevice);
+	commandPoolCreateInfo.queueFamilyIndex = vulkanDevice->graphicsFamilyQueueIndex;//vulkanDequeueFamilyIndices.graphicsFamily;
+
 	if(vkCreateCommandPool(vulkanDevice->logicalDevice, &commandPoolCreateInfo, nullptr, &commandPool) != VK_SUCCESS)
 	{
 		throw std::runtime_error("Failed to create command pool!");
@@ -275,7 +217,7 @@ void YasEngine::createCommandPool()
 
 void YasEngine::createVertexBuffer()
 {
-    //VkDeviceSize is alias to uint64_t
+	//VkDeviceSize is alias to uint64_t
 	VkDeviceSize vertexBufferSize = sizeof(vertices[0]) * vertices.size();
 	VkBuffer stagingBuffer;
 	VkDeviceMemory stagingBufferMemory;
@@ -441,9 +383,11 @@ void YasEngine::drawFrame(float deltaTime)
 
 	if(vkQueueSubmit(graphicsQueue, 1, &submitInfo, inFlightFences[currentFrame]) != VK_SUCCESS)
 	{
+//isPresentationQueueFamily
 		std::cout << "vkQueueSubmit was not a sucess!!" << std::endl;
-		throw std::runtime_error("Failed to submit draw command buffer.");
-	}
+		throw std::runtime_error("Failed to submit draw command buffer."); //lukesawicki runtime tu sie wywala
+	} //Validation layer: Object: 0x2 (Type = 27) | vkQueuePresentKHR: Presenting image without calling vkGetPhysicalDeviceSurfaceSupportKHR
+	
 	VkPresentInfoKHR presentInfoKhr = {};//
 	presentInfoKhr.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 	presentInfoKhr.waitSemaphoreCount = 1;
@@ -598,12 +542,13 @@ void YasEngine::updateUniformBuffer(uint32_t currentImage, float deltaTime)
 	vkUnmapMemory(vulkanDevice->logicalDevice, uniformBuffersMemory[currentImage]);
 }
 
+void YasEngine::createLogicalDevice()
+{
+	vulkanDevice->createLogicalDevice(vulkanInstance, surface, graphicsQueue, presentationQueue, enableValidationLayers);
+}
+
 void YasEngine::createSurface()
 {
-    // Both below: structure VkWin32SurfaceCreateInfoKHR and function vkCreateWin32SurfaceKHR
-    // are part of extension not Core Vulkan Api(in this case these extensions for Microsoft Windows Windows systems)
-
-    // Structure with data required to create Window surface (in this case Microsoft Windows systems)
 	VkWin32SurfaceCreateInfoKHR	surfaceCreateInfo;
 	surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
 	surfaceCreateInfo.pNext = NULL;
@@ -611,7 +556,6 @@ void YasEngine::createSurface()
 	surfaceCreateInfo.hinstance = application;
 	surfaceCreateInfo.hwnd = window;
 
-    // vkCreateWin32SurfaceKHR - function which create Window surface( in this case Microsoft Windows systems)
 	VkResult result = vkCreateWin32SurfaceKHR(vulkanInstance.instance, &surfaceCreateInfo, NULL, &surface);
 
 	if(!(result == VK_SUCCESS))
@@ -622,7 +566,8 @@ void YasEngine::createSurface()
 
 void YasEngine::createSwapchain()
 {
-	vulkanSwapchain.createSwapchain(surface, *vulkanDevice, window);
+	//QueueFamilyIndices queueIndices = findQueueFamilies(vulkanDevice->physicalDevice, surface);
+	vulkanSwapchain.createSwapchain(vulkanDevice->physicalDevice, surface, vulkanDevice->logicalDevice, *vulkanDevice, window);
 }
 
 void YasEngine::recreateSwapchain()
@@ -633,6 +578,7 @@ void YasEngine::recreateSwapchain()
 	createImageViews();
 	createRenderPass();
 	createGraphicsPipeline();
+////	createColorResources();
 	createDepthResources();
 	createFramebuffers();
 	createCommandBuffers();
@@ -645,6 +591,10 @@ void YasEngine::createImageViews()
 
 void YasEngine::cleanupSwapchain()
 {
+////	vkDestroyImageView(vulkanDevice->logicalDevice, colorImageView, nullptr);
+////	vkDestroyImage(vulkanDevice->logicalDevice, colorImage, nullptr);
+////	vkFreeMemory(vulkanDevice->logicalDevice, colorImageMemory, nullptr);
+
     vkDestroyImageView(vulkanDevice->logicalDevice, depthImageView, nullptr);
     vkDestroyImage(vulkanDevice->logicalDevice, depthImage, nullptr);
     vkFreeMemory(vulkanDevice->logicalDevice, depthImageMemory, nullptr);
@@ -676,8 +626,8 @@ void YasEngine::createRenderPass()
 	colorAttachmentDescription.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 	colorAttachmentDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 	colorAttachmentDescription.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-
-	colorAttachmentDescription.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+//lukesawicki 24-08-2018 0752
+	colorAttachmentDescription.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR; ////VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;//VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
 	VkAttachmentDescription depthAttachmentDescription = {};
 	depthAttachmentDescription.format = findDepthFormat();
@@ -689,6 +639,17 @@ void YasEngine::createRenderPass()
 	depthAttachmentDescription.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 	depthAttachmentDescription.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
+//lukesawicki 24-08-2018 0754
+////	VkAttachmentDescription colorAttachmentResolveDescription = {};
+////	colorAttachmentResolveDescription.format = vulkanSwapchain.swapchainImageFormat;;
+////	colorAttachmentResolveDescription.samples = VK_SAMPLE_COUNT_1_BIT;
+////	colorAttachmentResolveDescription.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+////	colorAttachmentResolveDescription.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+////	colorAttachmentResolveDescription.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+////	colorAttachmentResolveDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+////	colorAttachmentResolveDescription.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+////	colorAttachmentResolveDescription.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+
 	VkAttachmentReference colorAttachmentReference = {};
 	colorAttachmentReference.attachment = 0;
 	colorAttachmentReference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
@@ -697,11 +658,17 @@ void YasEngine::createRenderPass()
 	depthAttachmentReference.attachment = 1;
 	depthAttachmentReference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
+//lukesawicki 24-08-2018 0755
+////	VkAttachmentReference colorAttachmentResolveReference = {};
+////	colorAttachmentResolveReference.attachment = 2;
+////	colorAttachmentResolveReference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
 	VkSubpassDescription subpassDescription = {};
 	subpassDescription.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
 	subpassDescription.colorAttachmentCount = 1;
 	subpassDescription.pColorAttachments = &colorAttachmentReference;
 	subpassDescription.pDepthStencilAttachment = &depthAttachmentReference;
+////	subpassDescription.pResolveAttachments = &colorAttachmentResolveReference;//lukesawicki
 
 	VkSubpassDependency subpassDependency = {};
 	subpassDependency.srcSubpass = VK_SUBPASS_EXTERNAL;
@@ -711,6 +678,8 @@ void YasEngine::createRenderPass()
 	subpassDependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 	subpassDependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 
+//lukesawicki
+////	std::array<VkAttachmentDescription, 3> attachments = {colorAttachmentDescription, depthAttachmentDescription, colorAttachmentResolveDescription};
 std::array<VkAttachmentDescription, 2> attachments = {colorAttachmentDescription, depthAttachmentDescription};
 	VkRenderPassCreateInfo renderPassInfo = {};
 	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
@@ -751,13 +720,16 @@ void YasEngine::createGraphicsPipeline()
 	fragShaderStageInfo.pName = "main";
 
 	VkPipelineShaderStageCreateInfo shaderStages[] = {vertShaderStageInfo, fragShaderStageInfo};
+
 	VkPipelineVertexInputStateCreateInfo vertexInputInfo = {};
 	
+
+
 	auto bindingDescription = Vertex::getBindingDescription();
 	auto attributeDescriptions = Vertex::getAttributeDescriptions();
 
 	//does order matter?
-	vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 	vertexInputInfo.vertexBindingDescriptionCount = 1;
 	vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
 	vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
@@ -799,8 +771,11 @@ void YasEngine::createGraphicsPipeline()
 
 	VkPipelineMultisampleStateCreateInfo multisampling = {};
 	multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
+	//lukesawicki 2018-09-06 0745 changed
 	multisampling.sampleShadingEnable = VK_FALSE;
-	multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+	//lukesawicki 2018-09-06 0746 added 
+	//multisampling.minSampleShading = 0.2F;
+	multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;////vulkanDevice->msaaSamples;
 
 	VkPipelineDepthStencilStateCreateInfo pipelineDepthStencilStateCreateInfo = {};
 	pipelineDepthStencilStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
@@ -811,6 +786,8 @@ void YasEngine::createGraphicsPipeline()
 	pipelineDepthStencilStateCreateInfo.minDepthBounds = 0.0F;
 	pipelineDepthStencilStateCreateInfo.maxDepthBounds = 1.0F;
 	pipelineDepthStencilStateCreateInfo.stencilTestEnable = VK_FALSE;
+	//pipelineDepthStencilStateCreateInfo.front = {};
+	//pipelineDepthStencilStateCreateInfo.back = {};
 
 	VkPipelineColorBlendAttachmentState colorBlendAttachment = {};
 	colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
@@ -868,7 +845,9 @@ void YasEngine::createFramebuffers()
 
 	for(size_t i=0; i<vulkanSwapchain.swapchainImageViews.size(); i++)
 	{
-		std::array<VkImageView, 2> attachments = {vulkanSwapchain.swapchainImageViews[i], depthImageView};
+//lukesawicki dodalem color attachment i zmienilem kolejnosc
+		std::array<VkImageView, 3> attachments = {vulkanSwapchain.swapchainImageViews[i], depthImageView};
+
 		VkFramebufferCreateInfo framebufferCreateInfo = {};
 		framebufferCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
 		framebufferCreateInfo.renderPass = renderPass;
@@ -938,8 +917,7 @@ void YasEngine::cleanUp()
 	vkDestroyCommandPool(vulkanDevice->logicalDevice, commandPool, nullptr);
 	vkDestroyDevice(vulkanDevice->logicalDevice, nullptr);
 
-	if(enableValidationLayers)
-	{
+	if (enableValidationLayers) {
 		destroyDebugReportCallbackEXT(vulkanInstance.instance, callback, nullptr);
 	}
 
@@ -987,8 +965,7 @@ void YasEngine::createDescriptorSets()
 		throw std::runtime_error("failed to allocate descriptor sets!");
 	}
 
-	for(size_t i=0; i<vulkanSwapchain.swapchainImages.size(); i++)
-	{
+	for(size_t i=0; i<vulkanSwapchain.swapchainImages.size(); i++) {
 
 		VkDescriptorBufferInfo descriptorBufferInfo = {};
 		descriptorBufferInfo.buffer = uniformBuffers[i];
@@ -1048,6 +1025,7 @@ void YasEngine::createTextureImage()
 	vkUnmapMemory(vulkanDevice->logicalDevice, stagingBufferMemory);
 
 	stbi_image_free(pixels);
+//Lukesawicki 24-08-2018 0732
 	createImage(textureWidth, textureHeight, mipLevels, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureImage, textureImageMemory);
 	transitionImageLayout(textureImage, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, mipLevels);
 	copyBufferToImage(stagingBuffer, textureImage, static_cast<uint32_t>(textureWidth), static_cast<uint32_t>(textureHeight));
@@ -1057,6 +1035,7 @@ void YasEngine::createTextureImage()
 	generateMipmaps(textureImage, VK_FORMAT_R8G8B8A8_UNORM, textureWidth, textureHeight, mipLevels);
 }
 
+////void YasEngine::createImage(uint32_t textureWidth, uint32_t textureHeight, uint32_t mipLevelsNumber, VkSampleCountFlagBits samplesNumber, VkFormat format, VkImageTiling imageTiling, VkImageUsageFlags imageUsageFlags, VkMemoryPropertyFlags memoryProperties, VkImage& image, VkDeviceMemory& imageMemory)
 void YasEngine::createImage(uint32_t textureWidth, uint32_t textureHeight, uint32_t mipLevelsNumber, VkFormat format, VkImageTiling imageTiling, VkImageUsageFlags imageUsageFlags, VkMemoryPropertyFlags memoryProperties, VkImage& image, VkDeviceMemory& imageMemory)
 {
 	VkImageCreateInfo imageCreateInfo = {};
@@ -1088,8 +1067,7 @@ void YasEngine::createImage(uint32_t textureWidth, uint32_t textureHeight, uint3
 	memoryAllocateInfo.allocationSize = memoryRequirements.size;
 	memoryAllocateInfo.memoryTypeIndex = findMemoryType(memoryRequirements.memoryTypeBits, memoryProperties);
 
-	if (vkAllocateMemory(vulkanDevice->logicalDevice, &memoryAllocateInfo, nullptr, &imageMemory) != VK_SUCCESS)
-	{
+	if (vkAllocateMemory(vulkanDevice->logicalDevice, &memoryAllocateInfo, nullptr, &imageMemory) != VK_SUCCESS) {
 		throw std::runtime_error("failed to allocate image memory!");
 	}
 
@@ -1190,7 +1168,17 @@ void YasEngine::transitionImageLayout(VkImage image, VkFormat format, VkImageLay
 			}
 			else
 			{
-				throw std::invalid_argument("Unsuported layout transition.");
+////				if(oldImageLayout == VK_IMAGE_LAYOUT_UNDEFINED && newImageLayout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+////				{
+////					imageMemoryBarrier.srcAccessMask = 0;
+////					imageMemoryBarrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+////					sourcePipelineStageFlag = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+////					destinationPipelineStageFlags = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+////				}
+////				else
+////				{
+					throw std::invalid_argument("Unsuported layout transition.");
+////				}
 			}
 		}
 	}
@@ -1252,7 +1240,8 @@ void YasEngine::createTextureSampler()
 void YasEngine::createDepthResources()
 {
 	VkFormat depthFormat = findDepthFormat();
-	createImage(vulkanSwapchain.swapchainExtent.width, vulkanSwapchain.swapchainExtent.height, 1, depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, depthImage, depthImageMemory);
+//LUKESAWICKI 24-08-2018 0731  //LUKESAWICKI 24-08-2018 0747
+	createImage(vulkanSwapchain.swapchainExtent.width, vulkanSwapchain.swapchainExtent.height, 1, vulkanDevice->msaaSamples, depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, depthImage, depthImageMemory);
 	depthImageView = createImageView(depthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT, vulkanDevice->logicalDevice, 1);
 	transitionImageLayout(depthImage, depthFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, 1);
 }
@@ -1403,19 +1392,16 @@ void YasEngine::generateMipmaps(VkImage image, VkFormat imageFormat, int32_t tex
 			mipHeight /= 2;
 		}
 	}
-	imageMemoryBarrier.subresourceRange.baseMipLevel = mipLevelsNumber - 1;
-	imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-	imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-	imageMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-	imageMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+		imageMemoryBarrier.subresourceRange.baseMipLevel = mipLevelsNumber - 1;
+		imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+		imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		imageMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+		imageMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
 
-	vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier);
+		vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier);
 
-	endSingleTimeCommands(commandBuffer);
+		endSingleTimeCommands(commandBuffer);
 }
-
-//change to force build
-
 
 ////void YasEngine::createColorResources()
 ////{

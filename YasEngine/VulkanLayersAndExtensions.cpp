@@ -16,12 +16,12 @@ VulkanLayersAndExtensions::VulkanLayersAndExtensions()
 
 bool VulkanLayersAndExtensions::CheckIfAllRequestedInstanceExtensionAreSupported()
 {
-	bool allEnabledExtensionsAreAvailable = false;
+	bool allEnabletExtensionsAreAvailable = false;
 	uint32_t numberOfAvailableExtensions = 0;
     // Retrieve Instance Extensions Porperties(number of them)
     // Extensions may be new data types, and new behaviour of the Vulkan API
     // First call retrieve number of extensions properties
-	vkEnumerateInstanceExtensionProperties(nullptr, &numberOfAvailableExtensions, nullptr);
+	vkEnumerateInstanceExtensionProperties(nullptr, &numberOfAvailableExtensions, nullptr); // Here was error
 	std::vector<VkExtensionProperties> availableExtensions(numberOfAvailableExtensions);
 	// Second call retrieve extensions properties
     vkEnumerateInstanceExtensionProperties(nullptr, &numberOfAvailableExtensions, availableExtensions.data());

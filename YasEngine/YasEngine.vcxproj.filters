@@ -45,6 +45,12 @@
     <ClInclude Include="YasMathLib.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="VulkanPipeline.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="VulkanQueues.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="YasEngine.cpp">
@@ -66,6 +72,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="VulkanDevice.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="VulkanPipeline.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

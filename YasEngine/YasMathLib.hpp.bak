@@ -3,6 +3,7 @@
 
 namespace YasMathLib
 {
+
 	struct vec2
 	{
 		float x;
@@ -57,3 +58,4 @@ struct UniformBufferObject
 };
 
 #endif
+
