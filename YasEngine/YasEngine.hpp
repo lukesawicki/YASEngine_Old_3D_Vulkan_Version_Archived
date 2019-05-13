@@ -46,7 +46,7 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback( VkDebugReportFlagsEXT debug
 		void							createVulkanInstance();
 		void							initializeVulkan();
 		void							setupDebugCallback();
-		void							createLogicalDevice();
+		//void							createLogicalDevice();
 		void							createSurface();
 		void							createSwapchain();
 		void							recreateSwapchain();

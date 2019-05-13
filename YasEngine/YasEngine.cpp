@@ -38,14 +38,6 @@ LRESULT CALLBACK windowProcedure(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 // This function(createDebugReportCallbackEXT) is creation of implementations the creation of the debug report.
 // VkDebugReportCallbackCreateInfoEXT - structur which containst data about creating VkDebugReportCallbackEXT - 
 // data like behavior of debugging, what debug information should include: errors, warnings, information, performance wranings
-VkResult createDebugReportCallbackEXT(VkInstance& vulkanInstance, const VkDebugReportCallbackCreateInfoEXT* createInfo, const VkAllocationCallbacks* allocator, VkDebugReportCallbackEXT* callback) {
-
-// PFN_vkCreateDebugReportCallbackEXT - is not a part of VULKAN API
-// vkGetInstanceProcAddr - is not a part of VULKAN API (but is always provided if I understand correctly)
-// and is function to obtain core Vulkan API and Extensions functions pointers.
-// This function(createDebugReportCallbackEXT) is creation of implementations the creation of the debug report.
-// VkDebugReportCallbackCreateInfoEXT - structur which containst data about creating VkDebugReportCallbackEXT - 
-// data like behavior of debugging, what debug information should include: errors, warnings, information, performance wranings
 VkResult createDebugReportCallbackEXT(VkInstance& vulkanInstance, const VkDebugReportCallbackCreateInfoEXT* createInfo, const VkAllocationCallbacks* allocator, VkDebugReportCallbackEXT* callback)
 {
 	PFN_vkCreateDebugReportCallbackEXT debugReportCallbackFunction = (PFN_vkCreateDebugReportCallbackEXT)vkGetInstanceProcAddr(vulkanInstance, "vkCreateDebugReportCallbackEXT");
@@ -257,10 +249,10 @@ void YasEngine::createVulkanInstance()
 	vulkanInstance.createVulkanInstance(enableValidationLayers);
 }
 
-void YasEngine::selectPhysicalDevice()
-{
-	vulkanDevice->selectPhysicalDevice(vulkanInstance, surface);
-}
+//void YasEngine::selectPhysicalDevice()
+//{
+//	vulkanDevice->selectPhysicalDevice(vulkanInstance, surface);
+//}
 
 void YasEngine::createCommandPool()
 {

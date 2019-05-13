@@ -20,27 +20,38 @@ bool VulkanDevice::isPhysicalDeviceSuitable(VkPhysicalDevice physDevice, VulkanI
 	if(physicalDeviceProperties.vendorID == 4130) // to reformatt lukesawicki
     {
 		std::cout << "Physical device vendor: AMD" << std::endl;
-	} else if(physicalDeviceProperties.vendorID == 4318) {
-				std::cout << "Physical device vendor: NVIDIA" << std::endl;
-	} else if(physicalDeviceProperties.vendorID == 8086) {
-			std::cout << "Physical device vendor: INTEL" << std::endl;
-	} else {
-		std::cout << "Physical device vendor: Other vendor." << std::endl;
 	}
-
+    else
+    {
+        if(physicalDeviceProperties.vendorID == 4318)
+        {
+				    std::cout << "Physical device vendor: NVIDIA" << std::endl;
+	    }
+        else
+        {
+            
+            if(physicalDeviceProperties.vendorID == 8086)
+            {
+			        std::cout << "Physical device vendor: INTEL" << std::endl;
+	        }
+            else
+            {
+		        std::cout << "Physical device vendor: Other vendor." << std::endl;
+	        }
+        }
+    }
 	bool extensionsSupported = vulkanInstance.layersAndExtensions->CheckIfAllRequestedPhysicalDeviceExtensionAreSupported(physDevice);
-	bool swapchainSuitable = false;
+	bool swapchainSuitable = true; //lukesawicki uwaga zahardkodowane 20190513
 	
 	if(extensionsSupported)
 	{
-		SwapchainSupportDetails swapchainSupport = VulkanSwapchain::querySwapchainSupport(physDevice, surface);
-		swapchainSuitable = !swapchainSupport.formats.empty() && !swapchainSupport.presentModes.empty();
+		//SwapchainSupportDetails swapchainSupport = VulkanSwapchain::querySwapchainSupport(physDevice, surface);
+		//swapchainSuitable = !swapchainSupport.formats.empty() && !swapchainSupport.presentModes.empty();
 		std::cout <<"swapchainSuitable= " << swapchainSuitable << std::endl;
 	}
 
 	return (graphicQueue>=0) && (presentationFamilyQueueIndex>=0) && extensionsSupported && swapchainSuitable && physicalDeviceSupportedFeatures.samplerAnisotropy;
 }
-
 
 VulkanDevice::VulkanDevice(VulkanInstance& vulkanInstance, VkSurfaceKHR& surface, VkQueue& graphicsQueue, VkQueue& presentationQueue, bool enableValidationLayers)
 {
@@ -110,8 +121,8 @@ void VulkanDevice::createLogicalDevice(VulkanInstance& vulkanInstance, VkSurface
 	
 	if(enableValidationLayers)
 	{
-		createInfo.enabledLayerCount = static_cast<uint32_t>(vulkanInstance.layersAndExtensions->validationLayers.size());
-		createInfo.ppEnabledLayerNames = vulkanInstance.layersAndExtensions->validationLayers.data();
+		createInfo.enabledLayerCount = static_cast<uint32_t>(vulkanInstance.layersAndExtensions->requestedValidationLayers.size()); //->validationLayers.size());
+		createInfo.ppEnabledLayerNames = vulkanInstance.layersAndExtensions->requestedValidationLayers.data();
 	}
 	else
 	{
