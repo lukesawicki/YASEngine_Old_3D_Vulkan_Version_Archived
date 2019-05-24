@@ -19,8 +19,7 @@ class YasEngine
 
 		YasEngine();
 		void							run(HINSTANCE hInstance);
-		////static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugReportFlagsEXT debugReportFlags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t code, const char* layerPrefix, const char* msg, void* userData);
-static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback( VkDebugReportFlagsEXT debugReportFlags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t code, const char* layerPrefix, const char* msg, void* userData);
+        static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback( VkDebugReportFlagsEXT debugReportFlags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t code, const char* layerPrefix, const char* msg, void* userData);
 		static int						windowPositionX;
 		static int						windowPositionY;
 		static int						windowWidth;
@@ -34,7 +33,7 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback( VkDebugReportFlagsEXT debug
 		#else
 			const bool					enableValidationLayers = true;
 		#endif
-
+        static bool leftRotating;
 		static bool framebufferResized;
 	//public end
 
@@ -46,7 +45,6 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback( VkDebugReportFlagsEXT debug
 		void							createVulkanInstance();
 		void							initializeVulkan();
 		void							setupDebugCallback();
-		//void							createLogicalDevice();
 		void							createSurface();
 		void							createSwapchain();
 		void							recreateSwapchain();
@@ -72,7 +70,6 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback( VkDebugReportFlagsEXT debug
 		void							createDescriptorPool();
 		void							createDescriptorSets();
 		void							createTextureImage();
-//		void							createImage(uint32_t width, uint32_t height, uint32_t mipLevelsNumber, VkSampleCountFlagBits samplesNumber, VkFormat format, VkImageTiling imageTiling, VkImageUsageFlags imageUsageFlags, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
 		void							createImage(uint32_t width, uint32_t height, uint32_t mipLevelsNumber, VkFormat format, VkImageTiling imageTiling, VkImageUsageFlags imageUsageFlags, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
 		VkCommandBuffer					beginSingleTimeCommands();
 		void							endSingleTimeCommands(VkCommandBuffer commandBuffer);
@@ -86,7 +83,6 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback( VkDebugReportFlagsEXT debug
 		bool							hasStencilComponent(VkFormat format);
 		void							loadModel();
 		void							generateMipmaps(VkImage image, VkFormat imageFormat, int32_t textureWidth,int32_t textureHeight,uint32_t mipLevelsNumber);
-////		void							createColorResources();
 
 		HINSTANCE						application;
 		HWND							window;
@@ -126,13 +122,12 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback( VkDebugReportFlagsEXT debug
 		VkImage							depthImage;
 		VkDeviceMemory					depthImageMemory;
 		VkImageView						depthImageView;
-////		VkImage							colorImage;
-////		VkDeviceMemory					colorImageMemory;
-////		VkImageView						colorImageView;
+
 		float zeroTime = 0;
+        float time = 0;
 		std::vector<Vertex> vertices;
 		std::vector<uint32_t> indices;
-////		uint32_t mipLevelsNumber;
+
 	//private end
 };
 

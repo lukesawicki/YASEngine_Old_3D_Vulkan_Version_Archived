@@ -14,10 +14,11 @@ class VulkanDevice
 		bool							isPhysicalDeviceSuitable(VkPhysicalDevice physDevice, VulkanInstance& vulkanInstance, VkSurfaceKHR surface);
 		void							selectPhysicalDevice(VulkanInstance& vulkanInstance, VkSurfaceKHR& surface);
 		void							createLogicalDevice(VulkanInstance& vulkanInstance, VkSurfaceKHR& surface, VkQueue& graphicsQueue, VkQueue& presentationQueue, bool enableValidationLayers);
-		void							inforAboutDeviceAndDrivers();
+		void							informationAboutDeviceAndDrivers();
 		bool							isGraphicsQueueFamily(const VkQueueFlags& queueFlag);
 		uint32_t						getGraphicQueue(VkPhysicalDevice  physDevice);
 		uint32_t						getPresentationQueue(VkPhysicalDevice  physDevice, VkSurfaceKHR surface);
+        VkSampleCountFlagBits           getMaxUsableSampleCount();
 
 		VkDevice						logicalDevice;
 		VkPhysicalDevice				physicalDevice = VK_NULL_HANDLE;

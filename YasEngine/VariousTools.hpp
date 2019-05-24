@@ -121,8 +121,14 @@ template<> struct std::hash<Vertex>
 	}
 };
 
+
+// TODO lukesawicki
 static VkImageView createImageView(VkImage image, VkFormat format, VkImageAspectFlags imageAspectFlags, VkDevice& vulkanLogicDevice, uint32_t mipLevelsNumber)
 {
+    // VkImageView it is objects which allow to access to image(VkImage)
+
+    // VkImageViewCreateInfor structure contains informations needed to create image views (VkImageView)
+    // imageview types, format, data for remaping color/depth/stencil, range of mipmaplevels and arrays layers
 	VkImageViewCreateInfo imageViewCreateInfo = {};
 	imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
 	imageViewCreateInfo.image = image;
@@ -136,6 +142,7 @@ static VkImageView createImageView(VkImage image, VkFormat format, VkImageAspect
 
 	VkImageView imageView;
 
+    // Function which are using to create image views(VkImageView
 	if(vkCreateImageView(vulkanLogicDevice, &imageViewCreateInfo, nullptr, &imageView) != VK_SUCCESS)
 	{
 		throw std::runtime_error("Failed to create image view");

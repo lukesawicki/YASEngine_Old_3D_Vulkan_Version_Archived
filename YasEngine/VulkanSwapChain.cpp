@@ -3,28 +3,41 @@
 #include"VariousTools.hpp"
 
 //-----------------------------------------------------------------------------|---------------------------------------|
-// 
-// Maybe not needed
 
-//SwapchainSupportDetails	VulkanSwapchain::querySwapchainSupport(VkPhysicalDevice device, VkSurfaceKHR surface)
-//{
-	//SwapchainSupportDetails swapchainDetails;
 VkSurfaceCapabilitiesKHR VulkanSwapchain::getSwapchainCapabilities(VkPhysicalDevice device, VkSurfaceKHR surface)
 {
+    // This structure contains information about surface capabilities like: min/max number of image surfaces supported
+    // image dimention range, maximum number of image arrays possible, types of intransformation features supported
+    // by the surface
 	VkSurfaceCapabilitiesKHR capabilities;
+
+    // This function retrieve data with information about surface: current size, minimum/maximum size possible(maximum or minimum number
+    // of images the specified device supports for swapchain created for surface, possible
+    // transformation capabilities and other things
 	vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, surface, &capabilities);
 	return capabilities;
 }
 
 std::vector<VkSurfaceFormatKHR> VulkanSwapchain::getSwapchainSurfaceFormats(VkPhysicalDevice device, VkSurfaceKHR surface)
 {
+    // VkFormat is value specifying the format the swapchain image(s) will be created with
+    // describes the format and type of the data elements that will be contained in image
+
+    uint32_t formatCount;
+    
+    // Default format is 32-bit RGBA
 	std::vector<VkSurfaceFormatKHR> formats;
-	uint32_t formatCount;
+
+    // Retrieve data with information about surface formats:
+    // VkSurfaceFormatKHR - is data structure with informations describing a format-color space pair that is compatible
+    // with the specified surface (which depends on platform and device)
+    // first call retrieve formats count
 	vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &formatCount, nullptr);
 	
 	if(formatCount != 0)
 	{
 		formats.resize(formatCount);
+        // second call retrieve data for all formats
 		vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &formatCount, formats.data());
 	}
 	return formats;
@@ -32,20 +45,26 @@ std::vector<VkSurfaceFormatKHR> VulkanSwapchain::getSwapchainSurfaceFormats(VkPh
 
 std::vector<VkPresentModeKHR> VulkanSwapchain::getSwapchainPresentModes(VkPhysicalDevice device, VkSurfaceKHR surface)
 {
+    uint32_t presentModesCount;
+
+    // VkPresentModeKHR described below
 	std::vector<VkPresentModeKHR> presentModes;
-	uint32_t presentModesCount;
+    
+    // This function retrieve the surface presentation modes
+    // they are exposed via the VkPresentModeKHR in this case in vector of VkPresentModeKHR
+    // presentation modes determine how the incoming presentation requests will be processed and queued inernally.
+    // there are four types of present modes (it is all about time and order of (rendering) and update image.
+    // in this call function retrieve number of present modes
 	vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &presentModesCount, nullptr);
 
 	if(presentModesCount != 0)
 	{
 		presentModes.resize(presentModesCount);
+        // in this call function retrieve present modes
 		vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &presentModesCount, presentModes.data());
 	}
 	return presentModes;
 }
-	//return swapchainDetails;
-//}
-
 
 VkSurfaceFormatKHR VulkanSwapchain::chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &availableFormats)
 {
@@ -57,7 +76,7 @@ VkSurfaceFormatKHR VulkanSwapchain::chooseSwapSurfaceFormat(const std::vector<Vk
 			return availableFormat;
 		}
 	}
-	//Tke first in the row.
+	//Take first in the row.
 	return availableFormats[0];
 }
 
@@ -106,10 +125,12 @@ void VulkanSwapchain::createSwapchain(VkSurfaceKHR& surface, VulkanDevice& vulka
 	std::vector<VkSurfaceFormatKHR> vkSurfaceFormatsKhr = VulkanSwapchain::getSwapchainSurfaceFormats(vulkanDevice.physicalDevice, surface);
 	std::vector<VkPresentModeKHR> vkPresentModesKhr = VulkanSwapchain::getSwapchainPresentModes(vulkanDevice.physicalDevice, surface);
 
-
-
 	VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(vkSurfaceFormatsKhr);
 	VkPresentModeKHR presentMode = chooseSwapPresentMode(vkPresentModesKhr);
+    
+    // Extents describe the size of rectangular region of pixels within an image or framebuffer in 2D(width, height)
+    // in 3D same + depth
+    // VkExtent2D - Size of the swapchain color images
 	VkExtent2D extent = chooseSwapExtent(vkSurfaceCapabilitiesKhr, window);
 	uint32_t imageCount = vkSurfaceCapabilitiesKhr.minImageCount + 1;
 	if(vkSurfaceCapabilitiesKhr.maxImageCount > 0 && imageCount > vkSurfaceCapabilitiesKhr.maxImageCount)
@@ -117,6 +138,7 @@ void VulkanSwapchain::createSwapchain(VkSurfaceKHR& surface, VulkanDevice& vulka
 		imageCount = vkSurfaceCapabilitiesKhr.maxImageCount;
 	}
 
+    // VkSwapchainCreateInfoKHR contains information about creation of the swapchain object. Held in the VkSwapchainKHR
 	VkSwapchainCreateInfoKHR createInfo = {};
 	createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
 	createInfo.surface = surface;
@@ -127,11 +149,8 @@ void VulkanSwapchain::createSwapchain(VkSurfaceKHR& surface, VulkanDevice& vulka
 	createInfo.imageArrayLayers = 1;
 	createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
-	//uint32_t queueFamilyIndices[] = {(uint32_t)queueIndices.graphicsFamily, (uint32_t)queueIndices.presentationFamily};
-	//uint32_t queueFamilyIndices[] = {vulkanDevice.graphicsFamilyQueueIndex, vulkanDevice.presentationFamilyQueueIndex};
 	uint32_t queueFamilyIndices[] = { vulkanDevice.getGraphicQueue(vulkanDevice.physicalDevice), vulkanDevice.getPresentationQueue(vulkanDevice.physicalDevice, surface) };
 
-	//if(queueIndices.graphicsFamily != queueIndices.presentationFamily)
 	if(queueFamilyIndices[0] != queueFamilyIndices[1])
 	{
 		createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
@@ -141,20 +160,23 @@ void VulkanSwapchain::createSwapchain(VkSurfaceKHR& surface, VulkanDevice& vulka
 	else
 	{
 		createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
-		createInfo.queueFamilyIndexCount = 0; //// 20190109
-		createInfo.pQueueFamilyIndices = nullptr; //// 20190109
 	}
 
+    // This is a bit field of VkSurfaceTransformFlag-BitsKHR that
+    // describes the transform relative to the presentation engine's natural
+    // orientation, which is applied to the image content prior to the
+    // presentation.
 	createInfo.preTransform = vkSurfaceCapabilitiesKhr.currentTransform;
 	createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
 	createInfo.presentMode = presentMode;
 	createInfo.clipped = VK_TRUE;
-	//createInfo.oldSwapchain = VK_NULL_HANDLE;
 	
+    // vkCreateSwapchainKHR is a function which create swapchainobject
 	if(vkCreateSwapchainKHR(vulkanDevice.logicalDevice, &createInfo, nullptr, &swapchain) != VK_SUCCESS)
 	{
 		throw std::runtime_error("Failed to create swap chain!");
 	}
+    // vkGetSwapchainImagesKHR is function to retrieve image objects (VkImage)
 	vkGetSwapchainImagesKHR(vulkanDevice.logicalDevice, swapchain, &imageCount, nullptr);
 	swapchainImages.resize(imageCount);
 	vkGetSwapchainImagesKHR(vulkanDevice.logicalDevice, swapchain, &imageCount, swapchainImages.data());
@@ -178,4 +200,9 @@ void VulkanSwapchain::destroySwapchain(VkDevice vulkanLogicalDevice)
 		vkDestroyImageView(vulkanLogicalDevice, imageView, nullptr);
 	}
 	vkDestroySwapchainKHR(vulkanLogicalDevice, swapchain, nullptr);
+}
+
+bool VulkanSwapchain::isSwapchainAdequate(VkPhysicalDevice device, VkSurfaceKHR surface)
+{
+    return getSwapchainSurfaceFormats(device, surface).size() > 0 && getSwapchainPresentModes(device, surface).size() > 0;
 }

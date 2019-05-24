@@ -41,13 +41,11 @@ bool VulkanDevice::isPhysicalDeviceSuitable(VkPhysicalDevice physDevice, VulkanI
         }
     }
 	bool extensionsSupported = vulkanInstance.layersAndExtensions->CheckIfAllRequestedPhysicalDeviceExtensionAreSupported(physDevice);
-	bool swapchainSuitable = true; //lukesawicki uwaga zahardkodowane 20190513
+	bool swapchainSuitable = false; //lukesawicki uwaga zahardkodowane 20190513
 	
 	if(extensionsSupported)
 	{
-		//SwapchainSupportDetails swapchainSupport = VulkanSwapchain::querySwapchainSupport(physDevice, surface);
-		//swapchainSuitable = !swapchainSupport.formats.empty() && !swapchainSupport.presentModes.empty();
-		std::cout <<"swapchainSuitable= " << swapchainSuitable << std::endl;
+        swapchainSuitable = VulkanSwapchain::isSwapchainAdequate(physDevice, surface);
 	}
 
 	return (graphicQueue>=0) && (presentationFamilyQueueIndex>=0) && extensionsSupported && swapchainSuitable && physicalDeviceSupportedFeatures.samplerAnisotropy;
@@ -57,7 +55,8 @@ VulkanDevice::VulkanDevice(VulkanInstance& vulkanInstance, VkSurfaceKHR& surface
 {
 	selectPhysicalDevice(vulkanInstance, surface);
 	createLogicalDevice(vulkanInstance, surface, graphicsQueue, presentationQueue, enableValidationLayers);
-	inforAboutDeviceAndDrivers();
+    //msaaSamples = getMaxUsableSampleCount();
+	informationAboutDeviceAndDrivers();
 }
 
 void VulkanDevice::selectPhysicalDevice(VulkanInstance& vulkanInstance, VkSurfaceKHR& surface)
@@ -129,18 +128,23 @@ void VulkanDevice::createLogicalDevice(VulkanInstance& vulkanInstance, VkSurface
 		createInfo.enabledLayerCount = 0;
 	}
 
+    // This function create logical representation(VkDevice) of the physical device in the application space.
 	if(vkCreateDevice(physicalDevice, &createInfo, nullptr, &logicalDevice) != VK_SUCCESS)
 	{
 		throw std::runtime_error("Failed to create logical device.");
 	}
 
+    // this fuction Acuire compatible queue in this case graphic queue;
 	vkGetDeviceQueue(logicalDevice, queueFamilies[0], 0, &graphicsQueue);
+    // this fuction Acuire compatible queue in this case presentationQueue
 	vkGetDeviceQueue(logicalDevice, queueFamilies[1], 0, &presentationQueue);
 }
 
-void VulkanDevice::inforAboutDeviceAndDrivers()
+void VulkanDevice::informationAboutDeviceAndDrivers()
 {
 	VkPhysicalDeviceProperties physicalDeviceProperties;
+    
+    // this function retrieving information about physical device and store them in VkPhysicalDeviceProperties
 	vkGetPhysicalDeviceProperties(physicalDevice, &physicalDeviceProperties);
 
 	std::cout << "Chosen physical device properties: " << std::endl;
@@ -154,8 +158,15 @@ uint32_t VulkanDevice::getGraphicQueue(VkPhysicalDevice physDevice)
 {
 	uint32_t queueFamiliesPropertiesCount;// = 0;
 
+    //This function - vkGetPhysicalDeviceQueueFamilyProperties
+    //retrieve data with informations about queue family which are
+    // type of operations that are supported and number of queues that can be created based on that family
+    //In in this call function retriev number of queue families
 	vkGetPhysicalDeviceQueueFamilyProperties(physDevice, &queueFamiliesPropertiesCount, nullptr);
 	std::vector<VkQueueFamilyProperties> queueFamiliesProperties(queueFamiliesPropertiesCount);
+
+    //In this call function retriev all data abour each queue family -> VkQueueFamilyProperties
+    // queueFlags thies field indicates which family it is
 	vkGetPhysicalDeviceQueueFamilyProperties(physDevice, &queueFamiliesPropertiesCount, queueFamiliesProperties.data());
 
 	int result = -1;
@@ -171,8 +182,15 @@ uint32_t VulkanDevice::getPresentationQueue(VkPhysicalDevice  physDevice, VkSurf
 {
 	uint32_t queueFamiliesPropertiesCount = 0;
 
+    // This function - vkGetPhysicalDeviceQueueFamilyProperties
+    // retrieve data with informations about queue family which are
+    // type of operations that are supported and number of queues that can be created based on that family
+    // In in this call function retriev number of queue families
 	vkGetPhysicalDeviceQueueFamilyProperties(physDevice, &queueFamiliesPropertiesCount, nullptr);
 	std::vector<VkQueueFamilyProperties> queueFamiliesProperties(queueFamiliesPropertiesCount);
+
+    //In this call function retriev all data abour each queue family -> VkQueueFamilyProperties
+    //queueFlags thies field indicates which family it is
 	vkGetPhysicalDeviceQueueFamilyProperties(physDevice, &queueFamiliesPropertiesCount, queueFamiliesProperties.data());
 
 	VkBool32 presentationFamilySupport = false;
@@ -180,6 +198,7 @@ uint32_t VulkanDevice::getPresentationQueue(VkPhysicalDevice  physDevice, VkSurf
 	for (unsigned int i = 0; i < queueFamiliesPropertiesCount; i++)
 	{
 		presentationFamilySupport = false;
+        // This function determine whether a queue family of physical device supports presentation to given surface
 		vkGetPhysicalDeviceSurfaceSupportKHR(physDevice, i, surface, &presentationFamilySupport);
 		if (presentationFamilySupport)
 		{
@@ -192,4 +211,43 @@ uint32_t VulkanDevice::getPresentationQueue(VkPhysicalDevice  physDevice, VkSurf
 bool VulkanDevice::isGraphicsQueueFamily(const VkQueueFlags& queueFlag)
 {
 	return queueFlag & VK_QUEUE_GRAPHICS_BIT;
+}
+
+VkSampleCountFlagBits VulkanDevice::getMaxUsableSampleCount()
+{
+    VkPhysicalDeviceProperties physicalDeviceProperties;
+    vkGetPhysicalDeviceProperties(physicalDevice, &physicalDeviceProperties);
+
+    VkSampleCountFlags counts = std::min(physicalDeviceProperties.limits.framebufferColorSampleCounts, physicalDeviceProperties.limits.framebufferDepthSampleCounts);
+    if(counts & VK_SAMPLE_COUNT_64_BIT)
+    {
+        return VK_SAMPLE_COUNT_64_BIT;
+    }
+
+    if(counts & VK_SAMPLE_COUNT_32_BIT)
+    {
+        return VK_SAMPLE_COUNT_32_BIT;
+    }
+
+    if(counts & VK_SAMPLE_COUNT_16_BIT)
+    {
+        return VK_SAMPLE_COUNT_16_BIT;
+    }
+
+    if(counts & VK_SAMPLE_COUNT_8_BIT)
+    {
+        return VK_SAMPLE_COUNT_8_BIT;
+    }
+
+    if(counts & VK_SAMPLE_COUNT_4_BIT)
+    {
+        return VK_SAMPLE_COUNT_4_BIT;
+    }
+
+    if(counts & VK_SAMPLE_COUNT_2_BIT)
+    {
+        return VK_SAMPLE_COUNT_2_BIT;
+    }
+
+    return VK_SAMPLE_COUNT_1_BIT;
 }

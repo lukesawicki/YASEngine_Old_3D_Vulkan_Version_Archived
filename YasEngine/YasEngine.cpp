@@ -14,10 +14,10 @@ const std::string				YasEngine::MODEL_PATH="Models\\chalet.obj";
 const std::string				YasEngine::TEXTURE_PATH="Textures\\chalet.jpg";
 bool YasEngine::framebufferResized = false;
 const int MAX_FRAMES_IN_FLIGHT = 2;
-
+bool YasEngine::leftRotating = false;
 
 LRESULT CALLBACK windowProcedure(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
-{	
+{	YasEngine::leftRotating = false;
 	switch(message)
 	{
 		case WM_DISPLAYCHANGE:
@@ -26,6 +26,18 @@ LRESULT CALLBACK windowProcedure(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 		case WM_DESTROY:
 			PostQuitMessage(0);
 			return(0);
+            break;
+        case WM_KEYDOWN:
+        {
+            if(wParam==VK_LEFT)
+            {
+                YasEngine::leftRotating = true;
+            }
+            //else
+            //{
+            //    YasEngine::leftRotating = false;
+            //}
+        }
 	}
 	return DefWindowProc(hWnd, message, wParam, lParam);
 }
@@ -37,7 +49,7 @@ LRESULT CALLBACK windowProcedure(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 // and is function to obtain core Vulkan API and Extensions functions pointers.
 // This function(createDebugReportCallbackEXT) is creation of implementations the creation of the debug report.
 // VkDebugReportCallbackCreateInfoEXT - structur which containst data about creating VkDebugReportCallbackEXT - 
-// data like behavior of debugging, what debug information should include: errors, warnings, information, performance wranings
+// data like behavior of debugging, what debug informations should include: errors, warnings, information, performance wranings
 VkResult createDebugReportCallbackEXT(VkInstance& vulkanInstance, const VkDebugReportCallbackCreateInfoEXT* createInfo, const VkAllocationCallbacks* allocator, VkDebugReportCallbackEXT* callback)
 {
 	PFN_vkCreateDebugReportCallbackEXT debugReportCallbackFunction = (PFN_vkCreateDebugReportCallbackEXT)vkGetInstanceProcAddr(vulkanInstance, "vkCreateDebugReportCallbackEXT");
@@ -94,8 +106,8 @@ void YasEngine::setupDebugCallback()
 		return;
 	}
 	
-    // Data structure which contains information about behaviour of the debugging
-    // what debug information should be included: errors, general warning, information,
+    // Data structure which contains informations about behaviour of the debugging
+    // what debug informations should be included: errors, general warning, information,
     // preformance relation informations and should include reference to user-defined debug function
 	VkDebugReportCallbackCreateInfoEXT createInfo = {};
 	createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT;
@@ -248,11 +260,6 @@ void YasEngine::createVulkanInstance()
 {
 	vulkanInstance.createVulkanInstance(enableValidationLayers);
 }
-
-//void YasEngine::selectPhysicalDevice()
-//{
-//	vulkanDevice->selectPhysicalDevice(vulkanInstance, surface);
-//}
 
 void YasEngine::createCommandPool()
 {
@@ -575,10 +582,19 @@ void YasEngine::createUniformBuffers()
 
 void YasEngine::updateUniformBuffer(uint32_t currentImage, float deltaTime)
 {
-	float time = zeroTime += deltaTime;
-
+    if(YasEngine::leftRotating)
+    {
+	    time = zeroTime -= deltaTime;
+    }
+   /* {
+        time = 0;
+    }*/
 	UniformBufferObject uniformBufferObject = {};
-	uniformBufferObject.model = glm::rotate(glm::mat4(1.0F), time * glm::radians(90.0F), glm::vec3(0.0F, 0.0F, 1.0F));
+
+    std::cout << "---> " << time << std::endl;
+	//uniformBufferObject.model = glm::rotate(glm::mat4(1.0F), time * glm::radians(90.0F), glm::vec3(0.0F, 0.0F, 1.0F));
+    uniformBufferObject.model = glm::rotate(glm::mat4(1.0F), time * glm::radians(90.0F), glm::vec3(0.0F, 0.0F, 1.0F));
+ 
 	uniformBufferObject.view = glm::lookAt(glm::vec3(2.0F, 2.0F, 2.0F), glm::vec3(0.0F, 0.0F, 0.0F), glm::vec3(0.0F, 0.0F, 1.0F));
 	uniformBufferObject.proj = glm::perspective(glm::radians(45.0F), vulkanSwapchain.swapchainExtent.width / (float) vulkanSwapchain.swapchainExtent.height, 0.1f, 10.0F);
 	uniformBufferObject.proj[1][1] *= -1;
@@ -668,7 +684,6 @@ void YasEngine::createRenderPass()
 	colorAttachmentDescription.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 	colorAttachmentDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 	colorAttachmentDescription.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-
 	colorAttachmentDescription.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
 	VkAttachmentDescription depthAttachmentDescription = {};
@@ -703,7 +718,7 @@ void YasEngine::createRenderPass()
 	subpassDependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 	subpassDependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 
-std::array<VkAttachmentDescription, 2> attachments = {colorAttachmentDescription, depthAttachmentDescription};
+    std::array<VkAttachmentDescription, 2> attachments = {colorAttachmentDescription, depthAttachmentDescription};
 	VkRenderPassCreateInfo renderPassInfo = {};
 	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
 	renderPassInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
@@ -749,7 +764,7 @@ void YasEngine::createGraphicsPipeline()
 	auto attributeDescriptions = Vertex::getAttributeDescriptions();
 
 	//does order matter?
-	vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+	vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO; //TODO lukesawicki
 	vertexInputInfo.vertexBindingDescriptionCount = 1;
 	vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
 	vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
@@ -959,7 +974,6 @@ void YasEngine::createDescriptorPool()
 	{
 		throw std::runtime_error("Failed to create descriptor pool.");
 	}
-
 }
 
 void YasEngine::createDescriptorSets()
@@ -1405,6 +1419,11 @@ void YasEngine::generateMipmaps(VkImage image, VkFormat imageFormat, int32_t tex
 
 	endSingleTimeCommands(commandBuffer);
 }
+
+
+
+
+
 
 //change to force build
 

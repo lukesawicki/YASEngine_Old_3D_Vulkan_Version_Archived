@@ -42,6 +42,9 @@
     <ClCompile Include="VulkanSwapchain.cpp" />
     <ClCompile Include="YasEngine.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="knowledge.html" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{C54772E8-86CC-4504-947A-04A2913309AE}</ProjectGuid>
