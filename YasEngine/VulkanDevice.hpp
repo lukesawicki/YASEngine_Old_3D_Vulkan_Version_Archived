@@ -32,6 +32,9 @@ class VulkanDevice
 			{32902, "INTEL"}
 		};
 
+    uint32_t foundGraphicQueueFamily = -1;
+    uint32_t foundPresentationQueueFamily = -1;
+
 	VkQueue									queue;
 	uint32_t								queueFamilyCount;
 

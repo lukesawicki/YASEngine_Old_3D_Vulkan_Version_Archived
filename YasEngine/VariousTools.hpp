@@ -7,8 +7,8 @@
 
 
 
-struct SwapchainSupportDetails {
-
+struct SwapchainSupportDetails
+{
 	VkSurfaceCapabilitiesKHR capabilities;
 	std::vector<VkSurfaceFormatKHR> formats;
 	std::vector<VkPresentModeKHR> presentModes;
@@ -33,8 +33,8 @@ static std::vector<char> readFile(const std::string& fileName)
 	return buffer;
 }
 
-class TimePicker {
-
+class TimePicker
+{
 	private:
 
 		LARGE_INTEGER frequency;
@@ -69,7 +69,6 @@ class TimePicker {
 
 struct Vertex
 {
-
 	glm::vec3 pos;
 	glm::vec3 color;
 	glm::vec2 texCoord;

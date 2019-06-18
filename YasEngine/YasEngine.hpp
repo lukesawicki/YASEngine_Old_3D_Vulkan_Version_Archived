@@ -70,7 +70,7 @@ class YasEngine
 		void							createDescriptorPool();
 		void							createDescriptorSets();
 		void							createTextureImage();
-		void							createImage(uint32_t width, uint32_t height, uint32_t mipLevelsNumber, VkFormat format, VkImageTiling imageTiling, VkImageUsageFlags imageUsageFlags, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
+		void							createImage(uint32_t width, uint32_t height, uint32_t mipLevelsNumber, VkSampleCountFlagBits numSamples, VkFormat format, VkImageTiling imageTiling, VkImageUsageFlags imageUsageFlags, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
 		VkCommandBuffer					beginSingleTimeCommands();
 		void							endSingleTimeCommands(VkCommandBuffer commandBuffer);
 		void							transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldImageLayout, VkImageLayout newImageLayout,  uint32_t mipLevelsNumber);
@@ -83,6 +83,8 @@ class YasEngine
 		bool							hasStencilComponent(VkFormat format);
 		void							loadModel();
 		void							generateMipmaps(VkImage image, VkFormat imageFormat, int32_t textureWidth,int32_t textureHeight,uint32_t mipLevelsNumber);
+        void                            createColorResources();
+
 
 		HINSTANCE						application;
 		HWND							window;
@@ -105,6 +107,7 @@ class YasEngine
 		VkPipeline						graphicsPipeline;
 		std::vector<VkFramebuffer>		swapchainFramebuffers;
 		VkCommandPool					commandPool;
+
 		std::vector<VkCommandBuffer>	commandBuffers;
 		VkBuffer						vertexBuffer;
 		VkDeviceMemory					vertexBufferMemory;
@@ -114,11 +117,17 @@ class YasEngine
 		std::vector<VkDeviceMemory>		uniformBuffersMemory;
 		VkDescriptorPool				descriptorPool;
 		std::vector<VkDescriptorSet>	descriptorSets;
-		VkImage							textureImage;
+		
+        VkImage colorImage;
+        VkDeviceMemory colorImageMemory;
+        VkImageView colorImageView;
+
 		uint32_t						mipLevels;
+        VkImage							textureImage;
 		VkDeviceMemory					textureImageMemory;
 		VkImageView						textureImageView;
 		VkSampler						textureSampler;
+
 		VkImage							depthImage;
 		VkDeviceMemory					depthImageMemory;
 		VkImageView						depthImageView;

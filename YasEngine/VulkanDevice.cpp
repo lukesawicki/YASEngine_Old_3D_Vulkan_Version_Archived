@@ -55,7 +55,7 @@ VulkanDevice::VulkanDevice(VulkanInstance& vulkanInstance, VkSurfaceKHR& surface
 {
 	selectPhysicalDevice(vulkanInstance, surface);
 	createLogicalDevice(vulkanInstance, surface, graphicsQueue, presentationQueue, enableValidationLayers);
-    //msaaSamples = getMaxUsableSampleCount();
+    msaaSamples = getMaxUsableSampleCount();
 	informationAboutDeviceAndDrivers();
 }
 
@@ -92,12 +92,13 @@ void VulkanDevice::selectPhysicalDevice(VulkanInstance& vulkanInstance, VkSurfac
 void VulkanDevice::createLogicalDevice(VulkanInstance& vulkanInstance, VkSurfaceKHR& surface, VkQueue& graphicsQueue, VkQueue& presentationQueue, bool enableValidationLayers)
 {
 	std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
-	std::vector<uint32_t> queueFamilies;
-	queueFamilies.push_back(getGraphicQueue(physicalDevice));
-	queueFamilies.push_back(getPresentationQueue(physicalDevice, surface));//Here using physicalDevice because it was created in createPhysicalDevice
+	//std::set<uint32_t> queueFamilies;
+	//queueFamilies.push_back(getGraphicQueue(physicalDevice));
+	//queueFamilies.push_back(getPresentationQueue(physicalDevice, surface));//Here using physicalDevice because it was created in createPhysicalDevice
+    std::set<uint32_t> uniqueQueueFamilies = {getGraphicQueue(physicalDevice), getPresentationQueue(physicalDevice, surface)};
 	float queuePriority = 1.0F;
 
-	for(uint32_t queueFamily: queueFamilies)
+	for(uint32_t queueFamily: uniqueQueueFamilies)
 	{
 		VkDeviceQueueCreateInfo queueCreateInfo = {};
 		queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
@@ -135,9 +136,12 @@ void VulkanDevice::createLogicalDevice(VulkanInstance& vulkanInstance, VkSurface
 	}
 
     // this fuction Acuire compatible queue in this case graphic queue;
-	vkGetDeviceQueue(logicalDevice, queueFamilies[0], 0, &graphicsQueue);
+    auto it = uniqueQueueFamilies.begin();
+    
+	vkGetDeviceQueue(logicalDevice, *it, 0, &graphicsQueue);
     // this fuction Acuire compatible queue in this case presentationQueue
-	vkGetDeviceQueue(logicalDevice, queueFamilies[1], 0, &presentationQueue);
+    it++;
+	vkGetDeviceQueue(logicalDevice, *it, 0, &presentationQueue);
 }
 
 void VulkanDevice::informationAboutDeviceAndDrivers()
@@ -172,6 +176,7 @@ uint32_t VulkanDevice::getGraphicQueue(VkPhysicalDevice physDevice)
 	int result = -1;
 	for (unsigned int i = 0; i < queueFamiliesPropertiesCount; i++) {
 		if (isGraphicsQueueFamily(queueFamiliesProperties[i].queueFlags)) {
+            foundGraphicQueueFamily = i;
 			return i;
 		}
 	}
@@ -200,7 +205,7 @@ uint32_t VulkanDevice::getPresentationQueue(VkPhysicalDevice  physDevice, VkSurf
 		presentationFamilySupport = false;
         // This function determine whether a queue family of physical device supports presentation to given surface
 		vkGetPhysicalDeviceSurfaceSupportKHR(physDevice, i, surface, &presentationFamilySupport);
-		if (presentationFamilySupport)
+		if (presentationFamilySupport && i!=foundGraphicQueueFamily)
 		{
 			return i;
 		}
