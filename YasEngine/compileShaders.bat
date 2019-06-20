@@ -1,5 +1,5 @@
-C:\VulkanSDK\1.1.77.0\Bin32\glslangValidator.exe -V Shaders\vertShader.vert
-C:\VulkanSDK\1.1.77.0\Bin32\glslangValidator.exe -V Shaders\fragShader.frag
+C:\VulkanSDK\1.1.101.0\Bin32\glslangValidator.exe -V Shaders\vertShader.vert
+C:\VulkanSDK\1.1.101.0\Bin32\glslangValidator.exe -V Shaders\fragShader.frag
 REM cd Shaders
 
 REM files are created in folder where is this script
