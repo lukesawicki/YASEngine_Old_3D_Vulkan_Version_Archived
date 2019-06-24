@@ -12,7 +12,7 @@ class YasEngine
 {
     public:
 
-        void run();
+        void run(HINSTANCE hInstance);
 
     private:
         void prepareWindow();

@@ -72,7 +72,7 @@ void YasEngine::prepareVulkan()
 {
 }
 
-void YasEngine::run()
+void YasEngine::run(HINSTANCE hInstance)
 {
     prepareWindow();
     prepareVulkan();

@@ -2,6 +2,7 @@
 #include"Main.hpp"
 
 //-----------------------------------------------------------------------------|---------------------------------------|
+//    
 
 // Main function off windows application. Return int. 0 - there were not errors. !=0 there were errors.
 // hInstance handle to this application. hPrevInstance - not using (deprecated)
@@ -15,3 +16,5 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	return 0;
 }
 
+//                                                                            80                                     120
+//-----------------------------------------------------------------------------|---------------------------------------|

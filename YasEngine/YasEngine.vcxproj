@@ -19,11 +19,13 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="main.hpp" />
     <ClInclude Include="stdafx.hpp" />
     <ClInclude Include="TimePicker.hpp" />
     <ClInclude Include="YasEngine.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="main.cpp" />
     <ClCompile Include="stdafx.cpp" />
     <ClCompile Include="TimePicker.cpp" />
     <ClCompile Include="YasEngine.cpp" />
