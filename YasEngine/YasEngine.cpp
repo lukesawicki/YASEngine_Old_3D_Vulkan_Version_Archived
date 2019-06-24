@@ -4,7 +4,20 @@
 //-----------------------------------------------------------------------------|---------------------------------------|
 //                                                                            80                                     120
 
-YasEngine::YasEngine(HINSTANCE hInstance) {
+YasEngine::YasEngine(HINSTANCE hInstance)
+{
+        // Allocates a new console for the calling process.
+	AllocConsole();
+    // Attaches the calling process to the console of the specified process.
+	AttachConsole(GetCurrentProcessId());
+    // Stream object
+	FILE* file;
+    // fropen_s open existing file with another name
+	freopen_s(&file, "CON", "w", stdout);
+	freopen_s(&file, "CON", "w", stderr);
+	SetConsoleTitle("YasEngine logging");
+    std::cout.clear();
+
     applicationHandle = hInstance;
 }
 
@@ -28,6 +41,7 @@ LRESULT CALLBACK windowProcedure(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 
 void YasEngine::prepareWindow()
 {
+    std::cout << "Preaparing window..." << std::endl;
     // Size of windowClassEx object
     windowClassEx.cbSize                        = sizeof(WNDCLASSEX);
 
@@ -70,10 +84,22 @@ void YasEngine::prepareWindow()
     // Function tho create window with specyfied properties.
     windowHandle = CreateWindowEx(NULL, "YASEngine window class", "YASEngine", WS_OVERLAPPEDWINDOW, windowXposition,
                                   windowYposition, windowWidth, windowHeight, NULL, NULL, applicationHandle, NULL);
+    
+    // Set window's show state
+	ShowWindow(windowHandle, SW_NORMAL);
+
+    // Brings thread that created this window into the foreground and activates the window.
+	SetForegroundWindow(windowHandle);
+
+    // Set focus to specified window.
+	SetFocus(windowHandle);
 }
 
 void YasEngine::prepareVulkan()
 {
+    std::cout << "Preparing Vulkan instance object..." << std::endl;
+    std::cout << "Adding requested validations layers and extensions" << std::endl;
+
 }
 
 void YasEngine::run()
