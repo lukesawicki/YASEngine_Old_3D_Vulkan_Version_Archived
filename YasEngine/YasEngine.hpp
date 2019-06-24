@@ -11,12 +11,13 @@ LRESULT CALLBACK windowProcedure(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 class YasEngine
 {
     public:
-
-        void run(HINSTANCE hInstance);
-
-    private:
+        YasEngine(HINSTANCE hInstance);
         void prepareWindow();
         void prepareVulkan();
+        void run();
+
+    private:
+
         // Windows API
         int windowXposition                         = 10;//TODO take system width
         int windowYposition                         = 10;//TODO teke system height

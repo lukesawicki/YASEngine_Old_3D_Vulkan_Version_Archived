@@ -10,8 +10,8 @@
 // nShowCmd - variable which tell how to show window.
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 {
-	YasEngine yasEngine = YasEngine();
-	yasEngine.run(hInstance);
+	YasEngine yasEngine = YasEngine(hInstance);
+	yasEngine.run();
 	system("PAUSE");
 	return 0;
 }

@@ -1,0 +1,7 @@
+﻿1>------ Build started: Project: YasEngine, Configuration: Debug x64 ------
+1>main.cpp
+1>stdafx.cpp
+1>TimePicker.cpp
+1>YasEngine.cpp
+1>YasEngine.vcxproj -> C:\development\workspace\YASEngine\x64\Debug\YasEngine.exe
+========== Build: 1 succeeded, 0 failed, 0 up-to-date, 0 skipped ==========

@@ -4,6 +4,10 @@
 //-----------------------------------------------------------------------------|---------------------------------------|
 //                                                                            80                                     120
 
+YasEngine::YasEngine(HINSTANCE hInstance) {
+    applicationHandle = hInstance;
+}
+
 LRESULT CALLBACK windowProcedure(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	switch(message)
@@ -72,7 +76,7 @@ void YasEngine::prepareVulkan()
 {
 }
 
-void YasEngine::run(HINSTANCE hInstance)
+void YasEngine::run()
 {
     prepareWindow();
     prepareVulkan();
