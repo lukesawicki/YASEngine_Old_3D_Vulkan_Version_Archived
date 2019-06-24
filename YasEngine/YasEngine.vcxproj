@@ -20,10 +20,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.hpp" />
+    <ClInclude Include="TimePicker.hpp" />
     <ClInclude Include="YasEngine.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp" />
+    <ClCompile Include="TimePicker.cpp" />
     <ClCompile Include="YasEngine.cpp" />
   </ItemGroup>
   <ItemGroup>
