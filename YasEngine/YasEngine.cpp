@@ -98,6 +98,24 @@ void YasEngine::prepareWindow()
 void YasEngine::prepareVulkan()
 {
     std::cout << "Preparing Vulkan instance object..." << std::endl;
+
+    // Enumerating validation and extensions layers:
+    uint32_t validationLayersNumber = 0;
+    vkEnumerateInstanceLayerProperties(&validationLayersNumber, nullptr);
+    vkEnumerateInstanceLayerProperties(&validationLayersNumber, validationLayersProperties.data);
+
+
+        
+//VKAPI_ATTR VkResult VKAPI_CALL vkEnumerateInstanceLayerProperties(
+//    uint32_t*                                   pPropertyCount,
+//    VkLayerProperties*                          pProperties);
+
+    // Create Vulkan instance (VkInstance)
+
+    VkApplicationInfo vulkanApplicationInfo = {};
+
+
+
     std::cout << "Adding requested validations layers and extensions" << std::endl;
 
 }

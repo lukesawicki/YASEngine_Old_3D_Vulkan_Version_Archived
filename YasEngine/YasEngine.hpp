@@ -37,6 +37,8 @@ class YasEngine
 
         // It is logical representation of physical device.
         VkDevice vulkanDevice;
+
+        std::vector<VkLayerProperties> validationLayersProperties;
 };
 
 #endif
