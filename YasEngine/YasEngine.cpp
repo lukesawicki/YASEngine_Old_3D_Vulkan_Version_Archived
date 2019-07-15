@@ -4,23 +4,6 @@
 //-----------------------------------------------------------------------------|---------------------------------------|
 //                                                                            80                                     120
 
-YasEngine::YasEngine(HINSTANCE hInstance)
-{
-        // Allocates a new console for the calling process.
-	AllocConsole();
-    // Attaches the calling process to the console of the specified process.
-	AttachConsole(GetCurrentProcessId());
-    // Stream object
-	FILE* file;
-    // fropen_s open existing file with another name
-	freopen_s(&file, "CON", "w", stdout);
-	freopen_s(&file, "CON", "w", stderr);
-	SetConsoleTitle("YasEngine logging");
-    std::cout.clear();
-
-    applicationHandle = hInstance;
-}
-
 LRESULT CALLBACK windowProcedure(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	switch(message)
@@ -37,6 +20,26 @@ LRESULT CALLBACK windowProcedure(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
         }
 	}
 	return DefWindowProc(hWnd, message, wParam, lParam);
+}
+
+const char* YasEngine::engineName = "YasEngine";
+const char* YasEngine::applicationName = "YasEngine Demo Application";
+
+YasEngine::YasEngine(HINSTANCE hInstance)
+{
+        // Allocates a new console for the calling process.
+	AllocConsole();
+    // Attaches the calling process to the console of the specified process.
+	AttachConsole(GetCurrentProcessId());
+    // Stream object
+	FILE* file;
+    // fropen_s open existing file with another name
+	freopen_s(&file, "CON", "w", stdout);
+	freopen_s(&file, "CON", "w", stderr);
+	SetConsoleTitle("YasEngine logging");
+    std::cout.clear();
+
+    applicationHandle = hInstance;
 }
 
 void YasEngine::prepareWindow()
@@ -98,26 +101,136 @@ void YasEngine::prepareWindow()
 void YasEngine::prepareVulkan()
 {
     std::cout << "Preparing Vulkan instance object..." << std::endl;
+    // Enumerating layer properties
+    uint32_t numberOfValidationLayers = 0;
+    vkEnumerateInstanceLayerProperties(&numberOfValidationLayers, nullptr);
+    vkEnumerateInstanceLayerProperties(&numberOfValidationLayers, availableValidationLayersProperties.data);
+    
+    std::map<const char*, bool> availableLayers;
+    std::map<const char*, bool> availableExtensions;
 
-    // Enumerating validation and extensions layers:
-    uint32_t validationLayersNumber = 0;
-    vkEnumerateInstanceLayerProperties(&validationLayersNumber, nullptr);
-    vkEnumerateInstanceLayerProperties(&validationLayersNumber, validationLayersProperties.data);
+    try
+    {
+        for(const char* layerName: requiredInstanceLayerNames)
+        {
+            for(VkLayerProperties layerProperty: availableValidationLayersProperties)
+            {
+                if( strcmp(layerProperty.layerName, layerName) )
+                {
+                    availableLayers.insert( {layerProperty.layerName, true} );
+                    break;
+                }
+                if(availableLayers.find(layerName) == availableLayers.end())
+                {
+                    // CORRECT THE SAME CODE FOR LAYERS
+                    availableLayers.insert({layerName, false});
+                }
+            }
+        }
 
+        if(availableLayers.size() < requiredInstanceLayerNames.size())
+        {
+            throw new MissingValidationLayersException();
+        }
 
-        
-//VKAPI_ATTR VkResult VKAPI_CALL vkEnumerateInstanceLayerProperties(
-//    uint32_t*                                   pPropertyCount,
-//    VkLayerProperties*                          pProperties);
+        std::cout << "Availabla layers:" << std::endl;
+        for(VkLayerProperties layerProperty: availableValidationLayersProperties)
+        {
+            std::cout << layerProperty.layerName << std::endl;
+        }
 
-    // Create Vulkan instance (VkInstance)
+        // Enumerating instance extensions
+        uint32_t nuberOfInstanceExtensions = 0;
+        vkEnumerateInstanceExtensionProperties(nullptr, &nuberOfInstanceExtensions, nullptr);
+        vkEnumerateInstanceExtensionProperties(nullptr, &nuberOfInstanceExtensions, availableExtentionProperties.data);
 
+        for(const char* extensionName: requiredExtenstionsNames)
+        {
+            for(VkExtensionProperties extensionProperty: availableExtentionProperties)
+            {
+                if( strcmp(extensionProperty.extensionName, extensionName) )
+                {
+                    availableExtensions.insert( {extensionProperty.extensionName, true} );
+                    break;
+                }
+            }
+            if(availableExtensions.find(extensionName) == availableExtensions.end())
+            {
+                availableExtensions.insert({extensionName, false});
+            }
+        }
+
+        if(availableExtensions.size() < requiredInstanceLayerNames.size())
+        {
+            throw new MissingValidationLayersException();
+        }
+
+        std::cout << "Availabla layers:" << std::endl;
+        for(VkExtensionProperties extensionProperty: availableExtentionProperties)
+        {
+            std::cout << extensionProperty.extensionName << std::endl;
+        }
+
+    }
+    catch(MissingInstanceExtensionsException exception)
+    {
+        std::cout << exception.what() << std::endl;
+        std::cout << "Missing extensions: " << std::endl;
+        for(std::map<const char*, bool>::iterator layer = availableExtensions.begin(); layer!=availableExtensions.end(); ++layer)
+        {
+            if(layer->second == false)
+            {
+                std::cout << layer->first << std::endl;
+            }
+        }
+        exit(1);
+    }
+    catch (MissingValidationLayersException exception)
+    {
+        std::cout << exception.what() << std::endl;
+        std::cout << "Missing layers: " << std::endl;
+        for(std::map<const char*, bool>::iterator layer = availableLayers.begin(); layer!=availableLayers.end(); ++layer)
+        {
+            if(layer->second == false)
+            {
+                std::cout << layer->first << std::endl;
+            }
+        }
+        exit(1);
+    }
+
+    // Instance creation
     VkApplicationInfo vulkanApplicationInfo = {};
 
+    vulkanApplicationInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+    vulkanApplicationInfo.pNext = NULL;
+    vulkanApplicationInfo.pApplicationName = applicationName;
+    vulkanApplicationInfo.applicationVersion = VK_MAKE_VERSION(1,0,0);
+    vulkanApplicationInfo.pEngineName = engineName;
+    vulkanApplicationInfo.engineVersion = VK_MAKE_VERSION(0,2,0);
+    vulkanApplicationInfo.apiVersion = VK_API_VERSION_1_1; // VK_MAKE_VERSION(1,1,101,0);
+
+    VkInstanceCreateInfo instanceCreateInfo;
+    instanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+    instanceCreateInfo.pApplicationInfo = &vulkanApplicationInfo;
+    instanceCreateInfo.enabledExtensionCount = static_cast<uint32_t>(requiredExtenstionsNames.size());
+    instanceCreateInfo.ppEnabledExtensionNames = requiredExtenstionsNames.data();
+    instanceCreateInfo.enabledLayerCount = static_cast<uint32_t>(requiredInstanceLayerNames.size());
+    instanceCreateInfo.ppEnabledLayerNames = requiredInstanceLayerNames.data();
+
+    if(vkCreateInstance(&instanceCreateInfo, nullptr, &vulkanInstance) != VK_SUCCESS)
+    {
+        throw new InstanceCreationException();
+    }
+
+    // Enumerate physical devices
+
+    vkEnumeratePhysicalDevices(vulkanInstance, &numberOfPhysicalDevices, nullptr);
+    vkEnumeratePhysicalDevices(vulkanInstance, &numberOfPhysicalDevices, physicalDevices.data());
 
 
-    std::cout << "Adding requested validations layers and extensions" << std::endl;
-
+    // Create logical device
+    //vkGetPhysicalDeviceQueueFamilyProperties(
 }
 
 void YasEngine::run()
@@ -166,3 +279,4 @@ void YasEngine::run()
 
 //                                                                            80                                     120
 //-----------------------------------------------------------------------------|---------------------------------------|
+
