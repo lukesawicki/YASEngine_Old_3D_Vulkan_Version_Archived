@@ -39,6 +39,8 @@ class YasEngine
 
         // It represents device compatible with Vulkan API
         std::vector<VkPhysicalDevice> physicalDevices;
+        std::vector<VkPhysicalDeviceProperties*> physicalDevicesProperties;
+
         uint32_t numberOfPhysicalDevices;
         // It is logical representation of physical device.
         VkDevice vulkanDevice;

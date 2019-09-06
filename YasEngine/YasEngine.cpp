@@ -104,7 +104,7 @@ void YasEngine::prepareVulkan()
     // Enumerating layer properties
     uint32_t numberOfValidationLayers = 0;
     vkEnumerateInstanceLayerProperties(&numberOfValidationLayers, nullptr);
-    vkEnumerateInstanceLayerProperties(&numberOfValidationLayers, availableValidationLayersProperties.data);
+    vkEnumerateInstanceLayerProperties(&numberOfValidationLayers, availableValidationLayersProperties.data());
     
     std::map<const char*, bool> availableLayers;
     std::map<const char*, bool> availableExtensions;
@@ -142,7 +142,7 @@ void YasEngine::prepareVulkan()
         // Enumerating instance extensions
         uint32_t nuberOfInstanceExtensions = 0;
         vkEnumerateInstanceExtensionProperties(nullptr, &nuberOfInstanceExtensions, nullptr);
-        vkEnumerateInstanceExtensionProperties(nullptr, &nuberOfInstanceExtensions, availableExtentionProperties.data);
+        vkEnumerateInstanceExtensionProperties(nullptr, &nuberOfInstanceExtensions, availableExtentionProperties.data());
 
         for(const char* extensionName: requiredExtenstionsNames)
         {
@@ -183,7 +183,7 @@ void YasEngine::prepareVulkan()
                 std::cout << layer->first << std::endl;
             }
         }
-        exit(1);
+        exit(EXIT_FAILURE);
     }
     catch (MissingValidationLayersException exception)
     {
@@ -196,7 +196,7 @@ void YasEngine::prepareVulkan()
                 std::cout << layer->first << std::endl;
             }
         }
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
     // Instance creation
@@ -227,6 +227,18 @@ void YasEngine::prepareVulkan()
 
     vkEnumeratePhysicalDevices(vulkanInstance, &numberOfPhysicalDevices, nullptr);
     vkEnumeratePhysicalDevices(vulkanInstance, &numberOfPhysicalDevices, physicalDevices.data());
+
+    // Getting physical devices properties
+
+    
+
+    for (VkPhysicalDevice physDevice: physicalDevices)
+    {
+        VkPhysicalDeviceProperties* physProp = new VkPhysicalDeviceProperties();
+        physicalDevicesProperties.push_back(physProp);
+        vkGetPhysicalDeviceProperties(physDevice, physProp);
+        // lukesawicki tu skonczylem 16-07-2019
+    }
 
 
     // Create logical device
