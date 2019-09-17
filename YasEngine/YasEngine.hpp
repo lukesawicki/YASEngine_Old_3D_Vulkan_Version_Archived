@@ -75,7 +75,6 @@ class MissingValidationLayersException: public std::exception
             return "Missing validation layers!";
         }
     private:
-        int some;
 };
 
 class MissingInstanceExtensionsException: public std::exception
@@ -86,7 +85,6 @@ class MissingInstanceExtensionsException: public std::exception
             return "Missing instance extensions layers!";
         }
     private:
-        int some;
 };
 
 class InstanceCreationException: public std::exception
@@ -97,7 +95,6 @@ class InstanceCreationException: public std::exception
             return "Error during Instance creation!";
         }
     private:
-        int some;
 };
 
 #endif
