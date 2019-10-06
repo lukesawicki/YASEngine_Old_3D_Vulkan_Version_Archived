@@ -104,33 +104,45 @@ void YasEngine::prepareVulkan()
     // Enumerating layer properties
     uint32_t numberOfValidationLayers = 0;
     vkEnumerateInstanceLayerProperties(&numberOfValidationLayers, nullptr);
+
+    std::vector<VkLayerProperties> availableValidationLayersProperties; // ATTENTION same variable as in class
+
+    availableValidationLayersProperties.resize(numberOfValidationLayers);
+
     vkEnumerateInstanceLayerProperties(&numberOfValidationLayers, availableValidationLayersProperties.data());
     
-    std::map<const char*, bool> availableLayers;
+    std::map<const char*, bool> availableLayersNames;
     std::map<const char*, bool> availableExtensions;
+
+    std::cout << availableValidationLayersProperties.size() << std::endl;
+
+    for(VkLayerProperties layerProperties: availableValidationLayersProperties)
+    {
+        std::cout << layerProperties.layerName << std::endl;
+    }
 
     try
     {
-        for(const char* layerName: requiredInstanceLayerNames)
+        for(const char* layerName: minimumRequiredInstanceLayerNames)
         {
             for(VkLayerProperties layerProperty: availableValidationLayersProperties)
             {
                 if( strcmp(layerProperty.layerName, layerName) )
                 {
-                    availableLayers.insert( {layerProperty.layerName, true} );
+                    availableLayersNames.insert( {layerProperty.layerName, true} );
                     break;
                 }
-                if(availableLayers.find(layerName) == availableLayers.end())
+                if(availableLayersNames.find(layerName) == availableLayersNames.end())
                 {
                     // CORRECT THE SAME CODE FOR LAYERS
-                    availableLayers.insert({layerName, false});
+                    availableLayersNames.insert({layerName, false});
                 }
             }
         }
 
-        if(availableLayers.size() < requiredInstanceLayerNames.size())
+        if(availableLayersNames.size() < minimumRequiredInstanceLayerNames.size())
         {
-            throw new MissingValidationLayersException();
+            throw new MissingValidationLayersException(); // Rzuca ale dziala prawidlowo teraz bo jest 5 dostepnych a pewnie wymagane se wpisalem mniejsza ilosc
         }
 
         std::cout << "Availabla layers:" << std::endl;
@@ -160,7 +172,7 @@ void YasEngine::prepareVulkan()
             }
         }
 
-        if(availableExtensions.size() < requiredInstanceLayerNames.size())
+        if(availableExtensions.size() < minimumRequiredInstanceLayerNames.size())
         {
             throw new MissingValidationLayersException();
         }
@@ -189,7 +201,7 @@ void YasEngine::prepareVulkan()
     {
         std::cout << exception.what() << std::endl;
         std::cout << "Missing layers: " << std::endl;
-        for(std::map<const char*, bool>::iterator layer = availableLayers.begin(); layer!=availableLayers.end(); ++layer)
+        for(std::map<const char*, bool>::iterator layer = availableLayersNames.begin(); layer!=availableLayersNames.end(); ++layer)
         {
             if(layer->second == false)
             {
@@ -210,13 +222,15 @@ void YasEngine::prepareVulkan()
     vulkanApplicationInfo.engineVersion = VK_MAKE_VERSION(0,2,0);
     vulkanApplicationInfo.apiVersion = VK_API_VERSION_1_1; // VK_MAKE_VERSION(1,1,101,0);
 
+    // tutaj brakuje chyba czegos co stworzy application:) z tej struktury powyzej czy cos
+
     VkInstanceCreateInfo instanceCreateInfo;
     instanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
     instanceCreateInfo.pApplicationInfo = &vulkanApplicationInfo;
     instanceCreateInfo.enabledExtensionCount = static_cast<uint32_t>(requiredExtenstionsNames.size());
     instanceCreateInfo.ppEnabledExtensionNames = requiredExtenstionsNames.data();
-    instanceCreateInfo.enabledLayerCount = static_cast<uint32_t>(requiredInstanceLayerNames.size());
-    instanceCreateInfo.ppEnabledLayerNames = requiredInstanceLayerNames.data();
+    instanceCreateInfo.enabledLayerCount = static_cast<uint32_t>(minimumRequiredInstanceLayerNames.size());
+    instanceCreateInfo.ppEnabledLayerNames = minimumRequiredInstanceLayerNames.data();
 
     if(vkCreateInstance(&instanceCreateInfo, nullptr, &vulkanInstance) != VK_SUCCESS)
     {

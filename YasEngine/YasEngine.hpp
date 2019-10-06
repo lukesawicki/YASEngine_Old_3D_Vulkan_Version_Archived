@@ -49,12 +49,8 @@ class YasEngine
 
         // Api used in this project:
         // https://vulkan.lunarg.com/doc/sdk/1.1.101.0/windows/layer_configuration.html
-        std::vector<const char*> requiredInstanceLayerNames = {
-            "VK_LAYER_GOOGLE_threading",                // deprecated in 1.1.106.0 and newer versions
-            "VK_LAYER_LUNARG_parameter_validation",     // deprecated in 1.1.106.0 and newer versions
-            "VK_LAYER_LUNARG_object_tracker",           // deprecated in 1.1.106.0 and newer versions
-            "VK_LAYER_LUNARG_core_validation",          // deprecated in 1.1.106.0 and newer versions
-            "VK_LAYER_GOOGLE_unique_objects"            // deprecated in 1.1.106.0 and newer versions
+        std::vector<const char*> minimumRequiredInstanceLayerNames = {
+            "VK_LAYER_LUNARG_standard_validation",          // deprecated in 1.1.106.0 and newer versions
         };
 
         std::vector<const char*> requiredExtenstionsNames = {
@@ -62,8 +58,15 @@ class YasEngine
             VK_KHR_WIN32_SURFACE_EXTENSION_NAME,
             VK_EXT_DEBUG_REPORT_EXTENSION_NAME
         };
+
+        //VK_LAYER_NV_optimus
+        //VK_LAYER_RENDERDOC_Capture
+        //VK_LAYER_VALVE_steam_overlay
+        //VK_LAYER_VALVE_steam_fossilize
+        //VK_LAYER_LUNARG_standard_validation
+
         // Newer api: https://vulkan.lunarg.com/doc/sdk/1.1.106.0/windows/layer_configuration.html
-        std::vector<VkLayerProperties> availableValidationLayersProperties;
+        std::vector<VkLayerProperties> availableValidationLayersProperties; // commmented 20190917
         std::vector<VkExtensionProperties> availableExtentionProperties;
 };
 
