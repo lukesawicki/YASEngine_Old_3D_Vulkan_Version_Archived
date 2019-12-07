@@ -18,6 +18,9 @@ class YasEngine
         void prepareVulkan();
         void run();
 
+        // Represents connections application to Vulkan runtime
+        VkInstance vulkanInstance;
+
     private:
 
         static const char* engineName;
