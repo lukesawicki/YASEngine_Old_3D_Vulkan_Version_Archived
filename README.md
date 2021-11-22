@@ -1,4 +1,9 @@
 # YASEngine
+
+UPDATE 2021-11-22
+I have not abandoned this project. I have just moved to YasEngineSoftware, where I'm Implementing software renderer for learning purpose.
+https://github.com/lukesawicki/YasEngineSoftware
+
 YASEngine(Yet Another Simple Engine) will be simple game engine written in C++ with Vulkan API and other APIs in the future.
 
 In the beginning during creating engine and simultanously learning Vulkan, code which you find here is modified code from Vulkan tutorial -> https://vulkan-tutorial.com/Introduction 
