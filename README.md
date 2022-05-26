@@ -1,8 +1,12 @@
 # YASEngine
 
-UPDATE 2021-11-22
-I have not abandoned this project. I have just moved to YasEngineSoftware, where I'm Implementing software renderer for learning purpose.
+**** ATTENTION! ****
+CURRENTLY WORKING ON YasEngine with software renderer. Currently, regulary updated repositorium is: 
 https://github.com/lukesawicki/YasEngineSoftware
+
+
+
+
 
 YASEngine(Yet Another Simple Engine) will be simple game engine written in C++ with Vulkan API and other APIs in the future.
 
