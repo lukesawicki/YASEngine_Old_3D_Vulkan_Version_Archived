@@ -2,7 +2,7 @@
 
 **** ATTENTION! ****
 CURRENTLY WORKING ON YasEngine with software renderer. Currently, regulary updated repositorium is: 
-https://github.com/lukesawicki/YasEngineSoftware
+https://github.com/lukesawicki/YasEngineSoftware -->(The repository will be private until January 17, 2024)
 
 
 
