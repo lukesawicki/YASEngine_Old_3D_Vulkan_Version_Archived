@@ -2,11 +2,8 @@
 
 **** Important Informations ****
 
-This procjet is my old first atempt to graphics programming. That  was extremally hard  to start learning graphics programming from Vulkan API so I abandoned it after year.
-Then I started developing YasEngine with OpenGL but I wasn't happy how some stuff is explained then I decided to go full software renderer and started engine YasEngineSoftware.
-And then started from drawing pixel using SDL. This year I finished my first simple game Beauty of Math and decided to add 3D rendering but it is hard to add this to current
-code base of YasEngineSoftware so I decided to use obviously only smart part of code from ther and to be easier focus on only renderer not game so I created project YasRenderer.
-And YasRenderer will be for some time my active project.
+This procjet is my old first atempt to graphics programming. That was extremally hard to start learning graphics programming from Vulkan API so I abandoned it after year. Then I started developing YasEngine with OpenGL https://github.com/lukesawicki/YasEngineGL_Old_OpenGL_Version_Archived but I wasn't happy how some stuff is explained then I decided to go full software renderer and started engine YasEngineSoftware https://github.com/lukesawicki/YasEngineSoftware_Old_Software_Renderer_Version_ArchivedArchived
+And then started from drawing pixel using SDL. This year I finished my first simple game Beauty of Math and decided to add 3D rendering but it is hard to add this to current code base of YasEngineSoftware so I decided to use obviously only smart part of code from ther and to be easier focus on only renderer not game so I created project YasRenderer. And YasRenderer will be for some time my active project.
 
 
 
